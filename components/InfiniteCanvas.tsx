@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import React, { useRef, useEffect, useState, useCallback, forwardRef, useImperativeHandle } from 'react';
 import { CanvasElement, Tool, Point, ViewportState } from '@/types/canvas';
 
 interface InfiniteCanvasProps {
@@ -12,14 +12,18 @@ interface InfiniteCanvasProps {
   setElements: (elements: CanvasElement[] | ((prev: CanvasElement[]) => CanvasElement[])) => void;
 }
 
-export default function InfiniteCanvas({
+export interface InfiniteCanvasRef {
+  exportToPNG: () => void;
+}
+
+const InfiniteCanvas = forwardRef<InfiniteCanvasRef, InfiniteCanvasProps>(({
   currentTool,
   currentColor,
   brushSize,
   filled,
   elements,
   setElements,
-}: InfiniteCanvasProps) {
+}, ref) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentPath, setCurrentPath] = useState<Point[]>([]);
@@ -158,8 +162,10 @@ export default function InfiniteCanvas({
   };
 
   const drawElement = (ctx: CanvasRenderingContext2D, element: CanvasElement) => {
-    ctx.strokeStyle = element.color;
-    ctx.fillStyle = element.color;
+    if (element.type !== 'image') {
+      ctx.strokeStyle = element.color;
+      ctx.fillStyle = element.color;
+    }
 
     switch (element.type) {
       case 'drawing':
@@ -397,6 +403,27 @@ export default function InfiniteCanvas({
     redraw();
   }, [redraw]);
 
+  // Export canvas to PNG
+  const exportToPNG = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `canvas-${Date.now()}.png`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }, 'image/png');
+  }, []);
+
+  // Expose methods to parent component
+  useImperativeHandle(ref, () => ({
+    exportToPNG,
+  }), [exportToPNG]);
+
   return (
     <>
       <canvas
@@ -439,4 +466,8 @@ export default function InfiniteCanvas({
       )}
     </>
   );
-}
+});
+
+InfiniteCanvas.displayName = 'InfiniteCanvas';
+
+export default InfiniteCanvas;

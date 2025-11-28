@@ -15,6 +15,7 @@ import {
   Upload,
   MousePointer2,
   PaintBucket,
+  FileImage,
 } from 'lucide-react';
 import { Tool } from '@/types/canvas';
 
@@ -31,6 +32,7 @@ interface ToolbarProps {
   onSave: () => void;
   onLoad: () => void;
   onImageUpload: (file: File) => void;
+  onExportPNG: () => void;
 }
 
 export default function Toolbar({
@@ -46,6 +48,7 @@ export default function Toolbar({
   onSave,
   onLoad,
   onImageUpload,
+  onExportPNG,
 }: ToolbarProps) {
   const [showColorPicker, setShowColorPicker] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -170,6 +173,14 @@ export default function Toolbar({
           title="Cargar"
         >
           <Upload size={20} />
+        </button>
+
+        <button
+          onClick={onExportPNG}
+          className="p-2 rounded hover:bg-purple-100 text-purple-600 transition-colors"
+          title="Exportar a PNG"
+        >
+          <FileImage size={20} />
         </button>
       </div>
 
