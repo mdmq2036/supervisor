@@ -1,13 +1,14 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import InfiniteCanvas from '@/components/InfiniteCanvas';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import InfiniteCanvas, { InfiniteCanvasRef } from '@/components/InfiniteCanvas';
 import Toolbar from '@/components/Toolbar';
 import { CanvasElement, Tool } from '@/types/canvas';
 
 const STORAGE_KEY = 'infinite-canvas-data';
 
 export default function Home() {
+  const canvasRef = useRef<InfiniteCanvasRef>(null);
   const [currentTool, setCurrentTool] = useState<Tool>('draw');
   const [currentColor, setCurrentColor] = useState('#000000');
   const [brushSize, setBrushSize] = useState(2);
@@ -125,6 +126,10 @@ export default function Home() {
     reader.readAsDataURL(file);
   }, []);
 
+  const handleExportPNG = useCallback(() => {
+    canvasRef.current?.exportToPNG();
+  }, []);
+
   if (!mounted) {
     return null;
   }
@@ -144,8 +149,10 @@ export default function Home() {
         onSave={handleSave}
         onLoad={handleLoad}
         onImageUpload={handleImageUpload}
+        onExportPNG={handleExportPNG}
       />
       <InfiniteCanvas
+        ref={canvasRef}
         currentTool={currentTool}
         currentColor={currentColor}
         brushSize={brushSize}
