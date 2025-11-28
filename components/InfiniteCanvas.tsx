@@ -30,6 +30,7 @@ export default function InfiniteCanvas({
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
   const [tempText, setTempText] = useState('');
   const [tempTextPos, setTempTextPos] = useState<Point | null>(null);
+  const [tempTextScreenPos, setTempTextScreenPos] = useState<Point | null>(null);
   const imageCache = useRef<Map<string, HTMLImageElement>>(new Map());
 
   // Transform screen coordinates to canvas coordinates
@@ -226,6 +227,11 @@ export default function InfiniteCanvas({
     }
 
     if (currentTool === 'text') {
+      const canvas = canvasRef.current;
+      if (canvas) {
+        const rect = canvas.getBoundingClientRect();
+        setTempTextScreenPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+      }
       setTempTextPos(point);
       setTempText('');
       setEditingTextId('new');
@@ -368,6 +374,7 @@ export default function InfiniteCanvas({
     setEditingTextId(null);
     setTempText('');
     setTempTextPos(null);
+    setTempTextScreenPos(null);
   };
 
   // Resize canvas to match window
@@ -402,12 +409,12 @@ export default function InfiniteCanvas({
         onWheel={handleWheel}
         style={{ cursor: currentTool === 'pan' || isPanning ? 'grab' : 'crosshair' }}
       />
-      {editingTextId === 'new' && tempTextPos && (
+      {editingTextId === 'new' && tempTextScreenPos && (
         <div
           className="absolute"
           style={{
-            left: tempTextPos.x * viewport.zoom + viewport.x,
-            top: tempTextPos.y * viewport.zoom + viewport.y,
+            left: tempTextScreenPos.x,
+            top: tempTextScreenPos.y,
           }}
         >
           <input
@@ -420,11 +427,12 @@ export default function InfiniteCanvas({
                 setEditingTextId(null);
                 setTempText('');
                 setTempTextPos(null);
+                setTempTextScreenPos(null);
               }
             }}
             onBlur={handleTextSubmit}
             autoFocus
-            className="border-2 border-blue-500 px-2 py-1 text-xl"
+            className="border-2 border-blue-500 px-2 py-1 text-xl bg-white"
             style={{ color: currentColor }}
           />
         </div>
