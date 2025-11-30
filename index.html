@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DONET - Sistema de Gestión</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Pantalla de Login -->
+    <div id="loginScreen" class="screen active">
+        <div class="login-container">
+            <div class="logo-container">
+                <div class="logo-circle">
+                    <img src="logo-donet.png" alt="DONET Logo" class="logo">
+                </div>
+            </div>
+            <h1 class="app-title">APLICACIONES - DONET</h1>
+
+            <div class="login-box">
+                <h2>Iniciar Sesión</h2>
+                <form id="loginForm">
+                    <div class="input-group">
+                        <input type="text" id="username" placeholder="Usuario" required>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="password" placeholder="Contraseña" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Entrar</button>
+                </form>
+                <div class="version-info">Versión 1.0 - © 2025 DONET</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Menú Principal -->
+    <div id="menuScreen" class="screen">
+        <div class="header">
+            <div class="header-content">
+                <img src="logo-donet.png" alt="DONET" class="header-logo">
+                <h1>SISTEMA DE GESTIÓN - DONET</h1>
+                <button id="logoutBtn" class="btn-logout">Cerrar Sesión</button>
+            </div>
+        </div>
+
+        <div class="menu-container">
+            <div class="welcome-section">
+                <h2>Bienvenido, <span id="supervisorName"></span></h2>
+                <p class="date-display" id="currentDate"></p>
+            </div>
+
+            <div class="menu-cards">
+                <div class="menu-card" onclick="showScreen('registerScreen')">
+                    <div class="card-icon">📝</div>
+                    <h3>Registrar Inspección</h3>
+                    <p>Ingresar nuevos datos y fotografías</p>
+                </div>
+
+                <div class="menu-card" onclick="window.location.href='carga-masiva.html'">
+                    <div class="card-icon">📤</div>
+                    <h3>Carga Masiva</h3>
+                    <p>Importar datos desde Excel</p>
+                </div>
+
+                <div class="menu-card" onclick="showScreen('consultScreen')">
+                    <div class="card-icon">🔍</div>
+                    <h3>Consultar Registros</h3>
+                    <p>Ver registros de otros periodos</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pantalla de Registro -->
+    <div id="registerScreen" class="screen">
+        <div class="header">
+            <div class="header-content">
+                <img src="logo-donet.png" alt="DONET" class="header-logo">
+                <h1>REGISTRO DE INSPECCIÓN</h1>
+                <button onclick="showScreen('menuScreen')" class="btn-back">← Volver</button>
+            </div>
+        </div>
+
+        <div class="form-container">
+            <form id="registerForm">
+                <div class="form-section">
+                    <h3>Información General</h3>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Cuenta Contrato</label>
+                            <select id="cuentaContrato" required>
+                                <option value="">Seleccione una cuenta contrato</option>
+                            </select>
+                            <small style="color: #888; display: block; margin-top: 5px;">
+                                Solo se muestran las cuentas asignadas a tu usuario
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Fecha</label>
+                            <input type="date" id="fecha" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label>Observación 1</label>
+                            <textarea id="observacion1" rows="2"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label>Observación 2</label>
+                            <textarea id="observacion2" rows="2"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Fotografías</h3>
+                    <div class="photos-grid">
+                        <div class="photo-upload">
+                            <label for="foto1">
+                                <div class="upload-box" id="preview1">
+                                    <span class="upload-icon">📷</span>
+                                    <span class="upload-text">Foto 1</span>
+                                </div>
+                            </label>
+                            <input type="file" id="foto1" accept="image/*" onchange="previewImage(1)">
+                        </div>
+
+                        <div class="photo-upload">
+                            <label for="foto2">
+                                <div class="upload-box" id="preview2">
+                                    <span class="upload-icon">📷</span>
+                                    <span class="upload-text">Foto 2</span>
+                                </div>
+                            </label>
+                            <input type="file" id="foto2" accept="image/*" onchange="previewImage(2)">
+                        </div>
+
+                        <div class="photo-upload">
+                            <label for="foto3">
+                                <div class="upload-box" id="preview3">
+                                    <span class="upload-icon">📷</span>
+                                    <span class="upload-text">Foto 3</span>
+                                </div>
+                            </label>
+                            <input type="file" id="foto3" accept="image/*" onchange="previewImage(3)">
+                        </div>
+
+                        <div class="photo-upload">
+                            <label for="foto4">
+                                <div class="upload-box" id="preview4">
+                                    <span class="upload-icon">📷</span>
+                                    <span class="upload-text">Foto 4</span>
+                                </div>
+                            </label>
+                            <input type="file" id="foto4" accept="image/*" onchange="previewImage(4)">
+                        </div>
+
+                        <div class="photo-upload">
+                            <label for="foto5">
+                                <div class="upload-box" id="preview5">
+                                    <span class="upload-icon">📷</span>
+                                    <span class="upload-text">Foto 5</span>
+                                </div>
+                            </label>
+                            <input type="file" id="foto5" accept="image/*" onchange="previewImage(5)">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" onclick="resetForm()" class="btn-secondary">Limpiar</button>
+                    <button type="submit" class="btn-primary">Guardar Registro</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Pantalla de Consulta -->
+    <div id="consultScreen" class="screen">
+        <div class="header">
+            <div class="header-content">
+                <img src="logo-donet.png" alt="DONET" class="header-logo">
+                <h1>CONSULTAR REGISTROS</h1>
+                <button onclick="showScreen('menuScreen')" class="btn-back">← Volver</button>
+            </div>
+        </div>
+
+        <div class="consult-container">
+            <div class="search-section">
+                <h3>Filtros de Búsqueda</h3>
+                <div class="search-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Cuenta Contrato</label>
+                            <input type="text" id="searchCuenta">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Fecha Inicio</label>
+                            <input type="date" id="searchFechaInicio">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Fecha Fin</label>
+                            <input type="date" id="searchFechaFin">
+                        </div>
+
+                        <div class="form-group">
+                            <button onclick="buscarRegistros()" class="btn-primary">Buscar</button>
+                            <button onclick="cargarTodosLosRegistros()" class="btn-secondary" style="margin-left: 10px;">Ver Todos</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="results-section">
+                <h3>Resultados</h3>
+                <div id="resultsContainer">
+                    <p class="no-results">Utilice los filtros para buscar registros</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

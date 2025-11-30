@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DONET - Carga Masiva</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .upload-area {
+            border: 3px dashed var(--cyan);
+            border-radius: 15px;
+            padding: 60px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--secondary-bg);
+            margin: 30px 0;
+        }
+
+        .upload-area:hover {
+            background: var(--card-bg);
+            box-shadow: 0 0 30px var(--cyan-glow);
+        }
+
+        .upload-area.dragover {
+            background: var(--card-bg);
+            border-color: #00ff88;
+            box-shadow: 0 0 40px var(--cyan-glow);
+        }
+
+        .upload-icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+            color: var(--cyan);
+        }
+
+        .file-info {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border: 1px solid var(--cyan);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: var(--secondary-bg);
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+            border: 1px solid var(--border-color);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--cyan), #00ff88);
+            width: 0%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-bg);
+            font-weight: 600;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            color: var(--cyan);
+            font-weight: 700;
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .log-container {
+            background: var(--secondary-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .log-entry {
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+
+        .log-success {
+            background: rgba(0, 255, 136, 0.1);
+            color: #00ff88;
+        }
+
+        .log-error {
+            background: rgba(255, 68, 68, 0.1);
+            color: #ff4444;
+        }
+
+        .log-warning {
+            background: rgba(255, 193, 7, 0.1);
+            color: #ffc107;
+        }
+
+        .log-info {
+            background: rgba(0, 212, 255, 0.1);
+            color: var(--cyan);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn-icon {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="screen active">
+        <div class="header">
+            <div class="header-content">
+                <img src="logo-donet.png" alt="DONET" class="header-logo">
+                <h1>CARGA MASIVA DE DATOS</h1>
+                <button onclick="window.location.href='index.html'" class="btn-back">← Volver</button>
+            </div>
+        </div>
+
+        <div class="form-container">
+            <div class="form-section">
+                <h3>📤 Subir Archivo Excel</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 20px;">
+                    Arrastra y suelta tu archivo Excel aquí, o haz clic para seleccionarlo.
+                    <br>Formato aceptado: .xlsx, .xls
+                </p>
+
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📁</div>
+                    <h3>Arrastra tu archivo aquí</h3>
+                    <p style="color: var(--text-secondary); margin-top: 10px;">o haz clic para seleccionar</p>
+                    <input type="file" id="fileInput" accept=".xlsx,.xls" style="display: none;">
+                </div>
+
+                <div id="fileInfo" style="display: none;">
+                    <div class="file-info">
+                        <h4>📄 Archivo Seleccionado</h4>
+                        <p><strong>Nombre:</strong> <span id="fileName"></span></p>
+                        <p><strong>Tamaño:</strong> <span id="fileSize"></span></p>
+                        <p><strong>Filas detectadas:</strong> <span id="rowCount">-</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section" id="statsSection" style="display: none;">
+                <h3>📊 Estadísticas de Carga</h3>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Total de Registros</div>
+                        <div class="stat-value" id="statTotal">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Exitosos</div>
+                        <div class="stat-value" style="color: #00ff88;" id="statSuccess">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Duplicados</div>
+                        <div class="stat-value" style="color: #ffc107;" id="statDuplicates">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Errores</div>
+                        <div class="stat-value" style="color: #ff4444;" id="statErrors">0</div>
+                    </div>
+                </div>
+
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressBar">0%</div>
+                </div>
+            </div>
+
+            <div class="form-section" id="logSection" style="display: none;">
+                <h3>📋 Registro de Actividad</h3>
+                <div class="log-container" id="logContainer">
+                    <!-- Los logs aparecerán aquí -->
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button id="processBtn" class="btn-primary btn-icon" style="display: none;">
+                    <span>🚀</span>
+                    <span>Procesar y Cargar Datos</span>
+                </button>
+                <button id="cancelBtn" class="btn-secondary btn-icon" onclick="resetUpload()">
+                    <span>🔄</span>
+                    <span>Limpiar y Cargar Otro Archivo</span>
+                </button>
+                <button id="downloadErrorsBtn" class="btn-secondary btn-icon" style="display: none;">
+                    <span>📥</span>
+                    <span>Descargar Reporte de Errores</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="carga-masiva.js"></script>
+</body>
+</html>

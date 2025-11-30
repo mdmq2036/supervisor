@@ -1,0 +1,25 @@
+{
+  "name": "donet-supervision-system",
+  "version": "1.0.0",
+  "description": "Sistema de Gestión de Inspecciones DONET",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "python -m http.server 8000",
+    "test": "echo \"No tests specified\""
+  },
+  "keywords": [
+    "inspecciones",
+    "supervision",
+    "donet"
+  ],
+  "author": "DONET",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "dotenv": "^16.3.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

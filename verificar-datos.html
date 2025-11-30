@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificar Datos - DONET</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #0a1628;
+            color: #fff;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #00d4ff;
+            margin-bottom: 20px;
+        }
+
+        .section {
+            background: #1a2332;
+            border: 1px solid #00d4ff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .section h2 {
+            color: #00d4ff;
+            margin-bottom: 15px;
+        }
+
+        button {
+            background: #00d4ff;
+            color: #0a1628;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #00bfea;
+        }
+
+        pre {
+            background: #0a1628;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            border: 1px solid #00d4ff;
+        }
+
+        .success {
+            color: #0f0;
+        }
+
+        .error {
+            color: #f00;
+        }
+
+        .info {
+            color: #00d4ff;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            border: 1px solid #00d4ff;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background: #00d4ff;
+            color: #0a1628;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Verificación de Datos - Sistema DONET</h1>
+
+        <div class="section">
+            <h2>1. Configuración de Supabase</h2>
+            <button onclick="verificarConfig()">Verificar Configuración</button>
+            <pre id="configResult"></pre>
+        </div>
+
+        <div class="section">
+            <h2>2. Tablas en la Base de Datos</h2>
+            <button onclick="verificarTablas()">Verificar Tablas</button>
+            <pre id="tablasResult"></pre>
+        </div>
+
+        <div class="section">
+            <h2>3. Supervisores</h2>
+            <button onclick="verSupervisores()">Ver Supervisores</button>
+            <pre id="supervisoresResult"></pre>
+        </div>
+
+        <div class="section">
+            <h2>4. Inspecciones</h2>
+            <button onclick="verInspecciones()">Ver Todas las Inspecciones</button>
+            <button onclick="contarInspecciones()">Contar Inspecciones</button>
+            <pre id="inspeccionesResult"></pre>
+        </div>
+
+        <div class="section">
+            <h2>5. Historial de Cargas</h2>
+            <button onclick="verHistorial()">Ver Historial</button>
+            <pre id="historialResult"></pre>
+        </div>
+
+        <div class="section">
+            <h2>6. Test de Login</h2>
+            <input type="text" id="testUser" placeholder="Usuario" value="demo">
+            <input type="password" id="testPass" placeholder="Contraseña" value="demo123">
+            <button onclick="testLogin()">Probar Login</button>
+            <pre id="loginResult"></pre>
+        </div>
+
+        <div class="section">
+            <h2>7. Acciones Rápidas</h2>
+            <button onclick="location.href='index.html'">← Volver a la App</button>
+            <button onclick="limpiarConsola()">Limpiar Consola</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script>
+        // Inicializar Supabase
+        initSupabase();
+
+        function log(elementId, message, type = 'info') {
+            const el = document.getElementById(elementId);
+            const color = type === 'success' ? 'success' : type === 'error' ? 'error' : 'info';
+            el.innerHTML += `<span class="${color}">${message}</span>\n`;
+        }
+
+        function clearLog(elementId) {
+            document.getElementById(elementId).innerHTML = '';
+        }
+
+        function verificarConfig() {
+            clearLog('configResult');
+            log('configResult', '📊 Configuración de Supabase:', 'info');
+            log('configResult', `URL: ${SUPABASE_CONFIG.url}`, 'info');
+            log('configResult', `API Key: ${SUPABASE_CONFIG.anonKey.substring(0, 30)}...`, 'info');
+            log('configResult', `Supabase inicializado: ${supabase ? '✅ SÍ' : '❌ NO'}`, supabase ? 'success' : 'error');
+        }
+
+        async function verificarTablas() {
+            clearLog('tablasResult');
+            if (!supabase) {
+                log('tablasResult', '❌ Supabase no está inicializado', 'error');
+                return;
+            }
+
+            try {
+                // Intentar consultar cada tabla
+                const tablas = ['supervisores', 'inspecciones', 'historial_cargas', 'registros_duplicados'];
+
+                for (const tabla of tablas) {
+                    try {
+                        const { data, error } = await supabase
+                            .from(tabla)
+                            .select('*', { count: 'exact', head: true });
+
+                        if (error) {
+                            log('tablasResult', `❌ Tabla "${tabla}": ${error.message}`, 'error');
+                        } else {
+                            log('tablasResult', `✅ Tabla "${tabla}": Existe`, 'success');
+                        }
+                    } catch (e) {
+                        log('tablasResult', `❌ Tabla "${tabla}": ${e.message}`, 'error');
+                    }
+                }
+            } catch (error) {
+                log('tablasResult', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function verSupervisores() {
+            clearLog('supervisoresResult');
+            if (!supabase) {
+                log('supervisoresResult', '❌ Supabase no está inicializado', 'error');
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase
+                    .from('supervisores')
+                    .select('*');
+
+                if (error) throw error;
+
+                log('supervisoresResult', `✅ Total de supervisores: ${data.length}`, 'success');
+                log('supervisoresResult', JSON.stringify(data, null, 2), 'info');
+            } catch (error) {
+                log('supervisoresResult', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function verInspecciones() {
+            clearLog('inspeccionesResult');
+            if (!supabase) {
+                log('inspeccionesResult', '❌ Supabase no está inicializado', 'error');
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase
+                    .from('inspecciones')
+                    .select('*')
+                    .limit(5);
+
+                if (error) throw error;
+
+                log('inspeccionesResult', `✅ Mostrando primeras 5 inspecciones:`, 'success');
+                log('inspeccionesResult', JSON.stringify(data, null, 2), 'info');
+            } catch (error) {
+                log('inspeccionesResult', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function contarInspecciones() {
+            clearLog('inspeccionesResult');
+            if (!supabase) {
+                log('inspeccionesResult', '❌ Supabase no está inicializado', 'error');
+                return;
+            }
+
+            try {
+                const { count, error } = await supabase
+                    .from('inspecciones')
+                    .select('*', { count: 'exact', head: true });
+
+                if (error) throw error;
+
+                log('inspeccionesResult', `✅ Total de inspecciones: ${count}`, 'success');
+
+                // Contar por supervisor
+                const { data: porSupervisor } = await supabase
+                    .from('inspecciones')
+                    .select('supervisor_id');
+
+                if (porSupervisor) {
+                    const conteo = {};
+                    porSupervisor.forEach(item => {
+                        conteo[item.supervisor_id] = (conteo[item.supervisor_id] || 0) + 1;
+                    });
+                    log('inspeccionesResult', `\nPor supervisor:`, 'info');
+                    log('inspeccionesResult', JSON.stringify(conteo, null, 2), 'info');
+                }
+            } catch (error) {
+                log('inspeccionesResult', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function verHistorial() {
+            clearLog('historialResult');
+            if (!supabase) {
+                log('historialResult', '❌ Supabase no está inicializado', 'error');
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase
+                    .from('historial_cargas')
+                    .select('*')
+                    .order('fecha_carga', { ascending: false });
+
+                if (error) throw error;
+
+                log('historialResult', `✅ Total de cargas: ${data.length}`, 'success');
+                log('historialResult', JSON.stringify(data, null, 2), 'info');
+            } catch (error) {
+                log('historialResult', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testLogin() {
+            clearLog('loginResult');
+            if (!supabase) {
+                log('loginResult', '❌ Supabase no está inicializado', 'error');
+                return;
+            }
+
+            const username = document.getElementById('testUser').value;
+            const password = document.getElementById('testPass').value;
+
+            try {
+                const { data, error } = await supabase
+                    .from('supervisores')
+                    .select('*')
+                    .eq('usuario', username)
+                    .eq('password', password)
+                    .eq('activo', true)
+                    .single();
+
+                if (error || !data) {
+                    log('loginResult', '❌ Login FALLIDO: Usuario o contraseña incorrectos', 'error');
+                    if (error) log('loginResult', `Error: ${error.message}`, 'error');
+                } else {
+                    log('loginResult', '✅ Login EXITOSO:', 'success');
+                    log('loginResult', JSON.stringify(data, null, 2), 'success');
+                }
+            } catch (error) {
+                log('loginResult', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        function limpiarConsola() {
+            ['configResult', 'tablasResult', 'supervisoresResult', 'inspeccionesResult', 'historialResult', 'loginResult'].forEach(id => {
+                document.getElementById(id).innerHTML = '';
+            });
+        }
+
+        // Auto-verificar al cargar
+        window.addEventListener('load', () => {
+            verificarConfig();
+        });
+    </script>
+</body>
+</html>
