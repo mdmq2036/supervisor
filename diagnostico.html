@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnóstico - DONET</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #0a1628 0%, #1a2841 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #162032;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+        h1 {
+            color: #00d4ff;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .section {
+            background: #0a1628;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #00d4ff;
+        }
+        .section h2 {
+            color: #00d4ff;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        .success { background: #00d4ff; color: #0a1628; }
+        .error { background: #ff4444; color: white; }
+        .info { background: #2a3f5f; color: white; }
+        .warning { background: #ffaa00; color: #0a1628; }
+        button {
+            background: #00d4ff;
+            color: #0a1628;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            margin: 10px 5px;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: #00b8e6;
+            transform: translateY(-2px);
+        }
+        #loginTest {
+            background: #0a1628;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 2px solid #00d4ff;
+            border-radius: 5px;
+            background: #162032;
+            color: white;
+            font-size: 16px;
+        }
+        input:focus {
+            outline: none;
+            border-color: #00ffff;
+        }
+        a {
+            color: #00d4ff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        pre {
+            background: #000;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 10px 0;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Diagnóstico del Sistema DONET</h1>
+
+        <div class="section">
+            <h2>1. Verificación de Archivos</h2>
+            <div id="fileCheck"></div>
+        </div>
+
+        <div class="section">
+            <h2>2. Verificación de Supabase</h2>
+            <div id="supabaseCheck"></div>
+            <button onclick="testSupabase()">Probar Conexión Supabase</button>
+        </div>
+
+        <div class="section">
+            <h2>3. Prueba de Login (Modo Desarrollo)</h2>
+            <div id="loginTest">
+                <input type="text" id="testUser" placeholder="Usuario" value="admin">
+                <input type="password" id="testPass" placeholder="Contraseña" value="123">
+                <button onclick="testLogin()">Probar Login</button>
+                <div id="loginResult" style="margin-top: 15px;"></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>4. Verificación del DOM</h2>
+            <div id="domCheck"></div>
+            <button onclick="checkDOM()">Verificar Elementos HTML</button>
+        </div>
+
+        <div class="section">
+            <h2>5. Console Log</h2>
+            <pre id="consoleLog"></pre>
+        </div>
+
+        <div class="section" style="text-align: center;">
+            <h2>Acciones</h2>
+            <button onclick="clearCache()">Limpiar Caché</button>
+            <button onclick="location.href='index.html'">Ir a Aplicación</button>
+            <button onclick="location.reload()">Recargar Página</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+
+    <script>
+        // Capturar logs de consola
+        const logs = [];
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+
+        console.log = function(...args) {
+            logs.push({type: 'log', msg: args.join(' ')});
+            originalLog.apply(console, args);
+            updateConsoleLog();
+        };
+
+        console.error = function(...args) {
+            logs.push({type: 'error', msg: args.join(' ')});
+            originalError.apply(console, args);
+            updateConsoleLog();
+        };
+
+        console.warn = function(...args) {
+            logs.push({type: 'warn', msg: args.join(' ')});
+            originalWarn.apply(console, args);
+            updateConsoleLog();
+        };
+
+        function updateConsoleLog() {
+            const consoleLog = document.getElementById('consoleLog');
+            consoleLog.innerHTML = logs.map(log => {
+                let color = log.type === 'error' ? '#ff4444' :
+                           log.type === 'warn' ? '#ffaa00' : '#00d4ff';
+                return `<div style="color: ${color}">[${log.type.toUpperCase()}] ${log.msg}</div>`;
+            }).join('\n');
+        }
+
+        // 1. Verificar archivos
+        window.addEventListener('DOMContentLoaded', () => {
+            checkFiles();
+            checkSupabaseConfig();
+        });
+
+        function checkFiles() {
+            const fileCheck = document.getElementById('fileCheck');
+            let html = '';
+
+            // Verificar si config.js se cargó
+            if (typeof SUPABASE_CONFIG !== 'undefined') {
+                html += '<div class="test-result success">✅ config.js cargado correctamente</div>';
+                html += `<div class="test-result info">📊 URL: ${SUPABASE_CONFIG.url}</div>`;
+            } else {
+                html += '<div class="test-result error">❌ config.js NO se cargó</div>';
+            }
+
+            // Verificar si Supabase SDK se cargó
+            if (typeof window.supabase !== 'undefined') {
+                html += '<div class="test-result success">✅ Supabase SDK cargado</div>';
+            } else {
+                html += '<div class="test-result error">❌ Supabase SDK NO cargado</div>';
+            }
+
+            fileCheck.innerHTML = html;
+        }
+
+        function checkSupabaseConfig() {
+            const supabaseCheck = document.getElementById('supabaseCheck');
+            let html = '';
+
+            if (typeof initSupabase === 'function') {
+                const result = initSupabase();
+                if (result !== false && typeof supabase !== 'undefined') {
+                    html += '<div class="test-result success">✅ Supabase inicializado</div>';
+                    html += `<div class="test-result info">URL: ${SUPABASE_CONFIG.url}</div>`;
+                } else {
+                    html += '<div class="test-result warning">⚠️ Supabase no inicializado (modo desarrollo)</div>';
+                }
+            } else {
+                html += '<div class="test-result error">❌ Función initSupabase no encontrada</div>';
+            }
+
+            supabaseCheck.innerHTML = html;
+        }
+
+        async function testSupabase() {
+            const supabaseCheck = document.getElementById('supabaseCheck');
+            supabaseCheck.innerHTML += '<div class="test-result info">⏳ Probando conexión...</div>';
+
+            try {
+                if (typeof supabase === 'undefined') {
+                    supabaseCheck.innerHTML += '<div class="test-result error">❌ Supabase no está definido</div>';
+                    return;
+                }
+
+                // Intentar consultar supervisores
+                const { data, error } = await supabase
+                    .from('supervisores')
+                    .select('*')
+                    .limit(5);
+
+                if (error) {
+                    supabaseCheck.innerHTML += `<div class="test-result error">❌ Error: ${error.message}</div>`;
+                    supabaseCheck.innerHTML += '<div class="test-result warning">💡 Posible solución: Ejecutar SETUP_DATABASE.sql en Supabase</div>';
+                } else {
+                    supabaseCheck.innerHTML += `<div class="test-result success">✅ Conexión exitosa! Encontrados ${data.length} usuarios</div>`;
+                    if (data.length > 0) {
+                        supabaseCheck.innerHTML += '<div class="test-result info">👥 Usuarios disponibles:</div>';
+                        data.forEach(user => {
+                            supabaseCheck.innerHTML += `<div class="test-result info">   • ${user.usuario} / ${user.password}</div>`;
+                        });
+                    }
+                }
+            } catch (err) {
+                supabaseCheck.innerHTML += `<div class="test-result error">❌ Excepción: ${err.message}</div>`;
+            }
+        }
+
+        function testLogin() {
+            const username = document.getElementById('testUser').value;
+            const password = document.getElementById('testPass').value;
+            const result = document.getElementById('loginResult');
+
+            console.log('Probando login con:', username, password);
+
+            if (!username || !password) {
+                result.innerHTML = '<div class="test-result error">❌ Ingresa usuario y contraseña</div>';
+                return;
+            }
+
+            // Simular el código de app.js
+            const currentUser = {
+                id: 1,
+                usuario: username,
+                nombre: username.charAt(0).toUpperCase() + username.slice(1)
+            };
+
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+            result.innerHTML = `
+                <div class="test-result success">✅ Login simulado exitoso!</div>
+                <div class="test-result info">Usuario: ${currentUser.usuario}</div>
+                <div class="test-result info">Nombre: ${currentUser.nombre}</div>
+                <div class="test-result info">Guardado en localStorage: ${localStorage.getItem('currentUser')}</div>
+                <div style="margin-top: 15px;">
+                    <a href="index.html">→ Ir a la aplicación principal</a>
+                </div>
+            `;
+        }
+
+        function checkDOM() {
+            const domCheck = document.getElementById('domCheck');
+            let html = '';
+
+            // Cargar index.html en un iframe oculto
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = 'index.html';
+            document.body.appendChild(iframe);
+
+            iframe.onload = function() {
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+
+                const loginForm = iframeDoc.getElementById('loginForm');
+                const username = iframeDoc.getElementById('username');
+                const password = iframeDoc.getElementById('password');
+
+                if (loginForm) {
+                    html += '<div class="test-result success">✅ Formulario de login encontrado</div>';
+                } else {
+                    html += '<div class="test-result error">❌ Formulario de login NO encontrado</div>';
+                }
+
+                if (username) {
+                    html += '<div class="test-result success">✅ Campo username encontrado</div>';
+                } else {
+                    html += '<div class="test-result error">❌ Campo username NO encontrado</div>';
+                }
+
+                if (password) {
+                    html += '<div class="test-result success">✅ Campo password encontrado</div>';
+                } else {
+                    html += '<div class="test-result error">❌ Campo password NO encontrado</div>';
+                }
+
+                domCheck.innerHTML = html;
+                document.body.removeChild(iframe);
+            };
+        }
+
+        function clearCache() {
+            localStorage.clear();
+            sessionStorage.clear();
+            alert('✅ Caché limpiado. Recarga la página.');
+            location.reload();
+        }
+    </script>
+</body>
+</html>

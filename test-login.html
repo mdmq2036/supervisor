@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #0a1628;
+            color: white;
+        }
+        .test-box {
+            background: #162032;
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        input {
+            padding: 10px;
+            margin: 10px;
+            width: 200px;
+            border-radius: 5px;
+            border: none;
+        }
+        button {
+            padding: 10px 30px;
+            background: #00d4ff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #0a1628;
+        }
+        button:hover {
+            background: #00b8e6;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .success {
+            background: #00d4ff;
+            color: #0a1628;
+        }
+        .error {
+            background: #ff4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-box">
+        <h1>🔧 Test de Login - DONET</h1>
+        <p>Prueba de acceso simplificada</p>
+
+        <form id="testForm">
+            <div>
+                <input type="text" id="user" placeholder="Usuario" value="admin">
+            </div>
+            <div>
+                <input type="password" id="pass" placeholder="Contraseña" value="123">
+            </div>
+            <button type="submit">Entrar</button>
+        </form>
+
+        <div id="result"></div>
+
+        <div style="margin-top: 30px; font-size: 12px; opacity: 0.7;">
+            <p>📝 Cualquier usuario y contraseña deberían funcionar</p>
+            <p><a href="index.html" style="color: #00d4ff;">← Volver a la aplicación principal</a></p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('testForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const username = document.getElementById('user').value;
+            const password = document.getElementById('pass').value;
+            const result = document.getElementById('result');
+
+            console.log('Intento de login:', username, password);
+
+            if (username && password) {
+                result.className = 'success';
+                result.innerHTML = `✅ Login exitoso!<br>Usuario: ${username}<br><br>
+                <a href="index.html" style="color: #0a1628; font-weight: bold;">Ir a la aplicación →</a>`;
+
+                // Guardar usuario en localStorage para la app principal
+                const currentUser = {
+                    id: 1,
+                    usuario: username,
+                    nombre: username.charAt(0).toUpperCase() + username.slice(1)
+                };
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+                // Redirigir después de 2 segundos
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 2000);
+            } else {
+                result.className = 'error';
+                result.textContent = '❌ Por favor ingresa usuario y contraseña';
+            }
+        });
+    </script>
+</body>
+</html>
