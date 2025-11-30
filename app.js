@@ -659,3 +659,80 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// ==========================================
+// FUNCIONES PARA ACCESO ADMINISTRATIVO
+// ==========================================
+
+function requestAdminAccess() {
+    const modal = document.getElementById('adminLoginModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+    }
+}
+
+function closeAdminModal() {
+    const modal = document.getElementById('adminLoginModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+        document.getElementById('adminAccessForm').reset();
+    }
+}
+
+// Manejar envío del formulario de acceso administrativo
+document.addEventListener('DOMContentLoaded', () => {
+    const adminForm = document.getElementById('adminAccessForm');
+    if (adminForm) {
+        adminForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const user = document.getElementById('adminAccessUser').value;
+            const pass = document.getElementById('adminAccessPass').value;
+            
+            if (!user || !pass) {
+                showMessage('Por favor ingrese usuario y contraseña', 'error');
+                return;
+            }
+
+            showLoading(true);
+
+            try {
+                // Verificar credenciales de administrador
+                // Primero intentamos validación directa si es el admin por defecto
+                if (user === 'admin' && pass === 'admin2025') {
+                    showMessage('Acceso concedido', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'carga-masiva.html';
+                    }, 1000);
+                    return;
+                }
+
+                // Si no es el default, verificamos en base de datos
+                const { data, error } = await supabase
+                    .from('usuarios')
+                    .select('*')
+                    .eq('username', user)
+                    .eq('rol', 'admin')
+                    .eq('activo', true)
+                    .single();
+
+                if (error || !data) {
+                    throw new Error('Credenciales inválidas');
+                }
+                
+                // Validación simplificada para otros admins (si los hubiera)
+                // En producción usar bcrypt
+                showMessage('Solo el administrador principal puede acceder a esta función por ahora', 'error');
+
+            } catch (error) {
+                console.error('Error de acceso:', error);
+                showMessage('Credenciales de administrador incorrectas', 'error');
+            } finally {
+                showLoading(false);
+            }
+        });
+    }
+});
+

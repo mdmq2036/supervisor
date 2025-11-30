@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
@@ -11,6 +12,7 @@
     <title>DONET - Sistema de Gestión</title>
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
     <!-- Pantalla de Login -->
     <div id="loginScreen" class="screen active">
@@ -55,25 +57,10 @@
             </div>
 
             <div class="menu-cards">
-                <div class="menu-card" onclick="showScreen('registerScreen')">
-                    <div class="card-icon">📝</div>
-                    <h3>Registrar Inspección</h3>
-                    <p>Ingresar nuevos datos y fotografías</p>
-                </div>
-
-                <div class="menu-card" onclick="window.location.href='carga-masiva.html'">
-                    <div class="card-icon">📤</div>
-                    <h3>Carga Masiva</h3>
-                    <p>Importar datos desde Excel</p>
-                </div>
-
-                <div class="menu-card" onclick="showScreen('consultScreen')">
-                    <div class="card-icon">🔍</div>
-                    <h3>Consultar Registros</h3>
-                    <p>Ver registros de otros periodos</p>
-                </div>
+                <p>Ver registros de otros periodos</p>
             </div>
         </div>
+    </div>
     </div>
 
     <!-- Pantalla de Registro -->
@@ -218,7 +205,8 @@
 
                         <div class="form-group">
                             <button onclick="buscarRegistros()" class="btn-primary">Buscar</button>
-                            <button onclick="cargarTodosLosRegistros()" class="btn-secondary" style="margin-left: 10px;">Ver Todos</button>
+                            <button onclick="cargarTodosLosRegistros()" class="btn-secondary"
+                                style="margin-left: 10px;">Ver Todos</button>
                         </div>
                     </div>
                 </div>
@@ -233,6 +221,30 @@
         </div>
     </div>
 
+    <!-- Modal Login Admin para Carga Masiva -->
+    <div id="adminLoginModal" class="login-modal hidden">
+        <div class="login-box-admin">
+            <div class="logo-container" style="text-align: center; margin-bottom: 20px;">
+                <img src="logo-donet.png" alt="DONET Logo" style="max-width: 100px; border-radius: 50%;">
+            </div>
+            <h2 style="color: #00d9ff; text-align: center; margin-bottom: 20px;">Acceso Administrativo</h2>
+            <p style="color: #ccc; text-align: center; margin-bottom: 20px;">Se requiere acceso de administrador para
+                ingresar a Carga Masiva</p>
+            <form id="adminAccessForm">
+                <div class="input-group">
+                    <input type="text" id="adminAccessUser" placeholder="Usuario Administrador" required>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="adminAccessPass" placeholder="Contraseña" required>
+                </div>
+                <div class="form-actions" style="display: flex; gap: 10px; justify-content: center;">
+                    <button type="button" onclick="closeAdminModal()" class="btn-secondary">Cancelar</button>
+                    <button type="submit" class="btn-primary">Acceder</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div id="loadingOverlay" class="loading-overlay">
         <div class="spinner"></div>
     </div>
@@ -242,4 +254,5 @@
     <script src="device-fingerprint.js"></script>
     <script src="app.js"></script>
 </body>
+
 </html>
