@@ -34,6 +34,7 @@ body {
 }
 
 /* Login Screen */
+/* Login Screen */
 .login-container {
     display: flex;
     flex-direction: column;
@@ -41,61 +42,103 @@ body {
     justify-content: center;
     min-height: 100vh;
     padding: 20px;
-    background: radial-gradient(circle at center, #0a1628, #050d1a);
+    background: #0a1018;
+    /* Fondo base muy oscuro */
+    position: relative;
+    overflow: hidden;
+}
+
+/* Efecto de fondo difuminado (Glow grande) */
+.login-container::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(0, 212, 255, 0.15) 0%, rgba(10, 16, 24, 0) 70%);
+    border-radius: 50%;
+    z-index: 0;
+    pointer-events: none;
 }
 
 .logo-container {
-    margin-bottom: 30px;
+    margin-bottom: 20px;
     animation: fadeInDown 1s ease;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .logo-circle {
-    width: 150px;
-    height: 150px;
+    width: 120px;
+    height: 120px;
     border-radius: 50%;
-    border: 3px solid var(--cyan);
-    box-shadow: 0 0 30px var(--cyan-glow), 0 0 60px var(--cyan-glow);
+    /* Eliminamos borde sólido, dejamos solo glow */
+    border: 2px solid rgba(0, 212, 255, 0.5);
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.4), inset 0 0 20px rgba(0, 212, 255, 0.2);
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--secondary-bg);
-    animation: pulse 3s infinite;
+    background: #000;
+    /* Fondo negro para el logo */
+    margin-bottom: 20px;
+    position: relative;
+}
+
+/* Efecto de anillo brillante adicional */
+.logo-circle::after {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
 }
 
 .logo {
-    width: 120px;
-    height: 120px;
+    width: 90px;
+    height: auto;
     object-fit: contain;
 }
 
 .app-title {
-    font-size: 2.5rem;
+    font-size: 1.8rem;
     font-weight: 700;
-    letter-spacing: 2px;
+    letter-spacing: 1px;
     margin-bottom: 40px;
-    background: linear-gradient(135deg, var(--cyan), #ffffff);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    animation: fadeInUp 1s ease;
+    color: #ffffff;
+    text-transform: uppercase;
+    text-align: center;
+    z-index: 1;
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
 .login-box {
-    background: var(--card-bg);
+    background: rgba(22, 32, 50, 0.8);
+    /* Fondo semitransparente */
+    backdrop-filter: blur(10px);
     padding: 40px;
-    border-radius: 15px;
-    border: 1px solid var(--cyan);
-    box-shadow: 0 0 30px rgba(0, 212, 255, 0.2);
+    border-radius: 12px;
+    border: 1px solid rgba(42, 63, 95, 0.5);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     width: 100%;
-    max-width: 450px;
+    max-width: 400px;
     animation: fadeIn 1s ease;
+    z-index: 1;
 }
 
 .login-box h2 {
     text-align: center;
     margin-bottom: 30px;
-    font-size: 1.8rem;
-    color: var(--cyan);
+    font-size: 1.5rem;
+    color: #ffffff;
+    font-weight: 600;
 }
 
 .input-group {
@@ -104,41 +147,53 @@ body {
 
 .input-group input {
     width: 100%;
-    padding: 15px;
-    background: var(--secondary-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    color: var(--text-primary);
-    font-size: 1rem;
+    padding: 12px 15px;
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid #2a3f5f;
+    border-radius: 6px;
+    color: #b0c4de;
+    font-size: 0.95rem;
     transition: all 0.3s ease;
+}
+
+.input-group input::placeholder {
+    color: #64748b;
 }
 
 .input-group input:focus {
     outline: none;
     border-color: var(--cyan);
-    box-shadow: 0 0 10px var(--cyan-glow);
+    background: rgba(30, 41, 59, 1);
+    box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.1);
+    color: #ffffff;
 }
 
 .btn-primary {
     width: 100%;
-    padding: 15px;
-    background: var(--cyan);
-    color: var(--primary-bg);
+    padding: 12px;
+    background: #00b4d8;
+    /* Cian un poco más sólido */
+    background: linear-gradient(to bottom, #00d4ff, #00a8cc);
+    color: #000000;
+    /* Texto negro para contraste */
     border: none;
-    border-radius: 8px;
-    font-size: 1.1rem;
-    font-weight: 600;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 700;
     cursor: pointer;
     transition: all 0.3s ease;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    text-transform: none;
+    /* Quitar mayúsculas forzadas si las hubiera */
+    margin-top: 10px;
 }
 
 .btn-primary:hover {
-    background: #00b8e6;
-    box-shadow: 0 0 20px var(--cyan-glow);
-    transform: translateY(-2px);
+    background: linear-gradient(to bottom, #33ddff, #00b8e6);
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
+    transform: translateY(-1px);
 }
+
+
 
 .btn-secondary {
     padding: 12px 30px;
@@ -194,7 +249,8 @@ body {
     letter-spacing: 1px;
 }
 
-.btn-logout, .btn-back {
+.btn-logout,
+.btn-back {
     padding: 10px 20px;
     background: transparent;
     color: var(--cyan);
@@ -205,7 +261,8 @@ body {
     transition: all 0.3s ease;
 }
 
-.btn-logout:hover, .btn-back:hover {
+.btn-logout:hover,
+.btn-back:hover {
     background: var(--cyan);
     color: var(--primary-bg);
 }
@@ -272,7 +329,8 @@ body {
 }
 
 /* Form Container */
-.form-container, .consult-container {
+.form-container,
+.consult-container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 40px 20px;
@@ -573,6 +631,7 @@ body {
     from {
         opacity: 0;
     }
+
     to {
         opacity: 1;
     }
@@ -583,6 +642,7 @@ body {
         opacity: 0;
         transform: translateY(-30px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -594,6 +654,7 @@ body {
         opacity: 0;
         transform: translateY(30px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -601,9 +662,12 @@ body {
 }
 
 @keyframes pulse {
-    0%, 100% {
+
+    0%,
+    100% {
         box-shadow: 0 0 20px var(--cyan-glow), 0 0 40px var(--cyan-glow);
     }
+
     50% {
         box-shadow: 0 0 30px var(--cyan-glow), 0 0 60px var(--cyan-glow);
     }
@@ -613,6 +677,7 @@ body {
     0% {
         transform: rotate(0deg);
     }
+
     100% {
         transform: rotate(360deg);
     }
@@ -640,6 +705,7 @@ body {
 
 /* Tablets y Móviles pequeños (max-width: 768px) */
 @media (max-width: 768px) {
+
     /* Login Screen */
     .app-title {
         font-size: 1.8rem;
@@ -676,7 +742,8 @@ body {
         height: 40px;
     }
 
-    .btn-logout, .btn-back {
+    .btn-logout,
+    .btn-back {
         padding: 8px 15px;
         font-size: 0.9rem;
     }
@@ -767,6 +834,7 @@ body {
 
 /* Móviles pequeños (max-width: 480px) */
 @media (max-width: 480px) {
+
     /* Login */
     .login-container {
         padding: 15px;
@@ -824,7 +892,8 @@ body {
         height: 35px;
     }
 
-    .btn-logout, .btn-back {
+    .btn-logout,
+    .btn-back {
         padding: 6px 12px;
         font-size: 0.85rem;
         white-space: nowrap;
@@ -1004,12 +1073,14 @@ body {
 
 /* Touch screen improvements */
 @media (hover: none) and (pointer: coarse) {
+
     /* Aumentar áreas táctiles */
     .btn-primary,
     .btn-secondary,
     .btn-logout,
     .btn-back {
-        min-height: 44px; /* Tamaño mínimo recomendado para táctiles */
+        min-height: 44px;
+        /* Tamaño mínimo recomendado para táctiles */
     }
 
     .menu-card {
@@ -1032,6 +1103,7 @@ body {
     .form-group input,
     .form-group textarea,
     .form-group select {
-        font-size: 16px; /* Prevenir zoom automático en iOS */
+        font-size: 16px;
+        /* Prevenir zoom automático en iOS */
     }
 }
