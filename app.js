@@ -73,6 +73,42 @@ async function handleLogin(e) {
             return;
         }
 
+        // **NUEVO: Verificar límite de logins para usuario "prueba"**
+        if (username === 'prueba') {
+            const loginTracker = new LoginTracker(supabase);
+
+            // Verificar si el dispositivo puede hacer login
+            const canLoginResult = await loginTracker.canLogin(username);
+
+            if (!canLoginResult.allowed) {
+                showMessage(canLoginResult.message, 'error');
+                showLoading(false);
+                return;
+            }
+
+            // Registrar el login
+            const loginResult = await loginTracker.recordLogin(username);
+
+            if (loginResult.success) {
+                const remainingMessage = loginResult.remaining > 0
+                    ? `Quedan ${loginResult.remaining} login(s) disponibles en este dispositivo.`
+                    : 'Este es tu último login disponible en este dispositivo.';
+
+                console.log(`Login exitoso: ${remainingMessage}`);
+
+                // Mostrar alerta si quedan pocos intentos
+                if (loginResult.remaining <= 2 && loginResult.remaining > 0) {
+                    setTimeout(() => {
+                        alert(`⚠️ ADVERTENCIA: Te quedan solo ${loginResult.remaining} login(s) disponibles en este dispositivo.`);
+                    }, 1000);
+                } else if (loginResult.remaining === 0) {
+                    setTimeout(() => {
+                        alert('⚠️ ADVERTENCIA: Este fue tu último login disponible en este dispositivo. El dispositivo será bloqueado en el próximo intento.');
+                    }, 1000);
+                }
+            }
+        }
+
         currentUser = data;
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
         showScreen('menuScreen');
@@ -222,12 +258,16 @@ async function buscarRegistros() {
             return;
         }
 
-        // Construir query - FILTRAR POR SUPERVISOR
+        // Construir query - FILTRAR POR SUPERVISOR (excepto usuario "prueba")
         let query = supabase
             .from('inspecciones')
             .select('*')
-            .eq('supervisor_id', currentUser.id)  // Solo registros del supervisor
             .order('fecha_carga', { ascending: false });
+
+        // **NUEVO: Solo filtrar por supervisor si NO es usuario "prueba"**
+        if (currentUser.usuario !== 'prueba') {
+            query = query.eq('supervisor_id', currentUser.id);
+        }
 
         if (cuenta) {
             query = query.ilike('cuenta_contrato', `%${cuenta}%`);
@@ -395,12 +435,18 @@ async function loadCuentasContrato() {
     }
 
     try {
-        // Obtener todas las cuentas contrato del supervisor
-        const { data, error} = await supabase
+        // **NUEVO: Usuario "prueba" ve TODAS las cuentas**
+        let query = supabase
             .from('inspecciones')
-            .select('cuenta_contrato')
-            .eq('supervisor_id', currentUser.id)
+            .select('cuenta_contrato, supervisor_id, supervisores(nombre)')
             .order('cuenta_contrato');
+
+        // Solo filtrar por supervisor_id si NO es usuario "prueba"
+        if (currentUser.usuario !== 'prueba') {
+            query = query.eq('supervisor_id', currentUser.id);
+        }
+
+        const { data, error } = await query;
 
         if (error) throw error;
 
@@ -418,7 +464,8 @@ async function loadCuentasContrato() {
                 selectElement.appendChild(option);
             });
 
-            console.log(`Cargadas ${cuentasUnicas.length} cuentas contrato para el supervisor`);
+            const userType = currentUser.usuario === 'prueba' ? 'TODAS las' : 'las';
+            console.log(`Cargadas ${cuentasUnicas.length} ${userType} cuentas contrato`);
         }
     } catch (error) {
         console.error('Error al cargar cuentas contrato:', error);
@@ -460,19 +507,26 @@ async function cargarTodosLosRegistros() {
             return;
         }
 
-        // Obtener TODOS los registros del supervisor
-        const { data, error } = await supabase
+        // **NUEVO: Usuario "prueba" ve TODOS los registros**
+        let query = supabase
             .from('inspecciones')
             .select('*')
-            .eq('supervisor_id', currentUser.id)
             .order('fecha_carga', { ascending: false })
             .limit(100); // Limitar a 100 para no sobrecargar
+
+        // Solo filtrar por supervisor_id si NO es usuario "prueba"
+        if (currentUser.usuario !== 'prueba') {
+            query = query.eq('supervisor_id', currentUser.id);
+        }
+
+        const { data, error } = await query;
 
         if (error) {
             throw error;
         }
 
-        console.log(`Se encontraron ${data.length} registros para el supervisor ${currentUser.id}`);
+        const userType = currentUser.usuario === 'prueba' ? 'TODOS los supervisores' : `el supervisor ${currentUser.nombre}`;
+        console.log(`Se encontraron ${data.length} registros de ${userType}`);
         displayResults(data);
 
     } catch (error) {
