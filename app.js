@@ -58,58 +58,90 @@ async function handleLogin(e) {
             return;
         }
 
-        // Autenticación con Supabase
-        const { data, error } = await supabase
-            .from('supervisores')
-            .select('*')
-            .eq('usuario', username)
-            .eq('password', password)
-            .eq('activo', true)
-            .single();
+        let userData = null;
+        let isSpecialUser = false;
 
-        if (error || !data) {
-            showMessage('Usuario o contraseña incorrectos', 'error');
-            showLoading(false);
-            return;
+        // Primero intentar buscar en la tabla 'usuarios' (para prueba y admin)
+        try {
+            const { data: usuarioData, error: usuarioError } = await supabase
+                .from('usuarios')
+                .select('*')
+                .eq('username', username)
+                .eq('activo', true)
+                .single();
+
+            if (usuarioData && !usuarioError) {
+                // Usuario encontrado en tabla usuarios
+                // Por ahora validación simple (en producción usar bcrypt en backend)
+                if ((username === 'prueba' && password === 'prueba2025') ||
+                    (username === 'admin' && password === 'admin2025')) {
+                    userData = usuarioData;
+                    isSpecialUser = true;
+
+                    // Adaptar estructura para compatibilidad
+                    userData.usuario = userData.username;
+                } else {
+                    showMessage('Usuario o contraseña incorrectos', 'error');
+                    showLoading(false);
+                    return;
+                }
+            }
+        } catch (err) {
+            console.log('Usuario no encontrado en tabla usuarios, buscando en supervisores...');
         }
 
-        // **NUEVO: Verificar límite de logins para usuario "prueba"**
-        if (username === 'prueba') {
-            const loginTracker = new LoginTracker(supabase);
+        // Si no se encontró en usuarios, buscar en supervisores
+        if (!userData) {
+            const { data: supervisorData, error: supervisorError } = await supabase
+                .from('supervisores')
+                .select('*')
+                .eq('usuario', username)
+                .eq('password', password)
+                .eq('activo', true)
+                .single();
 
-            // Verificar si el dispositivo puede hacer login
-            const canLoginResult = await loginTracker.canLogin(username);
-
-            if (!canLoginResult.allowed) {
-                showMessage(canLoginResult.message, 'error');
+            if (supervisorError || !supervisorData) {
+                showMessage('Usuario o contraseña incorrectos', 'error');
                 showLoading(false);
                 return;
             }
 
-            // Registrar el login
-            const loginResult = await loginTracker.recordLogin(username);
+            userData = supervisorData;
+        }
 
-            if (loginResult.success) {
-                const remainingMessage = loginResult.remaining > 0
-                    ? `Quedan ${loginResult.remaining} login(s) disponibles en este dispositivo.`
-                    : 'Este es tu último login disponible en este dispositivo.';
+        // Verificar límite de dispositivos para usuario "prueba"
+        if (username === 'prueba' && typeof DeviceFingerprint !== 'undefined') {
+            try {
+                const deviceFP = new DeviceFingerprint();
+                const fingerprint = await deviceFP.generate();
 
-                console.log(`Login exitoso: ${remainingMessage}`);
+                // Verificar acceso del dispositivo
+                const { data: accessCheck, error: accessError } = await supabase
+                    .rpc('check_device_access', {
+                        p_user_id: userData.id,
+                        p_device_fingerprint: fingerprint
+                    });
 
-                // Mostrar alerta si quedan pocos intentos
-                if (loginResult.remaining <= 2 && loginResult.remaining > 0) {
-                    setTimeout(() => {
-                        alert(`⚠️ ADVERTENCIA: Te quedan solo ${loginResult.remaining} login(s) disponibles en este dispositivo.`);
-                    }, 1000);
-                } else if (loginResult.remaining === 0) {
-                    setTimeout(() => {
-                        alert('⚠️ ADVERTENCIA: Este fue tu último login disponible en este dispositivo. El dispositivo será bloqueado en el próximo intento.');
-                    }, 1000);
+                if (accessError) {
+                    console.error('Error verificando acceso:', accessError);
+                } else if (accessCheck && !accessCheck.allowed) {
+                    showMessage(accessCheck.message || 'Acceso denegado. Límite de dispositivos alcanzado.', 'error');
+                    showLoading(false);
+                    return;
+                } else if (accessCheck && accessCheck.allowed) {
+                    const deviceCount = accessCheck.device_count || 0;
+                    if (deviceCount >= 4) {
+                        setTimeout(() => {
+                            alert(`⚠️ ADVERTENCIA: Tienes ${deviceCount} de 5 dispositivos registrados. Quedan ${5 - deviceCount} disponibles.`);
+                        }, 1000);
+                    }
                 }
+            } catch (fpError) {
+                console.error('Error con device fingerprint:', fpError);
             }
         }
 
-        currentUser = data;
+        currentUser = userData;
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
         showScreen('menuScreen');
         updateUserInfo();
@@ -390,7 +422,7 @@ function previewImage(index) {
     if (fileInput.files && fileInput.files[0]) {
         const reader = new FileReader();
 
-        reader.onload = function(e) {
+        reader.onload = function (e) {
             preview.innerHTML = `<img src="${e.target.result}" alt="Preview ${index}">`;
             preview.classList.add('has-image');
         };
