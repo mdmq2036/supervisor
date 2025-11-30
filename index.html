@@ -96,11 +96,14 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label>Cuenta Contrato</label>
-                            <select id="cuentaContrato" required>
-                                <option value="">Seleccione una cuenta contrato</option>
-                            </select>
+                            <!-- CAMBIO: Input con Datalist para permitir escribir o seleccionar -->
+                            <input type="text" id="cuentaContrato" list="cuentasList"
+                                placeholder="Escriba o seleccione..." required>
+                            <datalist id="cuentasList">
+                                <!-- Se llenará dinámicamente -->
+                            </datalist>
                             <small style="color: #888; display: block; margin-top: 5px;">
-                                Solo se muestran las cuentas asignadas a tu usuario
+                                Escriba el número o seleccione de la lista
                             </small>
                         </div>
 
@@ -205,7 +208,7 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label>Cuenta Contrato</label>
-                            <input type="text" id="searchCuenta">
+                            <input type="text" id="searchCuenta" placeholder="Ingrese número de cuenta">
                         </div>
 
                         <div class="form-group">
@@ -237,15 +240,13 @@
     </div>
 
     <!-- Modal Login Admin para Carga Masiva -->
-    <div id="adminLoginModal" class="login-modal hidden">
+    <div id="adminLoginModal" class="login-modal" style="display: none;">
         <div class="login-box-admin">
             <div class="logo-container" style="text-align: center; margin-bottom: 20px;">
-                <img src="logo-donet.png" alt="DONET Logo" style="max-width: 100px; border-radius: 50%;">
+                <img src="logo-donet.png" alt="DONET Logo" style="max-width: 80px; border-radius: 50%;">
             </div>
             <h2 style="color: #00d9ff; text-align: center; margin-bottom: 20px;">Acceso Administrativo</h2>
-            <p style="color: #ccc; text-align: center; margin-bottom: 20px;">Se requiere acceso de administrador
-                para
-                ingresar a Carga Masiva</p>
+            <p style="color: #ccc; text-align: center; margin-bottom: 20px;">Ingrese credenciales de administrador</p>
             <form id="adminAccessForm">
                 <div class="input-group">
                     <input type="text" id="adminAccessUser" placeholder="Usuario Administrador" required>
