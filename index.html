@@ -57,10 +57,25 @@
             </div>
 
             <div class="menu-cards">
-                <p>Ver registros de otros periodos</p>
+                <div class="menu-card" onclick="showScreen('registerScreen')">
+                    <div class="card-icon">📝</div>
+                    <h3>Registrar Inspección</h3>
+                    <p>Ingresar nuevos datos y fotografías</p>
+                </div>
+
+                <div class="menu-card" onclick="requestAdminAccess()">
+                    <div class="card-icon">📤</div>
+                    <h3>Carga Masiva</h3>
+                    <p>Importar datos desde Excel</p>
+                </div>
+
+                <div class="menu-card" onclick="showScreen('consultScreen')">
+                    <div class="card-icon">🔍</div>
+                    <h3>Consultar Registros</h3>
+                    <p>Ver registros de otros periodos</p>
+                </div>
             </div>
         </div>
-    </div>
     </div>
 
     <!-- Pantalla de Registro -->
@@ -228,7 +243,8 @@
                 <img src="logo-donet.png" alt="DONET Logo" style="max-width: 100px; border-radius: 50%;">
             </div>
             <h2 style="color: #00d9ff; text-align: center; margin-bottom: 20px;">Acceso Administrativo</h2>
-            <p style="color: #ccc; text-align: center; margin-bottom: 20px;">Se requiere acceso de administrador para
+            <p style="color: #ccc; text-align: center; margin-bottom: 20px;">Se requiere acceso de administrador
+                para
                 ingresar a Carga Masiva</p>
             <form id="adminAccessForm">
                 <div class="input-group">
