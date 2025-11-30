@@ -96,14 +96,11 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label>Cuenta Contrato</label>
-                            <!-- CAMBIO: Input con Datalist para permitir escribir o seleccionar -->
-                            <input type="text" id="cuentaContrato" list="cuentasList"
-                                placeholder="Escriba o seleccione..." required>
-                            <datalist id="cuentasList">
-                                <!-- Se llenará dinámicamente -->
-                            </datalist>
+                            <select id="cuentaContrato" required>
+                                <option value="">Seleccione una cuenta contrato</option>
+                            </select>
                             <small style="color: #888; display: block; margin-top: 5px;">
-                                Escriba el número o seleccione de la lista
+                                Solo se muestran las cuentas asignadas a tu usuario
                             </small>
                         </div>
 
