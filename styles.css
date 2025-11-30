@@ -317,6 +317,7 @@ body {
 }
 
 .form-group input,
+.form-group select,
 .form-group textarea {
     padding: 12px;
     background: var(--secondary-bg);
@@ -325,9 +326,29 @@ body {
     color: var(--text-primary);
     font-size: 1rem;
     transition: all 0.3s ease;
+    width: 100%;
+}
+
+.form-group select {
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2300d4ff' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 12px;
+    padding-right: 40px;
+}
+
+.form-group select option {
+    background: var(--secondary-bg);
+    color: var(--text-primary);
+    padding: 10px;
 }
 
 .form-group input:focus,
+.form-group select:focus,
 .form-group textarea:focus {
     outline: none;
     border-color: var(--cyan);
@@ -337,6 +358,7 @@ body {
 .form-group textarea {
     resize: vertical;
     font-family: inherit;
+    min-height: 100px;
 }
 
 /* Photos Grid */
@@ -596,57 +618,39 @@ body {
     }
 }
 
-/* Responsive */
+/* Responsive - Mobile First Approach */
+
+/* Tablets (768px - 1024px) */
+@media (max-width: 1024px) {
+    .header-content {
+        padding: 0 15px;
+    }
+
+    .menu-container,
+    .form-container,
+    .consult-container {
+        padding: 30px 15px;
+    }
+
+    .menu-cards {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+    }
+}
+
+/* Tablets y Móviles pequeños (max-width: 768px) */
 @media (max-width: 768px) {
+    /* Login Screen */
     .app-title {
         font-size: 1.8rem;
+        letter-spacing: 1px;
     }
 
     .login-box {
         padding: 30px 20px;
+        max-width: 100%;
     }
 
-    .header h1 {
-        font-size: 1.2rem;
-    }
-
-    .header-logo {
-        width: 40px;
-        height: 40px;
-    }
-
-    .welcome-section h2 {
-        font-size: 1.8rem;
-    }
-
-    .menu-cards {
-        grid-template-columns: 1fr;
-    }
-
-    .form-row {
-        grid-template-columns: 1fr;
-    }
-
-    .form-actions {
-        flex-direction: column;
-    }
-
-    .form-actions button {
-        width: 100%;
-    }
-
-    .photos-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .result-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }
-}
-
-@media (max-width: 480px) {
     .logo-circle {
         width: 120px;
         height: 120px;
@@ -657,11 +661,377 @@ body {
         height: 90px;
     }
 
+    /* Header */
+    .header {
+        padding: 15px 20px;
+    }
+
+    .header h1 {
+        font-size: 1.3rem;
+        letter-spacing: 0.5px;
+    }
+
+    .header-logo {
+        width: 40px;
+        height: 40px;
+    }
+
+    .btn-logout, .btn-back {
+        padding: 8px 15px;
+        font-size: 0.9rem;
+    }
+
+    /* Welcome Section */
+    .welcome-section h2 {
+        font-size: 1.8rem;
+    }
+
+    .date-display {
+        font-size: 1rem;
+    }
+
+    /* Menu Cards */
+    .menu-cards {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .menu-card {
+        padding: 30px;
+    }
+
+    .card-icon {
+        font-size: 3rem;
+    }
+
+    .menu-card h3 {
+        font-size: 1.3rem;
+    }
+
+    /* Forms */
+    .form-container,
+    .consult-container {
+        padding: 20px 15px;
+    }
+
+    .form-section {
+        padding: 20px;
+    }
+
+    .form-section h3 {
+        font-size: 1.3rem;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .form-actions {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .form-actions button {
+        width: 100%;
+        min-width: auto;
+    }
+
+    /* Photos Grid */
+    .photos-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+
+    /* Results */
+    .result-card {
+        padding: 20px;
+    }
+
+    .result-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .result-info {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .result-photos {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+}
+
+/* Móviles pequeños (max-width: 480px) */
+@media (max-width: 480px) {
+    /* Login */
+    .login-container {
+        padding: 15px;
+    }
+
+    .logo-circle {
+        width: 100px;
+        height: 100px;
+    }
+
+    .logo {
+        width: 70px;
+        height: 70px;
+    }
+
     .app-title {
         font-size: 1.5rem;
+        margin-bottom: 30px;
+    }
+
+    .login-box {
+        padding: 25px 15px;
+    }
+
+    .login-box h2 {
+        font-size: 1.4rem;
+    }
+
+    .input-group input {
+        padding: 12px;
+        font-size: 0.95rem;
+    }
+
+    .btn-primary {
+        padding: 12px;
+        font-size: 1rem;
+    }
+
+    /* Header */
+    .header {
+        padding: 12px 15px;
+    }
+
+    .header-content {
+        gap: 10px;
+    }
+
+    .header h1 {
+        font-size: 1rem;
+        flex: 0 1 auto;
+    }
+
+    .header-logo {
+        width: 35px;
+        height: 35px;
+    }
+
+    .btn-logout, .btn-back {
+        padding: 6px 12px;
+        font-size: 0.85rem;
+        white-space: nowrap;
+    }
+
+    /* Welcome */
+    .welcome-section {
+        margin-bottom: 30px;
+    }
+
+    .welcome-section h2 {
+        font-size: 1.5rem;
+    }
+
+    .date-display {
+        font-size: 0.9rem;
+    }
+
+    /* Menu */
+    .menu-container {
+        padding: 20px 15px;
+    }
+
+    .menu-cards {
+        gap: 15px;
+    }
+
+    .menu-card {
+        padding: 25px 20px;
+    }
+
+    .card-icon {
+        font-size: 2.5rem;
+        margin-bottom: 15px;
+    }
+
+    .menu-card h3 {
+        font-size: 1.2rem;
+        margin-bottom: 10px;
+    }
+
+    .menu-card p {
+        font-size: 0.9rem;
+    }
+
+    /* Forms */
+    .form-container,
+    .consult-container {
+        padding: 15px 10px;
+    }
+
+    .form-section,
+    .search-section,
+    .results-section {
+        padding: 15px;
+    }
+
+    .form-section h3,
+    .search-section h3,
+    .results-section h3 {
+        font-size: 1.2rem;
+        margin-bottom: 15px;
+    }
+
+    .form-group label {
+        font-size: 0.9rem;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        padding: 10px;
+        font-size: 0.95rem;
+    }
+
+    /* Photos Grid - 2 columnas en móvil pequeño */
+    .photos-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .upload-icon {
+        font-size: 2rem;
+        margin-bottom: 5px;
+    }
+
+    .upload-text {
+        font-size: 0.75rem;
+    }
+
+    /* Results */
+    .result-card {
+        padding: 15px;
+    }
+
+    .result-header h4 {
+        font-size: 1.1rem;
+    }
+
+    .info-label {
+        font-size: 0.8rem;
+    }
+
+    .info-value {
+        font-size: 0.9rem;
+    }
+
+    .result-photos {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .no-results {
+        padding: 30px 15px;
+        font-size: 0.9rem;
+    }
+
+    /* Buttons */
+    .btn-secondary {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+}
+
+/* Móviles muy pequeños (max-width: 360px) */
+@media (max-width: 360px) {
+    .app-title {
+        font-size: 1.3rem;
+    }
+
+    .header h1 {
+        font-size: 0.9rem;
+    }
+
+    .menu-card {
+        padding: 20px 15px;
     }
 
     .photos-grid {
         grid-template-columns: 1fr;
+    }
+
+    .result-photos {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Landscape mode para móviles */
+@media (max-height: 600px) and (orientation: landscape) {
+    .login-container {
+        padding: 20px;
+    }
+
+    .logo-circle {
+        width: 80px;
+        height: 80px;
+    }
+
+    .logo {
+        width: 60px;
+        height: 60px;
+    }
+
+    .app-title {
+        font-size: 1.3rem;
+        margin-bottom: 20px;
+    }
+
+    .login-box {
+        padding: 20px;
+    }
+
+    .input-group {
+        margin-bottom: 15px;
+    }
+}
+
+/* Touch screen improvements */
+@media (hover: none) and (pointer: coarse) {
+    /* Aumentar áreas táctiles */
+    .btn-primary,
+    .btn-secondary,
+    .btn-logout,
+    .btn-back {
+        min-height: 44px; /* Tamaño mínimo recomendado para táctiles */
+    }
+
+    .menu-card {
+        min-height: 150px;
+    }
+
+    .upload-box {
+        min-height: 120px;
+    }
+
+    /* Remover hover effects en táctiles */
+    .menu-card:hover,
+    .upload-box:hover,
+    .result-card:hover,
+    .result-photo:hover {
+        transform: none;
+    }
+
+    /* Mejorar legibilidad en táctiles */
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        font-size: 16px; /* Prevenir zoom automático en iOS */
     }
 }
