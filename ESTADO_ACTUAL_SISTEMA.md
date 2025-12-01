@@ -1,9 +1,10 @@
 # ESTADO ACTUAL DEL SISTEMA DONET
 
-**Fecha:** 2025-11-29
+**Fecha:** 2025-12-01 (Actualizado)
 **Repositorio:** https://github.com/mdmq2036/supervisor.git
 **Render Service:** https://dashboard.render.com/web/srv-d4lsclu3jp1c739ibb2g
-**URL Aplicación:** https://supervisor-ohtd.onrender.com
+**URL Aplicación:** https://donet-supervision-system.onrender.com (o la asignada)
+**Estado Frontend:** ✅ DESPLEGADO CON NUEVO LOGO
 
 ---
 
