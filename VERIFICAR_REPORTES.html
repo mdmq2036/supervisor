@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✅ Verificación - Módulo de Reportes</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a1628 0%, #162032 100%);
+            color: white;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #00d4ff;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+        }
+        .check-section {
+            background: #1a2942;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border-left: 5px solid #00d4ff;
+        }
+        .check-section.success { border-left-color: #00ff00; background: #1a3a2a; }
+        .check-section.error { border-left-color: #ff4444; background: #3a1a1a; }
+        .check-section.warning { border-left-color: #ffaa00; background: #3a2a1a; }
+        h2 { color: #00d4ff; margin-bottom: 15px; font-size: 1.5rem; }
+        .check-item {
+            padding: 12px;
+            margin: 8px 0;
+            background: rgba(255,255,255,0.05);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .icon { font-size: 1.5rem; }
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #00d4ff 0%, #00a3cc 100%);
+            color: #0a1628;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            margin: 10px 10px 10px 0;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 212, 255, 0.4);
+        }
+        .btn-green {
+            background: linear-gradient(135deg, #00C851 0%, #007E33 100%);
+            color: white;
+        }
+        .btn-actions {
+            text-align: center;
+            margin-top: 30px;
+            padding: 25px;
+            background: #162032;
+            border-radius: 12px;
+        }
+        code {
+            background: #0a1628;
+            padding: 3px 8px;
+            border-radius: 4px;
+            color: #00d4ff;
+            font-family: 'Courier New', monospace;
+        }
+        .highlight {
+            color: #00ff00;
+            font-weight: bold;
+        }
+        .steps {
+            list-style: none;
+            counter-reset: step-counter;
+        }
+        .steps li {
+            counter-increment: step-counter;
+            padding: 12px 12px 12px 45px;
+            position: relative;
+            margin: 10px 0;
+        }
+        .steps li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            background: #00d4ff;
+            color: #0a1628;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        .warning-box {
+            background: rgba(255, 170, 0, 0.1);
+            border: 2px solid #ffaa00;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .info-box {
+            background: rgba(0, 212, 255, 0.1);
+            border: 2px solid #00d4ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✅ Verificación del Módulo de Reportes</h1>
+
+        <div class="check-section" id="fileCheck">
+            <h2>📁 Estado de Archivos</h2>
+            <div id="fileResults">Verificando...</div>
+        </div>
+
+        <div class="check-section" id="jsCheck">
+            <h2>📊 JavaScript Cargado</h2>
+            <div id="jsResults">Verificando...</div>
+        </div>
+
+        <div class="check-section">
+            <h2>🔧 Antes de Probar</h2>
+            <div class="warning-box">
+                <strong>⚠️ IMPORTANTE - Limpiar Cache:</strong>
+                <ol class="steps">
+                    <li>Presiona <code>Ctrl + Shift + R</code> para recargar sin cache</li>
+                    <li>O abre en modo incógnito: <code>Ctrl + Shift + N</code> (Chrome/Edge)</li>
+                    <li>O presiona <code>F12</code>, clic derecho en recargar → "Vaciar caché y recargar"</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="check-section">
+            <h2>✅ Checklist de Verificación</h2>
+            <p style="margin-bottom: 15px;">Al abrir la aplicación, verifica que aparezcan:</p>
+
+            <div class="check-item">
+                <span class="icon">📊</span>
+                <span>Tarjeta "Reportes" en el menú principal (4ta tarjeta)</span>
+            </div>
+
+            <div class="check-item">
+                <span class="icon">🔘</span>
+                <span><strong>DOS botones toggle:</strong> "📅 Mes Completo" y "📆 Rango Personalizado"</span>
+            </div>
+
+            <div class="check-item">
+                <span class="icon">📅</span>
+                <span>Selector de Mes y Año (cuando "Mes Completo" está activo)</span>
+            </div>
+
+            <div class="check-item">
+                <span class="icon">📆</span>
+                <span>Campos Fecha Inicio/Fin (cuando "Rango Personalizado" está activo)</span>
+            </div>
+
+            <div class="check-item">
+                <span class="icon">🔍</span>
+                <span>Botón "Buscar" en color cyan</span>
+            </div>
+
+            <div class="check-item">
+                <span class="icon">📥</span>
+                <span>Botones verdes para CSV y rojos para PDF</span>
+            </div>
+
+            <div class="check-item">
+                <span class="icon">💬</span>
+                <span>Botones verdes de WhatsApp</span>
+            </div>
+
+            <div class="check-item">
+                <span class="icon">📋</span>
+                <span>Tabla de preview en la parte inferior (después de "Buscar")</span>
+            </div>
+        </div>
+
+        <div class="check-section">
+            <h2>🧪 Prueba Funcional</h2>
+            <div class="info-box">
+                <strong>📝 Pasos para probar el módulo:</strong>
+                <ol class="steps">
+                    <li>Hacer login con: <code>prueba</code> / <code>prueba2025</code></li>
+                    <li>Click en tarjeta <strong>📊 Reportes</strong></li>
+                    <li>Verificar que aparezcan <span class="highlight">ambos botones de toggle</span></li>
+                    <li>Seleccionar mes actual y año 2025</li>
+                    <li>Click en <strong>🔍 Buscar</strong></li>
+                    <li>Debe aparecer tabla con registros en la parte inferior</li>
+                    <li>Probar descargar CSV (botón verde)</li>
+                    <li>Probar descargar PDF (botón rojo)</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="check-section">
+            <h2>🐛 Si No Funciona</h2>
+            <div class="check-item">
+                <span class="icon">1️⃣</span>
+                <span>Verifica la consola (F12) → pestaña Console → busca errores en rojo</span>
+            </div>
+            <div class="check-item">
+                <span class="icon">2️⃣</span>
+                <span>Verifica Network (F12) → pestaña Network → busca <code>reports.js</code> → debe ser 200 OK</span>
+            </div>
+            <div class="check-item">
+                <span class="icon">3️⃣</span>
+                <span>Verifica que la URL tenga <code>?v=3</code> en reports.js</span>
+            </div>
+            <div class="check-item">
+                <span class="icon">4️⃣</span>
+                <span>Cierra completamente el navegador y vuelve a abrir</span>
+            </div>
+            <div class="check-item">
+                <span class="icon">5️⃣</span>
+                <span>Intenta en otro navegador (Chrome, Firefox, Edge)</span>
+            </div>
+        </div>
+
+        <div class="btn-actions">
+            <h2 style="margin-bottom: 20px;">🚀 Acciones</h2>
+            <a href="index.html" class="btn btn-green" target="_blank">
+                ▶️ Abrir Aplicación (Nueva Ventana)
+            </a>
+            <a href="index.html" class="btn">
+                ▶️ Abrir Aplicación (Misma Ventana)
+            </a>
+            <button onclick="location.reload()" class="btn">
+                🔄 Recargar Esta Página
+            </button>
+            <button onclick="testReports()" class="btn">
+                🧪 Test Funciones JS
+            </button>
+        </div>
+
+        <div class="check-section">
+            <h2>📚 Documentación</h2>
+            <div class="check-item">
+                <span class="icon">📖</span>
+                <span><a href="INSTRUCCIONES_DESPLIEGUE.md" style="color: #00d4ff;">INSTRUCCIONES_DESPLIEGUE.md</a> - Guía completa de despliegue</span>
+            </div>
+            <div class="check-item">
+                <span class="icon">📖</span>
+                <span><a href="GUIA_RAPIDA_USO.md" style="color: #00d4ff;">GUIA_RAPIDA_USO.md</a> - Cómo usar el sistema</span>
+            </div>
+            <div class="check-item">
+                <span class="icon">📖</span>
+                <span><a href="MEJORAS_REALIZADAS.md" style="color: #00d4ff;">MEJORAS_REALIZADAS.md</a> - Detalles técnicos</span>
+            </div>
+            <div class="check-item">
+                <span class="icon">📖</span>
+                <span><a href="SOLUCION_CACHE.md" style="color: #00d4ff;">SOLUCION_CACHE.md</a> - Solución de problemas de cache</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Test de archivos
+        async function testFiles() {
+            const files = [
+                { name: 'index.html', required: true },
+                { name: 'reports.js', required: true },
+                { name: 'app.js', required: true },
+                { name: 'config.js', required: true },
+                { name: 'styles.css', required: true }
+            ];
+
+            const fileResults = document.getElementById('fileResults');
+            let html = '';
+            let allOk = true;
+
+            for (const file of files) {
+                try {
+                    const response = await fetch(file.name, { method: 'HEAD' });
+                    if (response.ok) {
+                        html += `<div class="check-item"><span class="icon">✅</span><span>${file.name} - OK (${response.status})</span></div>`;
+                    } else {
+                        html += `<div class="check-item"><span class="icon">❌</span><span>${file.name} - Error (${response.status})</span></div>`;
+                        allOk = false;
+                    }
+                } catch (error) {
+                    html += `<div class="check-item"><span class="icon">❌</span><span>${file.name} - No encontrado</span></div>`;
+                    allOk = false;
+                }
+            }
+
+            fileResults.innerHTML = html;
+
+            const section = document.getElementById('fileCheck');
+            section.className = allOk ? 'check-section success' : 'check-section error';
+        }
+
+        // Test de JavaScript
+        function testJS() {
+            const jsResults = document.getElementById('jsResults');
+            let html = '';
+            let allOk = true;
+
+            // Esperar a que se carguen los scripts
+            setTimeout(() => {
+                // Verificar funciones globales de reports.js
+                const reportFunctions = [
+                    'generateReport',
+                    'downloadReport',
+                    'shareWhatsApp',
+                    'setFilterType'
+                ];
+
+                const appFunctions = [
+                    'showScreen',
+                    'showMessage'
+                ];
+
+                // Verificar reports.js
+                reportFunctions.forEach(func => {
+                    if (typeof window[func] === 'function') {
+                        html += `<div class="check-item"><span class="icon">✅</span><span>Función ${func}() disponible</span></div>`;
+                    } else {
+                        html += `<div class="check-item"><span class="icon">❌</span><span>Función ${func}() NO encontrada</span></div>`;
+                        allOk = false;
+                    }
+                });
+
+                // Verificar app.js
+                appFunctions.forEach(func => {
+                    if (typeof window[func] === 'function') {
+                        html += `<div class="check-item"><span class="icon">✅</span><span>Función ${func}() disponible</span></div>`;
+                    } else {
+                        html += `<div class="check-item"><span class="icon">❌</span><span>Función ${func}() NO encontrada</span></div>`;
+                        allOk = false;
+                    }
+                });
+
+                // Verificar variables globales
+                if (typeof reportData !== 'undefined') {
+                    html += `<div class="check-item"><span class="icon">✅</span><span>Variable reportData disponible</span></div>`;
+                } else {
+                    html += `<div class="check-item"><span class="icon">⚠️</span><span>Variable reportData no encontrada (se carga con index.html)</span></div>`;
+                }
+
+                jsResults.innerHTML = html;
+
+                const section = document.getElementById('jsCheck');
+                section.className = allOk ? 'check-section success' : 'check-section warning';
+            }, 1500);
+        }
+
+        function testReports() {
+            console.log('=== TEST DE REPORTES ===');
+            console.log('typeof generateReport:', typeof generateReport);
+            console.log('typeof downloadReport:', typeof downloadReport);
+            console.log('typeof shareWhatsApp:', typeof shareWhatsApp);
+            console.log('typeof setFilterType:', typeof setFilterType);
+            console.log('typeof showScreen:', typeof showScreen);
+
+            alert('Revisa la consola (F12) para ver los resultados del test.\n\n' +
+                  'Si todas las funciones muestran "function", está todo OK.\n' +
+                  'Si muestran "undefined", reports.js no se cargó correctamente.');
+        }
+
+        // Ejecutar tests al cargar
+        window.addEventListener('DOMContentLoaded', () => {
+            testFiles();
+            testJS();
+        });
+    </script>
+
+    <!-- Cargar scripts para verificar si funcionan -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="config.js?v=3"></script>
+    <script src="app.js?v=3"></script>
+    <script src="reports.js?v=3"></script>
+</body>
+</html>
