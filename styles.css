@@ -1243,6 +1243,14 @@ body {
     background: linear-gradient(135deg, #ff6b6b 0%, #ff4444 100%);
 }
 
+.btn-excel {
+    background: linear-gradient(135deg, #107C41 0%, #0D5C2F 100%);
+}
+
+.btn-excel:hover {
+    background: linear-gradient(135deg, #1B8C50 0%, #107C41 100%);
+}
+
 /* Botones de WhatsApp */
 .share-buttons {
     display: flex;
@@ -1456,5 +1464,226 @@ body {
     .report-preview-table th,
     .report-preview-table td {
         padding: 8px;
+    }
+}
+/* ==============================================
+   NUEVO DISEÑO DE LOGIN - ESTILO DONET
+   ============================================== */
+
+.login-container-new {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: linear-gradient(180deg, #0F1E2E 0%, #1A2B3D 50%, #0F1E2E 100%);
+    padding: 20px;
+}
+
+.logo-container-large {
+    margin-bottom: 40px;
+    animation: fadeInDown 1s ease-out;
+}
+
+.logo-glow-circle {
+    width: 250px;
+    height: 250px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0, 217, 255, 0.2) 0%, rgba(0, 217, 255, 0) 70%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    animation: pulse 3s ease-in-out infinite;
+}
+
+.logo-glow-circle::before {
+    content: '';
+    position: absolute;
+    width: 260px;
+    height: 260px;
+    border-radius: 50%;
+    border: 3px solid rgba(0, 217, 255, 0.6);
+    animation: rotate 10s linear infinite;
+}
+
+.logo-main {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    object-fit: cover;
+    filter: drop-shadow(0 0 20px rgba(0, 217, 255, 0.5));
+}
+
+.app-title-new {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #FFFFFF;
+    text-align: center;
+    margin-bottom: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    animation: fadeIn 1.2s ease-out;
+}
+
+.title-underline {
+    width: 200px;
+    height: 4px;
+    background: linear-gradient(90deg, transparent, #00d9ff, transparent);
+    margin-bottom: 50px;
+    animation: expandWidth 1.5s ease-out;
+}
+
+.login-box-new {
+    background: rgba(26, 43, 61, 0.8);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(0, 217, 255, 0.3);
+    border-radius: 25px;
+    padding: 40px 50px;
+    width: 100%;
+    max-width: 450px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    animation: fadeInUp 1.3s ease-out;
+}
+
+.login-title {
+    font-size: 1.8rem;
+    color: #FFFFFF;
+    text-align: center;
+    margin-bottom: 30px;
+    font-weight: 600;
+}
+
+.input-group-new {
+    margin-bottom: 25px;
+}
+
+.input-field-new {
+    width: 100%;
+    padding: 18px 20px;
+    background: rgba(15, 30, 46, 0.7);
+    border: 2px solid rgba(0, 217, 255, 0.2);
+    border-radius: 12px;
+    color: #FFFFFF;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+}
+
+.input-field-new::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.input-field-new:focus {
+    outline: none;
+    border-color: #00d9ff;
+    box-shadow: 0 0 15px rgba(0, 217, 255, 0.3);
+    background: rgba(15, 30, 46, 0.9);
+}
+
+.btn-entrar {
+    width: 100%;
+    padding: 18px;
+    background: linear-gradient(135deg, #00d9ff 0%, #0099cc 100%);
+    border: none;
+    border-radius: 12px;
+    color: #0F1E2E;
+    font-size: 1.3rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.btn-entrar:hover {
+    background: linear-gradient(135deg, #00f0ff 0%, #00b3e6 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(0, 217, 255, 0.4);
+}
+
+.btn-entrar:active {
+    transform: translateY(0);
+}
+
+/* Animaciones */
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes expandWidth {
+    from {
+        width: 0;
+    }
+    to {
+        width: 200px;
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.05);
+        opacity: 0.8;
+    }
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .logo-glow-circle {
+        width: 180px;
+        height: 180px;
+    }
+    
+    .logo-main {
+        width: 140px;
+        height: 140px;
+    }
+    
+    .app-title-new {
+        font-size: 1.8rem;
+    }
+    
+    .login-box-new {
+        padding: 30px 25px;
     }
 }

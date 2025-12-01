@@ -30,7 +30,12 @@
       "Bash(where:*)",
       "Bash(GIT_TERMINAL_PROMPT=0 git push:*)",
       "Bash(cmd.exe /c \"c:\\MARTIN\\LUIGGY\\PUSH_Y_DEPLOY_COMPLETO.bat\")",
-      "Bash(cmd.exe /c notepad \"c:\\MARTIN\\LUIGGY\\RESUMEN_CAMBIOS_FINALES.txt\")"
+      "Bash(cmd.exe /c notepad \"c:\\MARTIN\\LUIGGY\\RESUMEN_CAMBIOS_FINALES.txt\")",
+      "Bash(cmd.exe /c notepad \"c:\\MARTIN\\LUIGGY\\RESUMEN_FINAL_ACTUALIZACION.txt\")",
+      "Bash(git remote:*)",
+      "Bash(printf:*)",
+      "Bash(git credential-manager:*)",
+      "Bash(cmd.exe:*)"
     ],
     "deny": [],
     "ask": []

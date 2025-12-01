@@ -235,7 +235,9 @@ async function downloadReport(format, type) {
 
     try {
         if (format === 'csv') {
-            downloadCSV(type);
+            downloadCSVPlain(type); // CSV simple sin formato
+        } else if (format === 'excel') {
+            downloadCSV(type); // Excel con formato (sobrescrito por reports-excel-formatter.js)
         } else if (format === 'pdf') {
             downloadPDF(type);
         }
@@ -247,8 +249,8 @@ async function downloadReport(format, type) {
     }
 }
 
-// Generar y descargar CSV/Excel
-function downloadCSV(type) {
+// Generar y descargar CSV simple (sin formato)
+function downloadCSVPlain(type) {
     let csvContent = '';
     let filename = '';
 

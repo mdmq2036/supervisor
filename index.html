@@ -10,32 +10,32 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
     <title>DONET - Sistema de Gestión</title>
-    <link rel="stylesheet" href="styles.css?v=5">
+    <link rel="stylesheet" href="styles.css?v=6">
 </head>
 
 <body>
     <!-- Pantalla de Login -->
     <div id="loginScreen" class="screen active">
-        <div class="login-container">
-            <div class="logo-container">
-                <div class="logo-circle">
-                    <img src="logo-donet.png" alt="DONET Logo" class="logo">
+        <div class="login-container-new">
+            <div class="logo-container-large">
+                <div class="logo-glow-circle">
+                    <img src="logo-donet.png" alt="DONET Logo" class="logo-main">
                 </div>
             </div>
-            <h1 class="app-title">APLICACIONES - DONET</h1>
+            <h1 class="app-title-new">APLICACIONES - DONET</h1>
+            <div class="title-underline"></div>
 
-            <div class="login-box">
-                <h2>Iniciar Sesión</h2>
+            <div class="login-box-new">
+                <h2 class="login-title">Iniciar Sesión</h2>
                 <form id="loginForm">
-                    <div class="input-group">
-                        <input type="text" id="username" placeholder="Usuario" required>
+                    <div class="input-group-new">
+                        <input type="text" id="username" class="input-field-new" placeholder="Usuario" required>
                     </div>
-                    <div class="input-group">
-                        <input type="password" id="password" placeholder="Contraseña" required>
+                    <div class="input-group-new">
+                        <input type="password" id="password" class="input-field-new" placeholder="Contraseña" required>
                     </div>
-                    <button type="submit" class="btn-primary">Entrar</button>
+                    <button type="submit" class="btn-entrar">Entrar</button>
                 </form>
-                <div class="version-info">Versión 1.0 - © 2025 DONET</div>
             </div>
         </div>
     </div>
@@ -321,10 +321,13 @@
                     <p class="download-description">Todos los campos de cada registro</p>
                     <div class="download-buttons">
                         <button onclick="downloadReport('csv', 'detailed')" class="btn-download btn-green">
-                            📥 Descargar CSV Detallado
+                            📥 CSV Detallado
+                        </button>
+                        <button onclick="downloadReport('excel', 'detailed')" class="btn-download btn-excel">
+                            📗 Excel Detallado
                         </button>
                         <button onclick="downloadReport('pdf', 'detailed')" class="btn-download btn-red">
-                            📥 Descargar PDF Detallado
+                            📕 PDF Detallado
                         </button>
                     </div>
                 </div>
@@ -334,10 +337,13 @@
                     <p class="download-description">Datos consolidados por categoría</p>
                     <div class="download-buttons">
                         <button onclick="downloadReport('csv', 'summary')" class="btn-download btn-green">
-                            📥 Descargar CSV Resumido
+                            📥 CSV Resumido
+                        </button>
+                        <button onclick="downloadReport('excel', 'summary')" class="btn-download btn-excel">
+                            📗 Excel Resumido
                         </button>
                         <button onclick="downloadReport('pdf', 'summary')" class="btn-download btn-red">
-                            📥 Descargar PDF Resumido
+                            📕 PDF Resumido
                         </button>
                     </div>
                 </div>
@@ -420,11 +426,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="config.js?v=5"></script>
-    <script src="device-fingerprint.js?v=5"></script>
-    <script src="app.js?v=5"></script>
-    <script src="reports.js?v=5"></script>
-    <script src="reports-excel-formatter.js?v=5"></script>
+    <script src="config.js?v=6"></script>
+    <script src="device-fingerprint.js?v=6"></script>
+    <script src="app.js?v=6"></script>
+    <script src="reports.js?v=6"></script>
+    <script src="reports-excel-formatter.js?v=6"></script>
 </body>
 
 </html>
