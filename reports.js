@@ -247,13 +247,13 @@ async function downloadReport(format, type) {
     }
 }
 
-// Generar y descargar CSV
+// Generar y descargar CSV/Excel
 function downloadCSV(type) {
     let csvContent = '';
     let filename = '';
 
     if (type === 'detailed') {
-        // CSV Detallado - Todos los campos
+        // CSV Detallado - Todos los campos importantes
         const headers = [
             'Fecha Carga', 'Cuenta Contrato', 'Instalación', 'Cliente DNI',
             'Dirección', 'Distrito', 'Teléfono', 'Turno', 'Puntos Instalar',
@@ -304,23 +304,65 @@ function downloadCSV(type) {
         filename = `reporte_detallado_${getCurrentDateStr()}.csv`;
 
     } else {
-        // CSV Resumido - Consolidado
-        const headers = ['Categoría', 'Pacientes', 'Acciones'];
+        // CSV Resumido - Datos más importantes consolidados
+        const headers = [
+            'Fecha Reporte', 'Supervisor', 'Total Inspecciones', 'Distrito Principal',
+            'Empresa Instaladora', 'Turno Predominante', 'Inspectores Activos', 'Observaciones Clave'
+        ];
         csvContent = headers.join(',') + '\n';
 
-        // Agrupar por área/categoría
-        const areas = {};
+        // Calcular estadísticas importantes
+        const distritos = {};
+        const empresas = {};
+        const turnos = {};
+        const inspectores = new Set();
+        let observacionesKey = [];
+
         reportData.forEach(registro => {
-            const area = registro.turno || 'Sin Categoría';
-            areas[area] = (areas[area] || 0) + 1;
+            const distrito = registro.distrito || 'Sin Especificar';
+            const empresa = registro.empresa_instaladora || 'Sin Especificar';
+            const turno = registro.turno || 'Sin Especificar';
+            
+            distritos[distrito] = (distritos[distrito] || 0) + 1;
+            empresas[empresa] = (empresas[empresa] || 0) + 1;
+            turnos[turno] = (turnos[turno] || 0) + 1;
+            inspectores.add(registro.nombre_dni_inspector);
+            
+            if (registro.observaciones_2) {
+                observacionesKey.push(registro.observaciones_2);
+            }
         });
 
-        Object.entries(areas).forEach(([area, count]) => {
-            csvContent += `"${area}",${count},"📋 Ver"\n`;
+        // Encontrar valores predominantes
+        const distritoPrincipal = Object.entries(distritos).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A';
+        const empresaPrincipal = Object.entries(empresas).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A';
+        const turnoPrincipal = Object.entries(turnos).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A';
+        const obsResumen = observacionesKey.slice(0, 3).join('; ') || 'Sin observaciones';
+
+        const row = [
+            new Date().toLocaleDateString('es-ES'),
+            `"${currentUser.nombre || 'N/A'}"`,
+            reportData.length,
+            `"${distritoPrincipal}"`,
+            `"${empresaPrincipal}"`,
+            `"${turnoPrincipal}"`,
+            inspectores.size,
+            `"${obsResumen}"`
+        ];
+        csvContent += row.join(',') + '\n';
+
+        // Agregar resumen por categoría
+        csvContent += '\n\nRESUMEN POR DISTRITO\n';
+        csvContent += 'Distrito,Cantidad\n';
+        Object.entries(distritos).forEach(([distrito, count]) => {
+            csvContent += `"${distrito}",${count}\n`;
         });
 
-        // Agregar totales
-        csvContent += `\nTOTAL,${reportData.length},-\n`;
+        csvContent += '\n\nRESUMEN POR EMPRESA\n';
+        csvContent += 'Empresa,Cantidad\n';
+        Object.entries(empresas).forEach(([empresa, count]) => {
+            csvContent += `"${empresa}",${count}\n`;
+        });
 
         filename = `reporte_resumido_${getCurrentDateStr()}.csv`;
     }
@@ -332,31 +374,124 @@ function downloadCSV(type) {
     link.download = filename;
     link.click();
 
-    showMessage(`Archivo CSV descargado: ${filename}`, 'success');
+    showMessage(`Archivo descargado: ${filename}`, 'success');
 }
 
 // Generar y descargar PDF
 function downloadPDF(type) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('l', 'mm', 'a4'); // Landscape
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
 
-    // Agregar logo (si existe)
-    // doc.addImage('logo-donet.png', 'PNG', 10, 10, 30, 30);
+    // ===== ENCABEZADO PROFESIONAL =====
+    // Fondo del encabezado
+    doc.setFillColor(10, 22, 40);
+    doc.rect(0, 0, pageWidth, 35, 'F');
 
-    // Título
-    doc.setFontSize(18);
+    // Línea decorativa azul
+    doc.setFillColor(0, 212, 255);
+    doc.rect(0, 35, pageWidth, 2, 'F');
+
+    // Logo/Título principal
+    doc.setFontSize(22);
     doc.setTextColor(0, 212, 255);
-    doc.text('DONET - Reporte de Inspecciones', 14, 20);
+    doc.setFont(undefined, 'bold');
+    doc.text('DONET', 14, 18);
 
-    // Fecha del reporte
     doc.setFontSize(10);
-    doc.setTextColor(100, 100, 100);
-    doc.text(`Generado: ${new Date().toLocaleString('es-ES')}`, 14, 28);
-    doc.text(`Usuario: ${currentUser.nombre}`, 14, 33);
-    doc.text(`Total de registros: ${reportData.length}`, 14, 38);
+    doc.setTextColor(200, 200, 200);
+    doc.setFont(undefined, 'normal');
+    doc.text('Sistema de Gestión de Inspecciones', 14, 26);
+
+    // Información del reporte en encabezado
+    doc.setFontSize(9);
+    doc.setTextColor(150, 150, 150);
+    const reportDate = new Date().toLocaleDateString('es-ES', { 
+        day: '2-digit', 
+        month: 'long', 
+        year: 'numeric' 
+    });
+    doc.text(`Reporte: ${type === 'detailed' ? 'DETALLADO' : 'RESUMIDO'}`, pageWidth - 70, 18);
+    doc.text(`Fecha: ${reportDate}`, pageWidth - 70, 26);
+
+    // ===== INFORMACIÓN DEL USUARIO =====
+    let yPosition = 42;
+    doc.setFontSize(10);
+    doc.setTextColor(10, 22, 40);
+    doc.setFont(undefined, 'bold');
+    doc.text('INFORMACIÓN DEL REPORTE', 14, yPosition);
+
+    yPosition += 7;
+    doc.setFontSize(9);
+    doc.setFont(undefined, 'normal');
+    doc.setTextColor(50, 50, 50);
+    
+    // Crear tabla de información
+    const infoData = [
+        ['Supervisor:', currentUser.nombre || 'N/A'],
+        ['Total de Inspecciones:', reportData.length.toString()],
+        ['Período:', type === 'detailed' ? 'Detallado' : 'Resumido'],
+        ['Generado:', new Date().toLocaleString('es-ES')]
+    ];
+
+    let infoY = yPosition;
+    infoData.forEach((row, index) => {
+        doc.setFont(undefined, 'bold');
+        doc.text(row[0], 14, infoY);
+        doc.setFont(undefined, 'normal');
+        doc.text(row[1], 50, infoY);
+        infoY += 5;
+    });
+
+    yPosition = infoY + 3;
 
     if (type === 'detailed') {
-        // PDF Detallado - Tabla con todos los campos importantes
+        // ===== PDF DETALLADO =====
+        
+        // Estadísticas principales
+        const distritos = {};
+        const empresas = {};
+        const turnos = {};
+        
+        reportData.forEach(registro => {
+            const distrito = registro.distrito || 'Sin Especificar';
+            const empresa = registro.empresa_instaladora || 'Sin Especificar';
+            const turno = registro.turno || 'Sin Especificar';
+            
+            distritos[distrito] = (distritos[distrito] || 0) + 1;
+            empresas[empresa] = (empresas[empresa] || 0) + 1;
+            turnos[turno] = (turnos[turno] || 0) + 1;
+        });
+
+        // Sección de estadísticas
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'bold');
+        doc.setTextColor(0, 212, 255);
+        doc.text('ESTADÍSTICAS PRINCIPALES', 14, yPosition);
+        
+        yPosition += 6;
+        doc.setFontSize(8);
+        doc.setFont(undefined, 'normal');
+        doc.setTextColor(50, 50, 50);
+
+        const distritoPrincipal = Object.entries(distritos).sort((a, b) => b[1] - a[1])[0];
+        const empresaPrincipal = Object.entries(empresas).sort((a, b) => b[1] - a[1])[0];
+        const turnoPrincipal = Object.entries(turnos).sort((a, b) => b[1] - a[1])[0];
+
+        doc.text(`• Distrito Principal: ${distritoPrincipal ? distritoPrincipal[0] : 'N/A'} (${distritoPrincipal ? distritoPrincipal[1] : 0} registros)`, 14, yPosition);
+        yPosition += 4;
+        doc.text(`• Empresa Principal: ${empresaPrincipal ? empresaPrincipal[0] : 'N/A'} (${empresaPrincipal ? empresaPrincipal[1] : 0} registros)`, 14, yPosition);
+        yPosition += 4;
+        doc.text(`• Turno Predominante: ${turnoPrincipal ? turnoPrincipal[0] : 'N/A'} (${turnoPrincipal ? turnoPrincipal[1] : 0} registros)`, 14, yPosition);
+        yPosition += 4;
+        doc.text(`• Total de Distritos: ${Object.keys(distritos).length}`, 14, yPosition);
+        yPosition += 4;
+        doc.text(`• Total de Empresas: ${Object.keys(empresas).length}`, 14, yPosition);
+
+        yPosition += 8;
+
+        // Tabla detallada
         const tableData = reportData.map(registro => [
             formatDateDisplay(registro.fecha_carga),
             registro.cuenta_contrato || 'N/A',
@@ -368,69 +503,199 @@ function downloadPDF(type) {
         ]);
 
         doc.autoTable({
-            startY: 45,
+            startY: yPosition,
             head: [['Fecha', 'Cuenta', 'Distrito', 'Dirección', 'Inspector', 'Turno', 'Empresa']],
             body: tableData,
             theme: 'grid',
             headStyles: {
                 fillColor: [0, 212, 255],
                 textColor: [10, 22, 40],
-                fontStyle: 'bold'
-            },
-            alternateRowStyles: {
-                fillColor: [240, 248, 255]
-            },
-            styles: {
+                fontStyle: 'bold',
                 fontSize: 8,
+                cellPadding: 3
+            },
+            bodyStyles: {
+                fontSize: 7,
                 cellPadding: 2
             },
+            alternateRowStyles: {
+                fillColor: [245, 248, 250]
+            },
+            rowPageBreak: 'avoid',
             columnStyles: {
-                0: { cellWidth: 22 },
-                1: { cellWidth: 25 },
-                2: { cellWidth: 30 },
-                3: { cellWidth: 60 },
-                4: { cellWidth: 50 },
-                5: { cellWidth: 20 },
-                6: { cellWidth: 50 }
-            }
+                0: { cellWidth: 18 },
+                1: { cellWidth: 22 },
+                2: { cellWidth: 28 },
+                3: { cellWidth: 55 },
+                4: { cellWidth: 45 },
+                5: { cellWidth: 18 },
+                6: { cellWidth: 45 }
+            },
+            margin: { top: 10, right: 10, bottom: 10, left: 10 }
         });
 
     } else {
-        // PDF Resumido - Consolidado por categoría
-        const areas = {};
+        // ===== PDF RESUMIDO =====
+        
+        // Calcular estadísticas importantes
+        const distritos = {};
+        const empresas = {};
+        const turnos = {};
+        const inspectores = new Set();
+        let observacionesKey = [];
+
         reportData.forEach(registro => {
-            const area = registro.turno || 'Emergencia';
-            areas[area] = (areas[area] || 0) + 1;
+            const distrito = registro.distrito || 'Sin Especificar';
+            const empresa = registro.empresa_instaladora || 'Sin Especificar';
+            const turno = registro.turno || 'Sin Especificar';
+            
+            distritos[distrito] = (distritos[distrito] || 0) + 1;
+            empresas[empresa] = (empresas[empresa] || 0) + 1;
+            turnos[turno] = (turnos[turno] || 0) + 1;
+            inspectores.add(registro.nombre_dni_inspector);
+            
+            if (registro.observaciones_2) {
+                observacionesKey.push(registro.observaciones_2);
+            }
         });
 
-        const tableData = Object.entries(areas).map(([area, count]) => [
-            area,
-            count,
-            '📋 Ver'
-        ]);
+        // Sección de resumen ejecutivo
+        doc.setFontSize(11);
+        doc.setFont(undefined, 'bold');
+        doc.setTextColor(0, 212, 255);
+        doc.text('RESUMEN EJECUTIVO', 14, yPosition);
+        
+        yPosition += 8;
+        doc.setFontSize(9);
+        doc.setFont(undefined, 'normal');
+        doc.setTextColor(50, 50, 50);
 
-        // Agregar fila de total
-        tableData.push(['TOTAL', reportData.length, '-']);
+        const summaryData = [
+            ['Total de Inspecciones:', reportData.length.toString(), ''],
+            ['Inspectores Activos:', inspectores.size.toString(), ''],
+            ['Distritos Cubiertos:', Object.keys(distritos).length.toString(), ''],
+            ['Empresas Involucradas:', Object.keys(empresas).length.toString(), ''],
+            ['Turnos Registrados:', Object.keys(turnos).length.toString(), '']
+        ];
+
+        summaryData.forEach((row) => {
+            doc.setFont(undefined, 'bold');
+            doc.text(row[0], 14, yPosition);
+            doc.setFont(undefined, 'normal');
+            doc.setTextColor(0, 212, 255);
+            doc.setFontSize(11);
+            doc.text(row[1], 70, yPosition);
+            doc.setTextColor(50, 50, 50);
+            doc.setFontSize(9);
+            yPosition += 6;
+        });
+
+        yPosition += 5;
+
+        // Tabla de resumen por distrito
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'bold');
+        doc.setTextColor(0, 212, 255);
+        doc.text('DISTRIBUCIÓN POR DISTRITO', 14, yPosition);
+        
+        yPosition += 6;
+
+        const distritoTableData = Object.entries(distritos)
+            .sort((a, b) => b[1] - a[1])
+            .map(([distrito, count]) => [
+                distrito,
+                count.toString(),
+                `${((count / reportData.length) * 100).toFixed(1)}%`
+            ]);
 
         doc.autoTable({
-            startY: 45,
-            head: [['Área', 'Pacientes', 'Acciones']],
-            body: tableData,
+            startY: yPosition,
+            head: [['Distrito', 'Cantidad', 'Porcentaje']],
+            body: distritoTableData,
             theme: 'grid',
             headStyles: {
                 fillColor: [0, 212, 255],
                 textColor: [10, 22, 40],
-                fontStyle: 'bold'
+                fontStyle: 'bold',
+                fontSize: 9,
+                cellPadding: 3
             },
-            footStyles: {
-                fillColor: [200, 200, 200],
-                fontStyle: 'bold'
+            bodyStyles: {
+                fontSize: 8,
+                cellPadding: 2
             },
-            styles: {
-                fontSize: 10,
-                cellPadding: 4
-            }
+            alternateRowStyles: {
+                fillColor: [245, 248, 250]
+            },
+            columnStyles: {
+                0: { cellWidth: 100 },
+                1: { cellWidth: 30 },
+                2: { cellWidth: 30 }
+            },
+            margin: { left: 14, right: 14 }
         });
+
+        yPosition = doc.lastAutoTable.finalY + 10;
+
+        // Tabla de resumen por empresa
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'bold');
+        doc.setTextColor(0, 212, 255);
+        doc.text('DISTRIBUCIÓN POR EMPRESA', 14, yPosition);
+        
+        yPosition += 6;
+
+        const empresaTableData = Object.entries(empresas)
+            .sort((a, b) => b[1] - a[1])
+            .map(([empresa, count]) => [
+                empresa,
+                count.toString(),
+                `${((count / reportData.length) * 100).toFixed(1)}%`
+            ]);
+
+        doc.autoTable({
+            startY: yPosition,
+            head: [['Empresa', 'Cantidad', 'Porcentaje']],
+            body: empresaTableData,
+            theme: 'grid',
+            headStyles: {
+                fillColor: [0, 212, 255],
+                textColor: [10, 22, 40],
+                fontStyle: 'bold',
+                fontSize: 9,
+                cellPadding: 3
+            },
+            bodyStyles: {
+                fontSize: 8,
+                cellPadding: 2
+            },
+            alternateRowStyles: {
+                fillColor: [245, 248, 250]
+            },
+            columnStyles: {
+                0: { cellWidth: 100 },
+                1: { cellWidth: 30 },
+                2: { cellWidth: 30 }
+            },
+            margin: { left: 14, right: 14 }
+        });
+    }
+
+    // ===== PIE DE PÁGINA =====
+    const totalPages = doc.internal.pages.length - 1;
+    for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(150, 150, 150);
+        doc.setFont(undefined, 'normal');
+        
+        // Línea separadora
+        doc.setDrawColor(200, 200, 200);
+        doc.line(10, pageHeight - 10, pageWidth - 10, pageHeight - 10);
+        
+        // Texto del pie
+        doc.text('© 2025 DONET - Sistema de Gestión de Inspecciones', 14, pageHeight - 5);
+        doc.text(`Página ${i} de ${totalPages}`, pageWidth - 30, pageHeight - 5);
     }
 
     // Descargar
