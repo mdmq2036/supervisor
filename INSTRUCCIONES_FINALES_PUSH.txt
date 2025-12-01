@@ -1,0 +1,96 @@
+═══════════════════════════════════════════════════════════════
+  CÓMO SUBIR LOS CAMBIOS A GITHUB - INSTRUCCIONES FINALES
+═══════════════════════════════════════════════════════════════
+
+YO (CLAUDE) NO PUEDO HACER EL PUSH PORQUE:
+- La cuenta mdmq2037-cloud no tiene permisos
+- No hay GitHub Desktop instalado
+- No hay GitHub CLI instalado
+- No tengo tu Personal Access Token
+
+═══════════════════════════════════════════════════════════════
+  OPCIÓN 1: COMANDO SIMPLE (30 SEGUNDOS)
+═══════════════════════════════════════════════════════════════
+
+1. Abre PowerShell o CMD
+2. Ejecuta:
+
+cd c:\MARTIN\LUIGGY
+git push origin main
+
+3. Windows te pedirá credenciales de GitHub
+4. Ingresa tu usuario y contraseña (o token)
+5. ¡Listo!
+
+═══════════════════════════════════════════════════════════════
+  OPCIÓN 2: CON PERSONAL ACCESS TOKEN (1 MINUTO)
+═══════════════════════════════════════════════════════════════
+
+1. Crea token en: https://github.com/settings/tokens/new
+   - Note: Token DONET
+   - Expiration: 90 days
+   - Scopes: marca "repo"
+   - Generate token
+   - COPIA EL TOKEN (ghp_...)
+
+2. Abre PowerShell o CMD y ejecuta:
+
+cd c:\MARTIN\LUIGGY
+git push https://TU-USUARIO:TU-TOKEN@github.com/mdmq2036/supervisor.git main
+
+   Reemplaza TU-USUARIO y TU-TOKEN
+
+═══════════════════════════════════════════════════════════════
+  OPCIÓN 3: SUBIDA MANUAL EN GITHUB.COM (5 MINUTOS)
+═══════════════════════════════════════════════════════════════
+
+Ve a: https://github.com/mdmq2036/supervisor
+
+ARCHIVOS NUEVOS (subir con "Upload files"):
+✓ reports.js ← EL MÁS IMPORTANTE
+✓ MEJORAS_REALIZADAS.md
+✓ RESUMEN_EJECUTIVO.md
+✓ GUIA_RAPIDA_USO.md
+✓ SOLUCION_CACHE.md
+✓ INSTRUCCIONES_DESPLIEGUE.md
+✓ INSTRUCCIONES_PUSH_DEPLOY.md
+✓ HAZME_PUSH_AHORA.md
+✓ test-reportes.html
+✓ VERIFICAR_REPORTES.html
+✓ PUSH_GITHUB.bat
+
+ARCHIVOS MODIFICADOS (editar en GitHub):
+✓ index.html (abre en GitHub → Edit → copia contenido de tu archivo local)
+✓ styles.css (abre en GitHub → Edit → copia contenido de tu archivo local)
+
+═══════════════════════════════════════════════════════════════
+  DESPUÉS DEL PUSH
+═══════════════════════════════════════════════════════════════
+
+1. Verifica en GitHub que haya 33 commits (antes 29)
+2. Ve a Render: https://dashboard.render.com/web/srv-d4lsclu3jp1c739ibb2g/events
+3. Espera 2-3 minutos (auto-deploy)
+4. O haz "Manual Deploy" → "Clear build cache & deploy"
+5. Espera 3-5 minutos
+6. Abre la app en producción en modo incógnito
+7. Verifica el módulo de reportes
+
+═══════════════════════════════════════════════════════════════
+  ARCHIVOS PREPARADOS PARA AYUDARTE
+═══════════════════════════════════════════════════════════════
+
+✓ PUSH_CON_TOKEN.bat - Script que te guía paso a paso
+✓ SUBIR_A_GITHUB.html - Página web con instrucciones visuales
+✓ archivos_modificados.txt - Lista de archivos cambiados
+
+═══════════════════════════════════════════════════════════════
+  RESUMEN
+═══════════════════════════════════════════════════════════════
+
+TODO EL CÓDIGO ESTÁ LISTO Y COMMITADO.
+
+Solo falta que TÚ hagas el push usando una de las 3 opciones de arriba.
+
+La más rápida es la OPCIÓN 1 (30 segundos con PowerShell).
+
+═══════════════════════════════════════════════════════════════

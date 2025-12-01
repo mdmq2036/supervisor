@@ -19,7 +19,16 @@
       "Bash(git remote set-url:*)",
       "Bash(git reset:*)",
       "Bash(start http://localhost:8001)",
-      "Bash(cmdkey /list:*)"
+      "Bash(cmdkey /list:*)",
+      "Bash(git rev-list:*)",
+      "Bash(gh --version:*)",
+      "Bash(start c:MARTINLUIGGYSUBIR_A_GITHUB.html)",
+      "Bash(cmd.exe /c start \"\" \"c:\\MARTIN\\LUIGGY\\SUBIR_A_GITHUB.html\")",
+      "Bash(cmd.exe /c start \"\" \"https://github.com/mdmq2036/supervisor\")",
+      "Bash(cmd.exe /c start \"\" \"https://dashboard.render.com/web/srv-d4lsclu3jp1c739ibb2g/events\")",
+      "Bash(cmd.exe /c \"c:\\MARTIN\\LUIGGY\\PUSH_CON_TOKEN.bat\")",
+      "Bash(where:*)",
+      "Bash(GIT_TERMINAL_PROMPT=0 git push:*)"
     ],
     "deny": [],
     "ask": []

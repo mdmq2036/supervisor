@@ -1,0 +1,14 @@
+.claude/settings.local.json
+GUIA_RAPIDA_USO.md
+HAZME_PUSH_AHORA.md
+INSTRUCCIONES_DESPLIEGUE.md
+INSTRUCCIONES_PUSH_DEPLOY.md
+MEJORAS_REALIZADAS.md
+PUSH_GITHUB.bat
+RESUMEN_EJECUTIVO.md
+SOLUCION_CACHE.md
+VERIFICAR_REPORTES.html
+index.html
+reports.js
+styles.css
+test-reportes.html
