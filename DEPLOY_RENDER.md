@@ -2,7 +2,7 @@
 
 ## ✅ CÓDIGO SUBIDO A GITHUB
 
-Repositorio: https://github.com/mdmq2037-cloud/supervisores.git
+Repositorio: https://github.com/mdmq2036/supervisor.git
 
 ---
 
@@ -21,7 +21,7 @@ Repositorio: https://github.com/mdmq2037-cloud/supervisores.git
 1. Click en **"New"** (botón azul arriba a la derecha)
 2. Selecciona **"Web Service"**
 3. Click en **"Connect a repository"**
-4. Busca y selecciona: **mdmq2037-cloud/supervisores**
+4. Busca y selecciona: **mdmq2036/supervisor**
 5. Click en **"Connect"**
 
 ---

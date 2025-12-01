@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: donet-supervision-system
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: SUPABASE_URL
+        value: https://bvqmaaxtaetebjsgdphj.supabase.co
+      - key: SUPABASE_ANON_KEY
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ2cW1hYXh0YWV0ZWJqc2dkcGhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQzNjAyMzEsImV4cCI6MjA3OTkzNjIzMX0.p2dgaWGlQcUsKJ8Y92mQzwyCs32tcKGGEAMh8d_F9ms
+      - key: APP_NAME
+        value: DONET
+      - key: APP_VERSION
+        value: "1.0"
+      - key: ENVIRONMENT
+        value: production
+      - key: PORT
+        value: "8000"
