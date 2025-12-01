@@ -28,7 +28,9 @@
       "Bash(cmd.exe /c start \"\" \"https://dashboard.render.com/web/srv-d4lsclu3jp1c739ibb2g/events\")",
       "Bash(cmd.exe /c \"c:\\MARTIN\\LUIGGY\\PUSH_CON_TOKEN.bat\")",
       "Bash(where:*)",
-      "Bash(GIT_TERMINAL_PROMPT=0 git push:*)"
+      "Bash(GIT_TERMINAL_PROMPT=0 git push:*)",
+      "Bash(cmd.exe /c \"c:\\MARTIN\\LUIGGY\\PUSH_Y_DEPLOY_COMPLETO.bat\")",
+      "Bash(cmd.exe /c notepad \"c:\\MARTIN\\LUIGGY\\RESUMEN_CAMBIOS_FINALES.txt\")"
     ],
     "deny": [],
     "ask": []

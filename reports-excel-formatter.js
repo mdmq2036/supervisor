@@ -33,20 +33,22 @@ function downloadExcelFormatted(type) {
             font-size: 11pt;
         }
         th {
-            background-color: #4472C4;
+            background-color: #305496;
             color: white;
             font-weight: bold;
             text-align: center;
-            padding: 10px 5px;
-            border: 1px solid #2C5AA0;
+            padding: 12px 8px;
+            border: 1px solid #1F3864;
+            font-size: 10pt;
         }
         td {
-            padding: 8px 5px;
-            border: 1px solid #D0D0D0;
+            padding: 10px 8px;
+            border: 1px solid #BFBFBF;
             text-align: left;
+            font-size: 10pt;
         }
         tr:nth-child(even) {
-            background-color: #E2EFDA;
+            background-color: #D9E2F3;
         }
         tr:nth-child(odd) {
             background-color: #FFFFFF;
@@ -152,26 +154,29 @@ function downloadExcelFormatted(type) {
             margin-bottom: 20px;
         }
         th {
-            background-color: #4472C4;
+            background-color: #305496;
             color: white;
             font-weight: bold;
             text-align: center;
-            padding: 10px 5px;
-            border: 1px solid #2C5AA0;
+            padding: 12px 8px;
+            border: 1px solid #1F3864;
+            font-size: 10pt;
         }
         td {
-            padding: 8px 5px;
-            border: 1px solid #D0D0D0;
+            padding: 10px 8px;
+            border: 1px solid #BFBFBF;
+            font-size: 10pt;
         }
         tr:nth-child(even) {
-            background-color: #E2EFDA;
+            background-color: #D9E2F3;
         }
         tr:nth-child(odd) {
             background-color: #FFFFFF;
         }
         h2 {
-            color: #4472C4;
+            color: #305496;
             margin-top: 20px;
+            font-weight: bold;
         }
     </style>
 </head>
