@@ -18,7 +18,8 @@
       "Bash(git push:*)",
       "Bash(git remote set-url:*)",
       "Bash(git reset:*)",
-      "Bash(start http://localhost:8001)"
+      "Bash(start http://localhost:8001)",
+      "Bash(cmdkey /list:*)"
     ],
     "deny": [],
     "ask": []
