@@ -1107,3 +1107,354 @@ body {
         /* Prevenir zoom automático en iOS */
     }
 }
+
+/* ==========================================
+   ESTILOS MÓDULO DE REPORTES
+   ========================================== */
+
+.reports-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 30px 20px;
+}
+
+.reports-filter-section,
+.reports-download-section,
+.reports-share-section,
+.reports-info-section,
+.reports-preview-section {
+    background: var(--secondary-bg);
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 25px;
+    border-left: 4px solid var(--cyan);
+}
+
+.reports-filter-section h3,
+.reports-download-section h3,
+.reports-share-section h3,
+.reports-info-section h3,
+.reports-preview-section h3 {
+    color: var(--cyan);
+    margin-bottom: 20px;
+    font-size: 1.3rem;
+}
+
+/* Toggle de tipo de filtro */
+.filter-type-toggle {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.filter-toggle-btn {
+    flex: 1;
+    padding: 12px 20px;
+    background: var(--card-bg);
+    color: var(--text-secondary);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: 600;
+}
+
+.filter-toggle-btn:hover {
+    border-color: var(--cyan);
+    color: var(--cyan);
+}
+
+.filter-toggle-btn.active {
+    background: var(--cyan);
+    color: var(--primary-bg);
+    border-color: var(--cyan);
+}
+
+/* Opciones de filtro */
+.filter-option {
+    display: none;
+}
+
+.filter-option.active {
+    display: block;
+}
+
+/* Sección de descarga */
+.reports-download-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.download-group {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+}
+
+.download-group h3 {
+    color: var(--cyan);
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+}
+
+.download-description {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+}
+
+.download-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.btn-download {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s;
+    color: white;
+    font-size: 0.95rem;
+}
+
+.btn-download:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.btn-green {
+    background: linear-gradient(135deg, #00C851 0%, #007E33 100%);
+}
+
+.btn-green:hover {
+    background: linear-gradient(135deg, #00E676 0%, #00C851 100%);
+}
+
+.btn-red {
+    background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+}
+
+.btn-red:hover {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ff4444 100%);
+}
+
+/* Botones de WhatsApp */
+.share-buttons {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.btn-whatsapp {
+    flex: 1;
+    min-width: 200px;
+    padding: 15px 25px;
+    background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.btn-whatsapp:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(37, 211, 102, 0.4);
+}
+
+.whatsapp-icon {
+    font-size: 1.5rem;
+}
+
+/* Grid de información */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+}
+
+.info-card {
+    background: var(--card-bg);
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 3px solid var(--cyan);
+}
+
+.info-card h4 {
+    color: var(--cyan);
+    font-size: 1rem;
+    margin-bottom: 8px;
+}
+
+.info-card p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+/* Preview de tabla */
+.count-badge {
+    background: var(--cyan);
+    color: var(--primary-bg);
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-left: 10px;
+}
+
+.report-table-container {
+    overflow-x: auto;
+    margin-top: 20px;
+}
+
+.report-preview-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--card-bg);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.report-preview-table thead {
+    background: var(--cyan);
+    color: var(--primary-bg);
+}
+
+.report-preview-table th {
+    padding: 15px;
+    text-align: left;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.report-preview-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.report-preview-table tr:hover {
+    background: rgba(0, 212, 255, 0.1);
+}
+
+.btn-view-detail {
+    padding: 6px 12px;
+    background: var(--cyan);
+    color: var(--primary-bg);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.btn-view-detail:hover {
+    background: var(--text-primary);
+    transform: scale(1.05);
+}
+
+/* Modal de detalles */
+.detail-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 20px;
+}
+
+.detail-modal-box {
+    background: var(--secondary-bg);
+    padding: 30px;
+    border-radius: 15px;
+    max-width: 600px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    border: 2px solid var(--cyan);
+}
+
+.detail-modal-box h3 {
+    color: var(--cyan);
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.detail-modal-content {
+    margin-bottom: 20px;
+}
+
+.detail-row {
+    padding: 10px;
+    margin-bottom: 10px;
+    background: var(--card-bg);
+    border-radius: 5px;
+    border-left: 3px solid var(--cyan);
+}
+
+.detail-row strong {
+    color: var(--cyan);
+    display: block;
+    margin-bottom: 5px;
+}
+
+/* Responsive para reportes */
+@media (max-width: 768px) {
+    .reports-container {
+        padding: 20px 10px;
+    }
+
+    .reports-filter-section,
+    .reports-download-section,
+    .reports-share-section,
+    .reports-info-section,
+    .reports-preview-section {
+        padding: 15px;
+    }
+
+    .filter-type-toggle {
+        flex-direction: column;
+    }
+
+    .reports-download-section {
+        grid-template-columns: 1fr;
+    }
+
+    .share-buttons {
+        flex-direction: column;
+    }
+
+    .btn-whatsapp {
+        width: 100%;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .report-preview-table {
+        font-size: 0.85rem;
+    }
+
+    .report-preview-table th,
+    .report-preview-table td {
+        padding: 8px;
+    }
+}
