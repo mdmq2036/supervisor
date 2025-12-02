@@ -470,14 +470,11 @@ document.addEventListener('DOMContentLoaded', () => {
     initMap();
     cargarUsuarios();
 
-    // Establecer fechas por defecto (hoy)
-    const hoy = new Date();
-    const hace30Dias = new Date(hoy);
-    hace30Dias.setDate(hace30Dias.getDate() - 30);
+    // NO establecer fechas por defecto - mostrar TODAS las ubicaciones
+    // Dejar los campos de fecha vacíos para no filtrar
+    document.getElementById('filterFechaInicio').value = '';
+    document.getElementById('filterFechaFin').value = '';
 
-    document.getElementById('filterFechaInicio').value = hace30Dias.toISOString().split('T')[0];
-    document.getElementById('filterFechaFin').value = hoy.toISOString().split('T')[0];
-
-    // Cargar ubicaciones iniciales
+    // Cargar ubicaciones iniciales SIN FILTROS
     cargarUbicaciones();
 });
