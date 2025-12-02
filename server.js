@@ -184,6 +184,28 @@ app.get('/api/ubicaciones', checkDbConnection, async (req, res) => {
     }
 });
 
+// 3.1 VÍA RÁPIDA: Obtener ubicaciones iniciales (IGNORA TODOS LOS FILTROS)
+app.get('/api/ubicaciones/inicial', checkDbConnection, async (req, res) => {
+    try {
+        console.log('🚀 GET /api/ubicaciones/inicial - Solicitando datos sin filtros');
+
+        const { data, error } = await supabase
+            .from('v_analisis_ubicaciones')
+            .select('*')
+            .order('timestamp_entrada', { ascending: false })
+            .limit(100);
+
+        if (error) throw error;
+
+        console.log(`✅ Vía Rápida: Enviando ${data?.length || 0} ubicaciones`);
+        res.json(data || []);
+
+    } catch (error) {
+        console.error('Error en vía rápida:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // 3.5 DEBUG: Obtener TODAS las ubicaciones sin filtros
 app.get('/api/ubicaciones/todas', checkDbConnection, async (req, res) => {
     try {
