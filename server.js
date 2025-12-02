@@ -40,15 +40,40 @@ app.get('/', (req, res) => {
 // Configuración de Supabase
 const { createClient } = require('@supabase/supabase-js');
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_ANON_KEY; // Usar la clave de servicio si es necesario para escrituras privilegiadas, pero anon suele bastar si hay RLS o para pruebas
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabaseKey = process.env.SUPABASE_ANON_KEY;
+
+let supabase;
+
+if (supabaseUrl && supabaseKey) {
+    try {
+        supabase = createClient(supabaseUrl, supabaseKey);
+        console.log('✅ Cliente Supabase inicializado correctamente');
+    } catch (error) {
+        console.error('❌ Error al inicializar Supabase:', error.message);
+    }
+} else {
+    console.warn('⚠️ ADVERTENCIA: SUPABASE_URL o SUPABASE_ANON_KEY no están definidos.');
+    console.warn('⚠️ La funcionalidad de base de datos no estará disponible.');
+}
+
+// Middleware para verificar conexión a BD antes de procesar peticiones API
+const checkDbConnection = (req, res, next) => {
+    if (!supabase) {
+        console.error('❌ Intento de acceso a BD sin configuración válida');
+        return res.status(500).json({
+            error: 'Error de configuración del servidor',
+            details: 'La conexión a la base de datos no está configurada. Revise las variables de entorno SUPABASE_URL y SUPABASE_ANON_KEY.'
+        });
+    }
+    next();
+};
 
 // ==========================================
 // API DE GEOLOCALIZACIÓN
 // ==========================================
 
 // 1. Registrar entrada de ubicación
-app.post('/api/ubicaciones/entrada', async (req, res) => {
+app.post('/api/ubicaciones/entrada', checkDbConnection, async (req, res) => {
     try {
         const {
             usuario_id, device_fingerprint, device_type,
@@ -88,7 +113,7 @@ app.post('/api/ubicaciones/entrada', async (req, res) => {
 });
 
 // 2. Registrar salida de ubicación
-app.post('/api/ubicaciones/salida', async (req, res) => {
+app.post('/api/ubicaciones/salida', checkDbConnection, async (req, res) => {
     try {
         const { session_id } = req.body;
 
@@ -112,7 +137,7 @@ app.post('/api/ubicaciones/salida', async (req, res) => {
 });
 
 // 3. Obtener historial de ubicaciones (con filtros)
-app.get('/api/ubicaciones', async (req, res) => {
+app.get('/api/ubicaciones', checkDbConnection, async (req, res) => {
     try {
         const { usuario_id, fecha_inicio, fecha_fin, device_type } = req.query;
 
@@ -148,7 +173,7 @@ app.get('/api/ubicaciones', async (req, res) => {
 });
 
 // 4. Obtener lista de usuarios (para el filtro)
-app.get('/api/usuarios', async (req, res) => {
+app.get('/api/usuarios', checkDbConnection, async (req, res) => {
     try {
         // Consultar tabla de usuarios (ajustar campos según tu esquema real)
         const { data, error } = await supabase
