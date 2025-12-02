@@ -1,62 +1,56 @@
 /**
- * MAPA DE UBICACIONES GPS - VERSIÓN CORREGIDA PARA PRODUCCIÓN
- * Última actualización: 2025-12-02 - Fix para Render
+ * MAPA DE UBICACIONES GPS - VERSIÓN REESCRITA Y SIMPLIFICADA
+ * Basado en el test simple que funciona correctamente
+ * Última actualización: 2025-12-02
  */
 
-// Configuración de API - Detectar automáticamente la URL base
+// Configuración de API
 const API_URL = window.location.origin;
 
-console.log('🔥 MAPA DE UBICACIONES - VERSIÓN PRODUCCIÓN');
+console.log('🗺️ Iniciando Mapa de Ubicaciones');
 console.log('📡 API URL:', API_URL);
 
-let map;
+// Variables globales
+let map = null;
 let markers = [];
 let ubicacionesData = [];
 let polyline = null;
 
 /**
- * Inicializar mapa con validaciones
+ * Inicializar mapa de Leaflet
  */
 function initMap() {
     try {
-        console.log('🗺️ Iniciando mapa de Leaflet...');
+        console.log('Creando mapa de Leaflet...');
 
         // Verificar que el contenedor existe
         const mapContainer = document.getElementById('map');
         if (!mapContainer) {
-            console.error('❌ Contenedor del mapa no encontrado');
+            console.error('❌ Contenedor #map no encontrado');
             return false;
         }
-
-        console.log('✅ Contenedor del mapa encontrado');
 
         // Crear mapa centrado en Lima, Perú
         map = L.map('map').setView([-12.0464, -77.0428], 12);
 
-        console.log('✅ Instancia de mapa creada');
-
-        // Agregar capa de OpenStreetMap
+        // Agregar capa de tiles de OpenStreetMap
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors',
             maxZoom: 19
         }).addTo(map);
 
-        console.log('✅ Capa de tiles agregada');
-
         // Forzar actualización del tamaño del mapa
         setTimeout(() => {
             if (map) {
                 map.invalidateSize();
-                console.log('✅ Tamaño del mapa actualizado');
+                console.log('✅ Mapa inicializado correctamente');
             }
         }, 100);
 
-        console.log('✅ Mapa inicializado correctamente');
         return true;
-
     } catch (error) {
         console.error('❌ Error al inicializar mapa:', error);
-        mostrarMensaje('Error al inicializar el mapa. Por favor, recarga la página.', 'error');
+        mostrarMensaje('Error al inicializar el mapa: ' + error.message, 'error');
         return false;
     }
 }
@@ -67,7 +61,6 @@ function initMap() {
 async function cargarUsuarios() {
     try {
         const response = await fetch(`${API_URL}/api/usuarios`);
-
         if (!response.ok) throw new Error('Error al cargar usuarios');
 
         const usuarios = await response.json();
@@ -80,6 +73,7 @@ async function cargarUsuarios() {
             select.appendChild(option);
         });
 
+        console.log(`✅ ${usuarios.length} usuarios cargados`);
     } catch (error) {
         console.error('Error al cargar usuarios:', error);
     }
@@ -94,16 +88,10 @@ async function cargarUbicaciones(esCargaInicial = false) {
     try {
         let url;
 
-        // Si es carga inicial, usar endpoint dedicado sin filtros
         if (esCargaInicial) {
-            console.log('🚀 Carga inicial: Usando endpoint /api/ubicaciones/inicial');
+            // Carga inicial: usar endpoint dedicado sin filtros
             url = `${API_URL}/api/ubicaciones/inicial`;
-
-            // Limpiar visualmente los inputs
-            const fechaInicioEl = document.getElementById('filterFechaInicio');
-            const fechaFinEl = document.getElementById('filterFechaFin');
-            if (fechaInicioEl) fechaInicioEl.value = '';
-            if (fechaFinEl) fechaFinEl.value = '';
+            console.log('🚀 Carga inicial sin filtros');
         } else {
             // Búsqueda con filtros
             const params = new URLSearchParams();
@@ -121,44 +109,36 @@ async function cargarUbicaciones(esCargaInicial = false) {
             url = `${API_URL}/api/ubicaciones${queryString ? '?' + queryString : ''}`;
         }
 
-        console.log(`📡 Consultando API: ${url}`);
+        console.log(`📡 Consultando: ${url}`);
 
         const response = await fetch(url);
-
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ error: 'Error desconocido' }));
-            throw new Error(errorData.error || `Error ${response.status}: ${response.statusText}`);
+            throw new Error(`Error ${response.status}: ${response.statusText}`);
         }
 
         ubicacionesData = await response.json();
 
-        // Validar que sea un array
         if (!Array.isArray(ubicacionesData)) {
-            console.warn('Respuesta no es un array:', ubicacionesData);
+            console.warn('Respuesta no es un array');
             ubicacionesData = [];
         }
 
-        console.log(`✅ ${ubicacionesData.length} ubicaciones recibidas de la API`);
-        console.log('📊 Muestra de datos:', ubicacionesData.slice(0, 2));
+        console.log(`✅ ${ubicacionesData.length} ubicaciones recibidas`);
 
-        // Actualizar mapa y estadísticas
+        // Actualizar interfaz
         actualizarMapa(ubicacionesData);
         actualizarEstadisticas(ubicacionesData);
         mostrarListaUbicaciones(ubicacionesData);
 
         if (ubicacionesData.length === 0) {
-            mostrarMensaje('⚠️ No se encontraron ubicaciones. Intenta ampliar el rango de fechas.', 'warning');
+            mostrarMensaje('⚠️ No se encontraron ubicaciones', 'warning');
         } else {
-            if (esCargaInicial) {
-                mostrarMensaje(`✅ Mostrando ${ubicacionesData.length} ubicaciones recientes`, 'success');
-            } else {
-                mostrarMensaje(`✅ Se encontraron ${ubicacionesData.length} ubicaciones`, 'success');
-            }
+            mostrarMensaje(`✅ ${ubicacionesData.length} ubicaciones cargadas`, 'success');
         }
 
     } catch (error) {
         console.error('❌ Error al cargar ubicaciones:', error);
-        mostrarMensaje(`Error al cargar ubicaciones: ${error.message}`, 'error');
+        mostrarMensaje('Error al cargar ubicaciones: ' + error.message, 'error');
         ubicacionesData = [];
         actualizarMapa([]);
         actualizarEstadisticas([]);
@@ -168,11 +148,15 @@ async function cargarUbicaciones(esCargaInicial = false) {
     }
 }
 
-
 /**
  * Actualizar marcadores en el mapa
  */
 function actualizarMapa(ubicaciones) {
+    if (!map) {
+        console.error('❌ Mapa no inicializado');
+        return;
+    }
+
     // Limpiar marcadores existentes
     markers.forEach(marker => map.removeLayer(marker));
     markers = [];
@@ -184,25 +168,29 @@ function actualizarMapa(ubicaciones) {
     }
 
     if (ubicaciones.length === 0) {
-        console.warn('⚠️ No se encontraron ubicaciones con los filtros aplicados');
-        // No mostrar alert intrusivo, el mensaje ya aparece en la UI
+        console.log('⚠️ No hay ubicaciones para mostrar');
         return;
     }
+
+    console.log(`📍 Agregando ${ubicaciones.length} marcadores al mapa`);
 
     const bounds = [];
     const routePoints = [];
 
-    // Crear marcadores para cada ubicación
+    // Crear marcadores
     ubicaciones.forEach((ubicacion, index) => {
         const lat = parseFloat(ubicacion.latitud);
         const lon = parseFloat(ubicacion.longitud);
 
-        if (isNaN(lat) || isNaN(lon)) return;
+        if (isNaN(lat) || isNaN(lon)) {
+            console.warn(`Coordenadas inválidas en ubicación ${index}`);
+            return;
+        }
 
         bounds.push([lat, lon]);
         routePoints.push([lat, lon]);
 
-        // Determinar color del marcador según duración
+        // Color según duración
         const color = getMarkerColor(ubicacion.duracion_minutos);
 
         // Crear icono personalizado
@@ -233,11 +221,6 @@ function actualizarMapa(ubicaciones) {
         const popupContent = crearPopupContent(ubicacion, index + 1);
         marker.bindPopup(popupContent);
 
-        // Evento click
-        marker.on('click', () => {
-            resaltarUbicacionEnLista(ubicacion.id);
-        });
-
         markers.push(marker);
     });
 
@@ -255,6 +238,8 @@ function actualizarMapa(ubicaciones) {
     if (bounds.length > 0) {
         map.fitBounds(bounds, { padding: [50, 50] });
     }
+
+    console.log(`✅ ${markers.length} marcadores agregados`);
 }
 
 /**
@@ -378,28 +363,13 @@ function mostrarListaUbicaciones(ubicaciones) {
  * Centrar mapa en una ubicación
  */
 function centrarMapa(lat, lon, markerIndex) {
+    if (!map) return;
+
     map.setView([lat, lon], 16);
 
     if (markers[markerIndex]) {
         markers[markerIndex].openPopup();
     }
-}
-
-/**
- * Resaltar ubicación en la lista
- */
-function resaltarUbicacionEnLista(ubicacionId) {
-    const items = document.querySelectorAll('.location-item');
-    items.forEach(item => {
-        if (item.dataset.id == ubicacionId) {
-            item.style.borderLeftColor = '#f6e05e';
-            item.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-            setTimeout(() => {
-                item.style.borderLeftColor = '#00d9ff';
-            }, 2000);
-        }
-    });
 }
 
 /**
@@ -421,7 +391,7 @@ function calcularDistancia(lat1, lon1, lat2, lon2) {
 }
 
 /**
- * Formatear duración en formato legible
+ * Formatear duración
  */
 function formatearDuracion(minutos) {
     if (minutos < 60) {
@@ -441,6 +411,7 @@ function limpiarFiltros() {
     document.getElementById('filterFechaInicio').value = '';
     document.getElementById('filterFechaFin').value = '';
     document.getElementById('filterDeviceType').value = '';
+    cargarUbicaciones(true);
 }
 
 /**
@@ -461,7 +432,6 @@ function showLoading(show) {
  * Mostrar mensaje temporal
  */
 function mostrarMensaje(mensaje, tipo = 'info') {
-    // Crear elemento de mensaje si no existe
     let messageEl = document.getElementById('tempMessage');
     if (!messageEl) {
         messageEl = document.createElement('div');
@@ -476,13 +446,11 @@ function mostrarMensaje(mensaje, tipo = 'info') {
             font-weight: 500;
             z-index: 10000;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            animation: slideIn 0.3s ease;
             max-width: 400px;
         `;
         document.body.appendChild(messageEl);
     }
 
-    // Establecer color según tipo
     const colores = {
         info: '#4299e1',
         error: '#f56565',
@@ -494,7 +462,6 @@ function mostrarMensaje(mensaje, tipo = 'info') {
     messageEl.textContent = mensaje;
     messageEl.style.display = 'block';
 
-    // Ocultar después de 5 segundos
     setTimeout(() => {
         messageEl.style.display = 'none';
     }, 5000);
@@ -513,17 +480,14 @@ function verificarAutenticacion() {
     return true;
 }
 
-
-
 /**
  * Inicialización del documento
  */
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('📄 DOM cargado, iniciando aplicación...');
+document.addEventListener('DOMContentLoaded', function () {
+    console.log('📄 DOM cargado');
 
     // Verificar autenticación
     if (!verificarAutenticacion()) {
-        console.log('❌ Usuario no autenticado, redirigiendo...');
         return;
     }
 
@@ -532,48 +496,29 @@ document.addEventListener('DOMContentLoaded', () => {
     // Verificar que Leaflet esté disponible
     if (typeof L === 'undefined') {
         console.error('❌ Leaflet no está cargado');
-        mostrarMensaje('Error: Librería de mapas no disponible. Por favor, recarga la página.', 'error');
+        mostrarMensaje('Error: Librería de mapas no disponible', 'error');
         return;
     }
 
     console.log('✅ Leaflet disponible');
 
     // Inicializar mapa
-    const mapaInicializado = initMap();
-    if (!mapaInicializado) {
-        console.error('❌ Fallo al inicializar el mapa');
+    const mapaOk = initMap();
+    if (!mapaOk) {
+        console.error('❌ Fallo al inicializar mapa');
         return;
     }
 
-    // Cargar usuarios para filtros
+    // Cargar usuarios
     cargarUsuarios();
 
     // Limpiar campos de fecha
-    const fechaInicio = document.getElementById('filterFechaInicio');
-    const fechaFin = document.getElementById('filterFechaFin');
+    document.getElementById('filterFechaInicio').value = '';
+    document.getElementById('filterFechaFin').value = '';
 
-    if (fechaInicio) {
-        fechaInicio.value = '';
-        fechaInicio.removeAttribute('value');
-    }
-
-    if (fechaFin) {
-        fechaFin.value = '';
-        fechaFin.removeAttribute('value');
-    }
-
-    console.log('✅ Campos de fecha limpiados');
-
-    // Mostrar mensaje informativo
+    // Cargar ubicaciones iniciales después de un breve delay
     setTimeout(() => {
-        mostrarMensaje('💡 Cargando ubicaciones recientes...', 'info');
-    }, 500);
-
-    // Cargar ubicaciones iniciales usando el endpoint dedicado
-    setTimeout(() => {
-        console.log('🚀 Iniciando carga de ubicaciones...');
+        console.log('🚀 Cargando ubicaciones iniciales...');
         cargarUbicaciones(true);
     }, 1000);
 });
-
-
