@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnóstico Mapa</title>
+    <style>
+        body {
+            background: #1a202c;
+            color: white;
+            font-family: monospace;
+            padding: 20px;
+        }
+
+        .box {
+            background: #2d3748;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+
+        h2 {
+            color: #63b3ed;
+            margin-top: 0;
+        }
+
+        pre {
+            background: #000;
+            padding: 10px;
+            overflow: auto;
+            max-height: 300px;
+        }
+
+        .success {
+            color: #48bb78;
+        }
+
+        .error {
+            color: #f56565;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #4299e1;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🛠️ Diagnóstico de Conexión y Datos</h1>
+
+    <div class="box">
+        <h2>1. Estado del Servidor</h2>
+        <div id="serverStatus">Verificando...</div>
+    </div>
+
+    <div class="box">
+        <h2>2. Prueba de API (Sin filtros)</h2>
+        <button onclick="testApi()">Probar API</button>
+        <pre id="apiResult">Esperando...</pre>
+    </div>
+
+    <div class="box">
+        <h2>3. Prueba de API (Todas)</h2>
+        <button onclick="testApiTodas()">Probar API Todas</button>
+        <pre id="apiTodasResult">Esperando...</pre>
+    </div>
+
+    <script>
+        // Verificar servidor
+        fetch('/health')
+            .then(r => r.json())
+            .then(d => document.getElementById('serverStatus').innerHTML = `<span class="success">✅ Servidor OK</span><br>Env: ${d.environment}`)
+            .catch(e => document.getElementById('serverStatus').innerHTML = `<span class="error">❌ Error: ${e.message}</span>`);
+
+        async function testApi() {
+            const el = document.getElementById('apiResult');
+            el.textContent = 'Cargando...';
+            try {
+                const res = await fetch('/api/ubicaciones');
+                const data = await res.json();
+                el.textContent = JSON.stringify(data, null, 2);
+            } catch (e) {
+                el.innerHTML = `<span class="error">Error: ${e.message}</span>`;
+            }
+        }
+
+        async function testApiTodas() {
+            const el = document.getElementById('apiTodasResult');
+            el.textContent = 'Cargando...';
+            try {
+                const res = await fetch('/api/ubicaciones/todas');
+                const data = await res.json();
+                el.textContent = JSON.stringify(data, null, 2);
+            } catch (e) {
+                el.innerHTML = `<span class="error">Error: ${e.message}</span>`;
+            }
+        }
+    </script>
+</body>
+
+</html>
