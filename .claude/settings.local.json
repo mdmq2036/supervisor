@@ -37,7 +37,8 @@
       "Bash(git credential-manager:*)",
       "Bash(cmd.exe:*)",
       "Bash(npm install)",
-      "Bash(python -m json.tool:*)"
+      "Bash(python -m json.tool:*)",
+      "Bash(timeout /t 30 /nobreak)"
     ],
     "deny": [],
     "ask": []

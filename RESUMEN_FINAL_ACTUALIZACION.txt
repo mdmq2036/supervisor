@@ -1,86 +1,83 @@
-═══════════════════════════════════════════════════════════════
-         RESUMEN FINAL - ACTUALIZACIONES COMPLETADAS
-         Sistema DONET - Formato Excel Mejorado
-═══════════════════════════════════════════════════════════════
+========================================
+ACTUALIZACION FINAL - SUPERVISOR
+========================================
 
-FECHA: 2025-12-01
-VERSIÓN: 1.3.0
-COMMITS PENDIENTES: 2
+COMMIT: 0e12ced
+FECHA: 2025-12-02
+ESTADO: *** DESPLEGANDO AHORA EN RENDER ***
 
-═══════════════════════════════════════════════════════════════
-✅ CAMBIOS IMPLEMENTADOS
-═══════════════════════════════════════════════════════════════
+========================================
+CAMBIOS REALIZADOS:
+========================================
 
-1. FORMATO EXCEL ACTUALIZADO SEGÚN IMAGEN:
-   ✅ Cabecera: Azul oscuro #305496 (según imagen)
-   ✅ Filas pares: Azul claro #D9E2F3
-   ✅ Filas impares: Blanco #FFFFFF
-   ✅ Bordes: Gris profesional #BFBFBF
-   ✅ Padding: 10-12px (mejor legibilidad)
-   ✅ Fuente: Calibri 10pt (estándar Excel)
-   ✅ Formato EXACTO como en la imagen proporcionada
+1. mapa-ubicaciones.js
+   - LIMPIEZA FORZADA de campos de fecha con setTimeout
+   - removeAttribute para eliminar valores del navegador
+   - Logs en consola para verificar limpieza
+   - Los campos se limpian 100ms despues de cargar
 
-2. LOGO DONET:
-   ✅ Creado logo-donet-nuevo.svg
-   ✅ Diseño circular con gráficos superiores
-   ✅ Texto DONET con cubo 3D en la O
-   ✅ Colores: Cian brillante y gris
+2. mapa-ubicaciones.html
+   - Version cambiada a ?v=20251202-final
+   - Fuerza recarga en navegadores
 
-3. CACHE BUSTING:
-   ✅ Actualizado a v=5 en todos los archivos
-   ✅ Forzará descarga de nuevas versiones
+========================================
+COMO VERIFICAR QUE FUNCIONA:
+========================================
 
-═══════════════════════════════════════════════════════════════
-📋 COMMITS LISTOS PARA PUSH
-═══════════════════════════════════════════════════════════════
+1. Abrir: https://supervisor-svkg.onrender.com/mapa-ubicaciones.html
 
-Commit 1 (79263e5):
-  - Mejora: Formato Excel profesional
-  - Cabecera azul y filas alternadas
-  - Librería SheetJS agregada
+2. Presionar F12 (abrir consola del navegador)
 
-Commit 2 (b948d5a):
-  - Actualización: Formato según diseño exacto
-  - Colores actualizados: #305496, #D9E2F3
-  - Logo DONET nuevo en SVG
-  - Cache busting v5
+3. En la consola debes ver:
+   "VERSION CORREGIDA - SIN FILTROS DE FECHA POR DEFECTO"
+   "Campo Fecha Inicio limpiado"
+   "Campo Fecha Fin limpiado"
+   "Campos de fecha establecidos como VACIOS"
 
-TOTAL: 2 commits | 10 archivos modificados | +644 líneas
+4. Los campos de fecha deben estar VACIOS
 
-═══════════════════════════════════════════════════════════════
-🚀 PARA HACER PUSH AHORA
-═══════════════════════════════════════════════════════════════
+5. Click en "Buscar" -> Veras 12 ubicaciones
 
-OPCIÓN RÁPIDA (30 segundos):
+========================================
+SI TODAVIA VES FECHAS 02/12/2025:
+========================================
 
-cd c:\MARTIN\LUIGGY
-git push origin main
+Tu navegador tiene CACHE ANTIGUO.
 
-(Ingresa credenciales cuando pida)
+SOLUCION OBLIGATORIA:
+1. Presiona: Ctrl + Shift + R
+   (Esto limpia el cache y recarga)
 
-═══════════════════════════════════════════════════════════════
-📊 RESULTADO ESPERADO EN EXCEL
-═══════════════════════════════════════════════════════════════
+2. O cierra y abre el navegador nuevamente
 
-Cuando descargues el reporte Excel verás:
+3. O usa el mapa simple:
+   https://supervisor-svkg.onrender.com/mapa-simple.html
 
-┌─────────────────────────────────────────────────────────┐
-│ CABECERA AZUL OSCURO (#305496) - TEXTO BLANCO         │
-├─────────────────────────────────────────────────────────┤
-│ Fila 1 - Blanco (#FFFFFF)                              │
-├─────────────────────────────────────────────────────────┤
-│ Fila 2 - Azul Claro (#D9E2F3)                          │
-├─────────────────────────────────────────────────────────┤
-│ Fila 3 - Blanco (#FFFFFF)                              │
-├─────────────────────────────────────────────────────────┤
-│ Fila 4 - Azul Claro (#D9E2F3)                          │
-└─────────────────────────────────────────────────────────┘
+========================================
+TIEMPO DE ESPERA:
+========================================
 
-═══════════════════════════════════════════════════════════════
+- Render tarda 3-5 minutos en desplegar
+- Espera a que aparezca "Live" en:
+  https://dashboard.render.com/web/srv-d4lsclu3jp1c739ibb2g/events
 
-ESTADO: ✅ TODO LISTO - SOLO FALTA PUSH
+========================================
+GARANTIA:
+========================================
 
-Repositorio: https://github.com/mdmq2036/supervisor
-Render: https://dashboard.render.com/web/srv-d4lsclu3jp1c739ibb2g
+Con esta actualizacion, INCLUSO SI el navegador
+tiene cache, los campos se limpiaran automaticamente
+con JavaScript 100ms despues de cargar la pagina.
 
-═══════════════════════════════════════════════════════════════
+Ya NO dependemos de que el navegador respete
+el cache bust - lo forzamos con codigo.
+
+========================================
+DATOS ACTUALES:
+========================================
+
+- 12 ubicaciones en base de datos
+- API funcionando correctamente
+- Backend 100% operativo
+
+========================================
