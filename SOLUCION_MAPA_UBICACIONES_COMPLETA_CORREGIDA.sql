@@ -1,5 +1,5 @@
 -- =====================================================
--- SOLUCIÓN COMPLETA PARA MAPA DE UBICACIONES
+-- SOLUCIÓN COMPLETA PARA MAPA DE UBICACIONES - CORREGIDA
 -- Ejecutar este script en Supabase SQL Editor
 -- =====================================================
 
@@ -79,7 +79,7 @@ FROM auditoria_ubicaciones au
 JOIN usuarios u ON au.usuario_id = u.id
 ORDER BY au.timestamp_entrada DESC;
 
--- PASO 6: Crear función para registrar entrada de ubicación
+-- PASO 7: Crear función para registrar entrada de ubicación
 CREATE OR REPLACE FUNCTION registrar_entrada_ubicacion(
     p_usuario_id INTEGER,
     p_device_fingerprint TEXT,
@@ -125,7 +125,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- PASO 7: Crear función para registrar salida
+-- PASO 8: Crear función para registrar salida
 CREATE OR REPLACE FUNCTION registrar_salida_ubicacion(
     p_id INTEGER
 )
@@ -140,7 +140,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- PASO 8: Insertar datos de prueba (si no existen ubicaciones)
+-- PASO 9: Insertar datos de prueba (si no existen ubicaciones)
 DO $$
 DECLARE
     v_usuario_id INTEGER;
@@ -180,7 +180,7 @@ BEGIN
     END IF;
 END $$;
 
--- PASO 9: Verificar que todo funciona
+-- PASO 10: Verificar que todo funciona
 SELECT '========================================' as separador;
 SELECT '✅ VERIFICACIÓN DEL SISTEMA' as titulo;
 SELECT '========================================' as separador;
