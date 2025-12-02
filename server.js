@@ -37,6 +37,135 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+// Configuración de Supabase
+const { createClient } = require('@supabase/supabase-js');
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_ANON_KEY; // Usar la clave de servicio si es necesario para escrituras privilegiadas, pero anon suele bastar si hay RLS o para pruebas
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+// ==========================================
+// API DE GEOLOCALIZACIÓN
+// ==========================================
+
+// 1. Registrar entrada de ubicación
+app.post('/api/ubicaciones/entrada', async (req, res) => {
+    try {
+        const {
+            usuario_id, device_fingerprint, device_type,
+            latitud, longitud, precision_metros,
+            actividad_realizada, cuenta_contrato,
+            ip_address, user_agent
+        } = req.body;
+
+        // Validar datos mínimos
+        if (!usuario_id || !latitud || !longitud) {
+            return res.status(400).json({ error: 'Faltan datos requeridos' });
+        }
+
+        // Llamar a la función RPC de Supabase
+        const { data, error } = await supabase
+            .rpc('registrar_entrada_ubicacion', {
+                p_usuario_id: usuario_id,
+                p_device_fingerprint: device_fingerprint,
+                p_device_type: device_type,
+                p_latitud: latitud,
+                p_longitud: longitud,
+                p_precision: precision_metros,
+                p_actividad: actividad_realizada,
+                p_cuenta_contrato: cuenta_contrato,
+                p_ip: ip_address,
+                p_user_agent: user_agent
+            });
+
+        if (error) throw error;
+
+        res.json({ success: true, session_id: data });
+
+    } catch (error) {
+        console.error('Error al registrar entrada:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// 2. Registrar salida de ubicación
+app.post('/api/ubicaciones/salida', async (req, res) => {
+    try {
+        const { session_id } = req.body;
+
+        if (!session_id) {
+            return res.status(400).json({ error: 'Falta session_id' });
+        }
+
+        const { data, error } = await supabase
+            .rpc('registrar_salida_ubicacion', {
+                p_id: session_id
+            });
+
+        if (error) throw error;
+
+        res.json({ success: true, updated: data });
+
+    } catch (error) {
+        console.error('Error al registrar salida:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// 3. Obtener historial de ubicaciones (con filtros)
+app.get('/api/ubicaciones', async (req, res) => {
+    try {
+        const { usuario_id, fecha_inicio, fecha_fin, device_type } = req.query;
+
+        let query = supabase
+            .from('v_analisis_ubicaciones')
+            .select('*')
+            .order('timestamp_entrada', { ascending: false });
+
+        // Aplicar filtros dinámicos
+        if (usuario_id) query = query.eq('usuario_id', usuario_id);
+        if (device_type) query = query.eq('device_type', device_type);
+
+        if (fecha_inicio) {
+            query = query.gte('timestamp_entrada', `${fecha_inicio}T00:00:00`);
+        }
+        if (fecha_fin) {
+            query = query.lte('timestamp_entrada', `${fecha_fin}T23:59:59`);
+        }
+
+        // Limitar resultados para no saturar el mapa
+        query = query.limit(500);
+
+        const { data, error } = await query;
+
+        if (error) throw error;
+
+        res.json(data);
+
+    } catch (error) {
+        console.error('Error al obtener ubicaciones:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// 4. Obtener lista de usuarios (para el filtro)
+app.get('/api/usuarios', async (req, res) => {
+    try {
+        // Consultar tabla de usuarios (ajustar campos según tu esquema real)
+        const { data, error } = await supabase
+            .from('usuarios')
+            .select('id, username, nombre')
+            .order('nombre');
+
+        if (error) throw error;
+
+        res.json(data);
+
+    } catch (error) {
+        console.error('Error al obtener usuarios:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Rutas adicionales
 app.get('/carga-masiva', (req, res) => {
     res.sendFile(path.join(__dirname, 'carga-masiva.html'));
