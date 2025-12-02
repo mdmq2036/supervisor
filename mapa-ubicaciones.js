@@ -1,10 +1,13 @@
 /**
- * SCRIPT PARA MAPA DE UBICACIONES
- * Visualización interactiva de ubicaciones GPS y tiempo de permanencia
+ * MAPA DE UBICACIONES GPS - VERSIÓN CORREGIDA
+ * SIN FILTROS DE FECHA POR DEFECTO - MUESTRA TODAS LAS UBICACIONES
+ * Última actualización: 2025-12-02 - Fix definitivo filtros de fecha
  */
 
 // Configuración de API - Detectar automáticamente la URL base
 const API_URL = window.location.origin;
+
+console.log('🔥 VERSIÓN CORREGIDA - SIN FILTROS DE FECHA POR DEFECTO');
 
 let map;
 let markers = [];
