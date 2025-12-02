@@ -1515,6 +1515,15 @@ body {
     filter: drop-shadow(0 0 20px rgba(0, 217, 255, 0.5));
 }
 
+/* Nuevo logo sin doble círculo */
+.logo-main-new {
+    width: 350px;
+    height: 350px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 30px rgba(0, 217, 255, 0.4));
+    animation: logoFloat 3s ease-in-out infinite;
+}
+
 .app-title-new {
     font-size: 2.5rem;
     font-weight: 700;
@@ -1667,22 +1676,36 @@ body {
     }
 }
 
+@keyframes logoFloat {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .logo-glow-circle {
         width: 180px;
         height: 180px;
     }
-    
+
     .logo-main {
         width: 140px;
         height: 140px;
     }
-    
+
+    .logo-main-new {
+        width: 250px;
+        height: 250px;
+    }
+
     .app-title-new {
         font-size: 1.8rem;
     }
-    
+
     .login-box-new {
         padding: 30px 25px;
     }
