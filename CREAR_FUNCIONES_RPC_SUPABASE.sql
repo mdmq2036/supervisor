@@ -3,7 +3,15 @@
 -- Ejecutar en Supabase SQL Editor
 -- =====================================================
 
--- FUNCIÓN 1: Registrar entrada de ubicación
+-- PASO 1: Eliminar funciones existentes si existen
+DROP FUNCTION IF EXISTS registrar_entrada_ubicacion(
+    INTEGER, TEXT, VARCHAR(50), DECIMAL(10, 8), DECIMAL(11, 8),
+    DECIMAL(10, 2), VARCHAR(255), VARCHAR(100), TEXT, TEXT
+);
+
+DROP FUNCTION IF EXISTS registrar_salida_ubicacion(INTEGER);
+
+-- PASO 2: Crear FUNCIÓN 1 - Registrar entrada de ubicación
 CREATE OR REPLACE FUNCTION registrar_entrada_ubicacion(
     p_usuario_id INTEGER,
     p_device_fingerprint TEXT,
@@ -51,7 +59,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- FUNCIÓN 2: Registrar salida de ubicación
+-- PASO 3: Crear FUNCIÓN 2 - Registrar salida de ubicación
 CREATE OR REPLACE FUNCTION registrar_salida_ubicacion(
     p_session_id INTEGER
 )
@@ -79,16 +87,18 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Verificar que las funciones se crearon
+-- PASO 4: Verificar que las funciones se crearon correctamente
 SELECT
     routine_name,
-    routine_type
+    routine_type,
+    'Función creada exitosamente' as estado
 FROM information_schema.routines
 WHERE routine_schema = 'public'
 AND routine_name IN ('registrar_entrada_ubicacion', 'registrar_salida_ubicacion')
 ORDER BY routine_name;
 
--- Mensaje de confirmación
+-- PASO 5: Mensajes de confirmación
 SELECT '✅ Funciones RPC creadas exitosamente' as resultado;
 SELECT '📍 registrar_entrada_ubicacion() - Guarda ubicación al conectarse' as info1;
 SELECT '🚪 registrar_salida_ubicacion() - Registra salida y calcula duración' as info2;
+SELECT '🎯 Ahora los equipos que se conecten guardarán su ubicación GPS automáticamente' as siguiente_paso;
