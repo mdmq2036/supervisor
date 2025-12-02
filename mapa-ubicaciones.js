@@ -223,7 +223,7 @@ function crearPopupContent(ubicacion, numero) {
     return `
         <div class="popup-title">📍 Ubicación #${numero}</div>
         <div class="popup-info">
-            <strong>Usuario:</strong> ${ubicacion.nombre_usuario || 'N/A'}<br>
+            <strong>Usuario:</strong> ${ubicacion.nombre || ubicacion.username || 'N/A'}<br>
             <strong>Dispositivo:</strong> ${ubicacion.device_type === 'mobile' ? '📱 Móvil' : '💻 PC'}<br>
             <strong>Entrada:</strong> ${fechaEntrada.toLocaleString('es-PE')}<br>
             ${fechaSalida ? `<strong>Salida:</strong> ${fechaSalida.toLocaleString('es-PE')}<br>` : ''}
@@ -296,13 +296,13 @@ function mostrarListaUbicaciones(ubicaciones) {
             <div class="location-item" onclick="centrarMapa(${ubicacion.latitud}, ${ubicacion.longitud}, ${index})" data-id="${ubicacion.id}">
                 <div class="location-header">
                     <span class="location-time">
-                        ${ubicacion.device_type === 'mobile' ? '📱' : '💻'} 
+                        ${ubicacion.device_type === 'mobile' ? '📱' : '💻'}
                         ${fechaEntrada.toLocaleString('es-PE')}
                     </span>
                     <span class="location-duration">⏱️ ${duracion}</span>
                 </div>
                 <div class="location-details">
-                    <strong>${ubicacion.nombre_usuario || 'Usuario desconocido'}</strong><br>
+                    <strong>${ubicacion.nombre || ubicacion.username || 'Usuario desconocido'}</strong><br>
                     ${ubicacion.actividad_realizada ? `Actividad: ${ubicacion.actividad_realizada}<br>` : ''}
                     ${ubicacion.cuenta_contrato ? `Cuenta: ${ubicacion.cuenta_contrato}<br>` : ''}
                     <span class="location-coords">
@@ -462,12 +462,12 @@ document.addEventListener('DOMContentLoaded', () => {
     initMap();
     cargarUsuarios();
 
-    // Establecer fechas por defecto (último mes)
+    // Establecer fechas por defecto (hoy)
     const hoy = new Date();
-    const haceUnMes = new Date(hoy);
-    haceUnMes.setMonth(haceUnMes.getMonth() - 1);
+    const hace30Dias = new Date(hoy);
+    hace30Dias.setDate(hace30Dias.getDate() - 30);
 
-    document.getElementById('filterFechaInicio').value = haceUnMes.toISOString().split('T')[0];
+    document.getElementById('filterFechaInicio').value = hace30Dias.toISOString().split('T')[0];
     document.getElementById('filterFechaFin').value = hoy.toISOString().split('T')[0];
 
     // Cargar ubicaciones iniciales
