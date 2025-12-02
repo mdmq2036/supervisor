@@ -154,13 +154,15 @@ app.get('/api/ubicaciones', checkDbConnection, async (req, res) => {
             .order('timestamp_entrada', { ascending: false });
 
         // Aplicar filtros dinámicos
+        // Aplicar filtros dinámicos
         if (usuario_id) query = query.eq('usuario_id', usuario_id);
         if (device_type) query = query.eq('device_type', device_type);
 
-        if (fecha_inicio) {
+        // Validar que las fechas sean válidas y no vacías
+        if (fecha_inicio && fecha_inicio.trim() !== '') {
             query = query.gte('timestamp_entrada', `${fecha_inicio}T00:00:00`);
         }
-        if (fecha_fin) {
+        if (fecha_fin && fecha_fin.trim() !== '') {
             query = query.lte('timestamp_entrada', `${fecha_fin}T23:59:59`);
         }
 

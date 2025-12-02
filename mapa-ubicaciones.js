@@ -57,49 +57,39 @@ async function cargarUsuarios() {
 /**
  * Cargar ubicaciones desde la API
  */
-async function cargarUbicaciones() {
+async function cargarUbicaciones(esCargaInicial = false) {
     showLoading(true);
 
     try {
         const params = new URLSearchParams();
 
-        const usuarioId = document.getElementById('filterUsuario').value;
-        // NOTA: Ignoramos los valores iniciales de los inputs de fecha para asegurar que cargue todo
-        // Solo usaremos los filtros si el usuario hace click en "Buscar"
-        const fechaInicio = document.getElementById('filterFechaInicio').value;
-        const fechaFin = document.getElementById('filterFechaFin').value;
-        const deviceType = document.getElementById('filterDeviceType').value;
+        // Si es carga inicial, NO leer inputs, forzar carga de todo
+        if (esCargaInicial) {
+            console.log('🚀 Carga inicial/limpia: Ignorando filtros para mostrar TODO');
+            // Limpiar visualmente los inputs
+            const fechaInicioEl = document.getElementById('filterFechaInicio');
+            const fechaFinEl = document.getElementById('filterFechaFin');
+            if (fechaInicioEl) fechaInicioEl.value = '';
+            if (fechaFinEl) fechaFinEl.value = '';
+        } else {
+            // Solo leer filtros si es una búsqueda manual
+            const usuarioId = document.getElementById('filterUsuario').value;
+            const fechaInicio = document.getElementById('filterFechaInicio').value;
+            const fechaFin = document.getElementById('filterFechaFin').value;
+            const deviceType = document.getElementById('filterDeviceType').value;
 
-        if (usuarioId) params.append('usuario_id', usuarioId);
-
-        // Solo aplicar fechas si NO es la carga automática (esto lo controlamos con una bandera o lógica)
-        // O mejor: si el usuario no ha interactuado, no filtrar.
-        // Por ahora, enviaremos las fechas solo si tienen valor, pero el problema es que el navegador las pre-llena.
-
-        // FIX: Si estamos en la carga inicial (o limpieza), queremos ver TODO.
-        // Vamos a detectar si la función fue llamada por el botón "Buscar"
-        const esBusquedaManual = window.event && window.event.type === 'click' && window.event.target.id === 'btnBuscar';
-
-        if (esBusquedaManual) {
+            if (usuarioId) params.append('usuario_id', usuarioId);
             if (fechaInicio) params.append('fecha_inicio', fechaInicio);
             if (fechaFin) params.append('fecha_fin', fechaFin);
-        } else {
-            console.log('🚀 Carga automática: Ignorando filtros de fecha para mostrar historial completo');
-            // Limpiar visualmente los inputs
-            document.getElementById('filterFechaInicio').value = '';
-            document.getElementById('filterFechaFin').value = '';
+            if (deviceType) params.append('device_type', deviceType);
         }
 
-        if (deviceType) params.append('device_type', deviceType);
+        const queryString = params.toString();
+        const url = `${API_URL}/api/ubicaciones${queryString ? '?' + queryString : ''}`;
 
-        console.log('🔍 Filtros aplicados:', {
-            usuario: usuarioId || 'Todos',
-            fechaInicio: esBusquedaManual ? fechaInicio : 'IGNORADO (Ver todo)',
-            fechaFin: esBusquedaManual ? fechaFin : 'IGNORADO (Ver todo)',
-            dispositivo: deviceType || 'Todos'
-        });
+        console.log(`📡 Consultando API: ${url}`);
 
-        const response = await fetch(`${API_URL}/api/ubicaciones?${params}`);
+        const response = await fetch(url);
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({ error: 'Error desconocido' }));
@@ -122,16 +112,18 @@ async function cargarUbicaciones() {
         console.log(`✅ ${ubicacionesData.length} ubicaciones cargadas`);
 
         if (ubicacionesData.length === 0) {
-            mostrarMensaje('⚠️ No se encontraron ubicaciones. Click en "Limpiar" y luego "Buscar" para ver todas.', 'warning');
+            mostrarMensaje('⚠️ No se encontraron ubicaciones. Intenta ampliar el rango de fechas.', 'warning');
         } else {
-            mostrarMensaje(`✅ Se cargaron ${ubicacionesData.length} ubicaciones`, 'success');
+            if (esCargaInicial) {
+                mostrarMensaje(`✅ Mostrando las últimas ${ubicacionesData.length} ubicaciones`, 'success');
+            } else {
+                mostrarMensaje(`✅ Se encontraron ${ubicacionesData.length} ubicaciones`, 'success');
+            }
         }
 
     } catch (error) {
         console.error('Error al cargar ubicaciones:', error);
         mostrarMensaje(`Error al cargar ubicaciones: ${error.message}`, 'error');
-
-        // Limpiar UI en caso de error
         ubicacionesData = [];
         actualizarMapa([]);
         actualizarEstadisticas([]);
@@ -140,6 +132,7 @@ async function cargarUbicaciones() {
         showLoading(false);
     }
 }
+
 
 /**
  * Actualizar marcadores en el mapa
@@ -518,6 +511,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Cargar ubicaciones iniciales SIN FILTROS
     setTimeout(() => {
-        cargarUbicaciones();
+        cargarUbicaciones(true);
     }, 500);
 });
