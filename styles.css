@@ -1515,13 +1515,15 @@ body {
     filter: drop-shadow(0 0 20px rgba(0, 217, 255, 0.5));
 }
 
-/* Nuevo logo sin doble círculo */
+/* Nuevo logo circular con efecto brillante */
 .logo-main-new {
-    width: 350px;
-    height: 350px;
+    width: 380px;
+    height: 380px;
     object-fit: contain;
-    filter: drop-shadow(0 0 30px rgba(0, 217, 255, 0.4));
-    animation: logoFloat 3s ease-in-out infinite;
+    filter: drop-shadow(0 0 40px rgba(0, 217, 255, 0.6))
+            drop-shadow(0 0 80px rgba(0, 217, 255, 0.3));
+    animation: logoFloat 3s ease-in-out infinite, logoPulse 4s ease-in-out infinite;
+    border-radius: 50%;
 }
 
 .app-title-new {
@@ -1685,6 +1687,17 @@ body {
     }
 }
 
+@keyframes logoPulse {
+    0%, 100% {
+        filter: drop-shadow(0 0 40px rgba(0, 217, 255, 0.6))
+                drop-shadow(0 0 80px rgba(0, 217, 255, 0.3));
+    }
+    50% {
+        filter: drop-shadow(0 0 50px rgba(0, 217, 255, 0.8))
+                drop-shadow(0 0 100px rgba(0, 217, 255, 0.4));
+    }
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .logo-glow-circle {
@@ -1698,8 +1711,8 @@ body {
     }
 
     .logo-main-new {
-        width: 250px;
-        height: 250px;
+        width: 280px;
+        height: 280px;
     }
 
     .app-title-new {
