@@ -146,6 +146,9 @@ async function handleLogin(e) {
         showScreen('menuScreen');
         updateUserInfo();
 
+        // Solicitar permisos de geolocalización automáticamente
+        requestGeolocationPermission();
+
         // Limpiar formulario
         document.getElementById('loginForm').reset();
 
@@ -681,7 +684,7 @@ function closeAdminModal() {
     }
 }
 
-// Manejar env�o del formulario de acceso administrativo
+// Manejar env�o del formulario de acceso administrativo
 document.addEventListener('DOMContentLoaded', () => {
     const adminForm = document.getElementById('adminAccessForm');
     if (adminForm) {
@@ -692,7 +695,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const pass = document.getElementById('adminAccessPass').value;
             
             if (!user || !pass) {
-                showMessage('Por favor ingrese usuario y contrase�a', 'error');
+                showMessage('Por favor ingrese usuario y contrase�a', 'error');
                 return;
             }
 
@@ -700,7 +703,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 // Verificar credenciales de administrador
-                // Primero intentamos validaci�n directa si es el admin por defecto
+                // Primero intentamos validaci�n directa si es el admin por defecto
                 if (user === 'admin' && pass === 'admin2025') {
                     showMessage('Acceso concedido', 'success');
                     setTimeout(() => {
@@ -719,12 +722,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     .single();
 
                 if (error || !data) {
-                    throw new Error('Credenciales inv�lidas');
+                    throw new Error('Credenciales inv�lidas');
                 }
                 
-                // Validaci�n simplificada para otros admins (si los hubiera)
-                // En producci�n usar bcrypt
-                showMessage('Solo el administrador principal puede acceder a esta funci�n por ahora', 'error');
+                // Validaci�n simplificada para otros admins (si los hubiera)
+                // En producci�n usar bcrypt
+                showMessage('Solo el administrador principal puede acceder a esta funci�n por ahora', 'error');
 
             } catch (error) {
                 console.error('Error de acceso:', error);
@@ -734,5 +737,107 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+});
+
+// ==========================================
+// FUNCIONES DE GEOLOCALIZACIÓN AUTOMÁTICA
+// ==========================================
+
+/**
+ * Solicitar permisos de geolocalización al usuario
+ * Se ejecuta automáticamente después del login exitoso
+ */
+async function requestGeolocationPermission() {
+    // Verificar soporte de geolocalización
+    if (!('geolocation' in navigator)) {
+        console.warn('⚠️ Geolocalización no soportada en este navegador');
+        return;
+    }
+
+    try {
+        console.log('📍 Solicitando permisos de geolocalización...');
+
+        // Solicitar permiso y obtener ubicación
+        const position = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(
+                resolve,
+                reject,
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        });
+
+        const locationData = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            accuracy: position.coords.accuracy
+        };
+
+        console.log('✅ Ubicación GPS obtenida:', locationData);
+
+        // Guardar en localStorage para uso posterior
+        localStorage.setItem('lastKnownLocation', JSON.stringify(locationData));
+
+        // Mostrar notificación al usuario
+        showMessage(`📍 Ubicación GPS activada (Precisión: ${Math.round(locationData.accuracy)}m)`, 'success');
+
+        // Iniciar rastreo si GeolocationTracker está disponible
+        if (typeof GeolocationTracker !== 'undefined' && currentUser) {
+            initializeLocationTracking();
+        }
+
+    } catch (error) {
+        console.error('❌ Error al obtener ubicación GPS:', error);
+
+        let errorMessage = '';
+        if (error.code === 1) {
+            errorMessage = '⚠️ Permiso de ubicación denegado. Por favor, habilite la ubicación en la configuración de su navegador.';
+        } else if (error.code === 2) {
+            errorMessage = '⚠️ Ubicación no disponible. Verifique que el GPS esté habilitado.';
+        } else if (error.code === 3) {
+            errorMessage = '⚠️ Tiempo de espera agotado. Intente nuevamente.';
+        } else {
+            errorMessage = '⚠️ No se pudo obtener la ubicación GPS.';
+        }
+
+        showMessage(errorMessage, 'warning');
+    }
+}
+
+/**
+ * Inicializar rastreo continuo de ubicación
+ */
+function initializeLocationTracking() {
+    try {
+        if (!window.geoTracker) {
+            window.geoTracker = new GeolocationTracker();
+        }
+
+        // Iniciar rastreo automático
+        window.geoTracker.startTracking(
+            currentUser.id,
+            'sesión activa',
+            null
+        );
+
+        console.log('✅ Rastreo de ubicación iniciado');
+    } catch (error) {
+        console.error('Error al inicializar rastreo:', error);
+    }
+}
+
+/**
+ * Verificar y solicitar ubicación si hay sesión activa
+ */
+document.addEventListener('DOMContentLoaded', () => {
+    // Si ya hay un usuario logueado, solicitar permisos
+    setTimeout(() => {
+        if (currentUser) {
+            requestGeolocationPermission();
+        }
+    }, 1000);
 });
 
