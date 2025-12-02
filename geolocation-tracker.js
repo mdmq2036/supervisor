@@ -290,8 +290,7 @@ class GeolocationTracker {
             const response = await fetch(`${API_URL}/api/ubicaciones/entrada`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     usuario_id: userId,
@@ -328,8 +327,7 @@ class GeolocationTracker {
             const response = await fetch(`${API_URL}/api/ubicaciones/salida`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     session_id: sessionId
@@ -373,11 +371,7 @@ class GeolocationTracker {
             if (fechaInicio) params.append('fecha_inicio', fechaInicio);
             if (fechaFin) params.append('fecha_fin', fechaFin);
 
-            const response = await fetch(`${API_URL}/api/ubicaciones/historial?${params}`, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
+            const response = await fetch(`${API_URL}/api/ubicaciones/historial?${params}`);
 
             if (!response.ok) {
                 throw new Error('Error al obtener historial de ubicaciones');

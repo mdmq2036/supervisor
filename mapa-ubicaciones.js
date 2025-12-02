@@ -29,11 +29,7 @@ function initMap() {
  */
 async function cargarUsuarios() {
     try {
-        const response = await fetch(`${API_URL}/api/usuarios`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
+        const response = await fetch(`${API_URL}/api/usuarios`);
 
         if (!response.ok) throw new Error('Error al cargar usuarios');
 
@@ -71,11 +67,7 @@ async function cargarUbicaciones() {
         if (fechaFin) params.append('fecha_fin', fechaFin);
         if (deviceType) params.append('device_type', deviceType);
 
-        const response = await fetch(`${API_URL}/api/ubicaciones?${params}`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
+        const response = await fetch(`${API_URL}/api/ubicaciones?${params}`);
 
         if (!response.ok) throw new Error('Error al cargar ubicaciones');
 
@@ -385,8 +377,8 @@ function showLoading(show) {
  * Verificar autenticación
  */
 function verificarAutenticacion() {
-    const token = localStorage.getItem('token');
-    if (!token) {
+    const currentUser = localStorage.getItem('currentUser');
+    if (!currentUser) {
         alert('Debe iniciar sesión para acceder a esta página');
         window.location.href = 'index.html';
         return false;
