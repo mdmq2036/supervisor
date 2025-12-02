@@ -473,10 +473,25 @@ document.addEventListener('DOMContentLoaded', () => {
     initMap();
     cargarUsuarios();
 
-    // NO establecer fechas por defecto - mostrar TODAS las ubicaciones
-    // Dejar los campos de fecha vacíos para no filtrar
-    document.getElementById('filterFechaInicio').value = '';
-    document.getElementById('filterFechaFin').value = '';
+    // FORZAR limpieza de campos de fecha (incluso si el navegador tiene caché)
+    setTimeout(() => {
+        const fechaInicio = document.getElementById('filterFechaInicio');
+        const fechaFin = document.getElementById('filterFechaFin');
+
+        if (fechaInicio) {
+            fechaInicio.value = '';
+            fechaInicio.removeAttribute('value');
+            console.log('✅ Campo Fecha Inicio limpiado');
+        }
+
+        if (fechaFin) {
+            fechaFin.value = '';
+            fechaFin.removeAttribute('value');
+            console.log('✅ Campo Fecha Fin limpiado');
+        }
+
+        console.log('📅 Campos de fecha establecidos como VACÍOS - Mostrando TODAS las ubicaciones');
+    }, 100);
 
     // Cargar ubicaciones iniciales SIN FILTROS
     cargarUbicaciones();
