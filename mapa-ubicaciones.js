@@ -70,6 +70,13 @@ async function cargarUbicaciones() {
         if (fechaFin) params.append('fecha_fin', fechaFin);
         if (deviceType) params.append('device_type', deviceType);
 
+        console.log('🔍 Filtros aplicados:', {
+            usuario: usuarioId || 'Todos',
+            fechaInicio: fechaInicio || 'Sin límite',
+            fechaFin: fechaFin || 'Sin límite',
+            dispositivo: deviceType || 'Todos'
+        });
+
         const response = await fetch(`${API_URL}/api/ubicaciones?${params}`);
 
         if (!response.ok) {
@@ -125,7 +132,8 @@ function actualizarMapa(ubicaciones) {
     }
 
     if (ubicaciones.length === 0) {
-        alert('No se encontraron ubicaciones con los filtros seleccionados');
+        console.warn('⚠️ No se encontraron ubicaciones con los filtros aplicados');
+        // No mostrar alert intrusivo, el mensaje ya aparece en la UI
         return;
     }
 
