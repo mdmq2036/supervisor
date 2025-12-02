@@ -103,7 +103,9 @@ async function cargarUbicaciones() {
         console.log(`✅ ${ubicacionesData.length} ubicaciones cargadas`);
 
         if (ubicacionesData.length === 0) {
-            mostrarMensaje('No se encontraron ubicaciones con los filtros seleccionados.', 'info');
+            mostrarMensaje('⚠️ No se encontraron ubicaciones. Click en "Limpiar" y luego "Buscar" para ver todas.', 'warning');
+        } else {
+            mostrarMensaje(`✅ Se cargaron ${ubicacionesData.length} ubicaciones`, 'success');
         }
 
     } catch (error) {
@@ -473,26 +475,30 @@ document.addEventListener('DOMContentLoaded', () => {
     initMap();
     cargarUsuarios();
 
-    // FORZAR limpieza de campos de fecha (incluso si el navegador tiene caché)
+    // FORZAR limpieza INMEDIATA de campos de fecha
+    const fechaInicio = document.getElementById('filterFechaInicio');
+    const fechaFin = document.getElementById('filterFechaFin');
+
+    if (fechaInicio) {
+        fechaInicio.value = '';
+        fechaInicio.removeAttribute('value');
+    }
+
+    if (fechaFin) {
+        fechaFin.value = '';
+        fechaFin.removeAttribute('value');
+    }
+
+    console.log('✅ Campos de fecha limpiados');
+    console.log('📅 Mostrando TODAS las ubicaciones (sin filtros de fecha)');
+
+    // Mostrar mensaje informativo
     setTimeout(() => {
-        const fechaInicio = document.getElementById('filterFechaInicio');
-        const fechaFin = document.getElementById('filterFechaFin');
-
-        if (fechaInicio) {
-            fechaInicio.value = '';
-            fechaInicio.removeAttribute('value');
-            console.log('✅ Campo Fecha Inicio limpiado');
-        }
-
-        if (fechaFin) {
-            fechaFin.value = '';
-            fechaFin.removeAttribute('value');
-            console.log('✅ Campo Fecha Fin limpiado');
-        }
-
-        console.log('📅 Campos de fecha establecidos como VACÍOS - Mostrando TODAS las ubicaciones');
-    }, 100);
+        mostrarMensaje('💡 Tip: Los filtros de fecha están vacíos para mostrar TODAS las ubicaciones', 'info');
+    }, 1000);
 
     // Cargar ubicaciones iniciales SIN FILTROS
-    cargarUbicaciones();
+    setTimeout(() => {
+        cargarUbicaciones();
+    }, 500);
 });
