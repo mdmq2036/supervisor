@@ -12,7 +12,7 @@ BEGIN
         RAISE NOTICE '❌ Vista v_analisis_ubicaciones NO existe - Creándola ahora...';
 
         -- Crear la vista con los nombres CORRECTOS de columnas
-        CREATE OR REPLACE VIEW v_analisis_ubicaciones AS
+        EXECUTE 'CREATE OR REPLACE VIEW v_analisis_ubicaciones AS
         SELECT
             au.id,
             au.usuario_id,
@@ -28,16 +28,16 @@ BEGIN
             au.actividad_realizada,
             au.cuenta_contrato,
             CASE
-                WHEN au.duracion_minutos IS NULL THEN 'En curso'
-                WHEN au.duracion_minutos < 5 THEN 'Muy corta'
-                WHEN au.duracion_minutos < 15 THEN 'Corta'
-                WHEN au.duracion_minutos < 30 THEN 'Media'
-                WHEN au.duracion_minutos < 60 THEN 'Larga'
-                ELSE 'Muy larga'
+                WHEN au.duracion_minutos IS NULL THEN ''En curso''
+                WHEN au.duracion_minutos < 5 THEN ''Muy corta''
+                WHEN au.duracion_minutos < 15 THEN ''Corta''
+                WHEN au.duracion_minutos < 30 THEN ''Media''
+                WHEN au.duracion_minutos < 60 THEN ''Larga''
+                ELSE ''Muy larga''
             END as clasificacion_duracion
         FROM auditoria_ubicaciones au
         JOIN usuarios u ON au.usuario_id = u.id
-        ORDER BY au.timestamp_entrada DESC;
+        ORDER BY au.timestamp_entrada DESC';
 
         RAISE NOTICE '✅ Vista v_analisis_ubicaciones creada exitosamente';
     ELSE
@@ -89,20 +89,12 @@ ORDER BY total_ubicaciones DESC;
 -- PASO 5: Verificar que la vista funciona correctamente
 SELECT COUNT(*) as total_en_vista FROM v_analisis_ubicaciones;
 
--- PASO 6: Mostrar resumen de ubicaciones por usuario
-SELECT
-    usuario_id,
-    username,
-    nombre,
-    COUNT(*) as total_ubicaciones,
-    MAX(timestamp_entrada) as ultima_ubicacion
-FROM v_analisis_ubicaciones
-GROUP BY usuario_id, username, nombre
-ORDER BY total_ubicaciones DESC;
+-- PASO 6: Mostrar primeras filas de la vista (si existe)
+SELECT * FROM v_analisis_ubicaciones LIMIT 5;
 
 -- RESULTADO ESPERADO:
 -- Si todo está correcto, deberías ver:
--- ✅ Vista existe
--- ✅ Hay ubicaciones en la tabla
+-- ✅ Vista existe o fue creada
+-- ✅ Hay ubicaciones en la tabla (o 0 si está vacía)
 -- ✅ La vista retorna datos
--- ✅ Usuarios tienen ubicaciones asociadas
+-- ✅ Usuarios listados con sus ubicaciones
