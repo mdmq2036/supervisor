@@ -11,7 +11,7 @@ BEGIN
     ) THEN
         RAISE NOTICE '❌ Vista v_analisis_ubicaciones NO existe - Creándola ahora...';
 
-        -- Crear la vista
+        -- Crear la vista con los nombres CORRECTOS de columnas
         CREATE OR REPLACE VIEW v_analisis_ubicaciones AS
         SELECT
             au.id,
@@ -22,8 +22,8 @@ BEGIN
             au.latitud,
             au.longitud,
             au.precision_metros,
-            au.entrada_timestamp as timestamp_entrada,
-            au.salida_timestamp as timestamp_salida,
+            au.timestamp_entrada,
+            au.timestamp_salida,
             au.duracion_minutos,
             au.actividad_realizada,
             au.cuenta_contrato,
@@ -37,7 +37,7 @@ BEGIN
             END as clasificacion_duracion
         FROM auditoria_ubicaciones au
         JOIN usuarios u ON au.usuario_id = u.id
-        ORDER BY au.entrada_timestamp DESC;
+        ORDER BY au.timestamp_entrada DESC;
 
         RAISE NOTICE '✅ Vista v_analisis_ubicaciones creada exitosamente';
     ELSE
@@ -69,17 +69,17 @@ SELECT
     latitud,
     longitud,
     device_type,
-    entrada_timestamp,
+    timestamp_entrada,
     duracion_minutos
 FROM auditoria_ubicaciones
-ORDER BY entrada_timestamp DESC
+ORDER BY timestamp_entrada DESC
 LIMIT 5;
 
 -- PASO 4: Verificar usuarios disponibles
 SELECT
-    id,
-    username,
-    nombre,
+    u.id,
+    u.username,
+    u.nombre,
     COUNT(au.id) as total_ubicaciones
 FROM usuarios u
 LEFT JOIN auditoria_ubicaciones au ON u.id = au.usuario_id
