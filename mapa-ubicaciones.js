@@ -61,18 +61,21 @@ async function cargarUbicaciones(esCargaInicial = false) {
     showLoading(true);
 
     try {
-        const params = new URLSearchParams();
+        let url;
 
-        // Si es carga inicial, NO leer inputs, forzar carga de todo
+        // Si es carga inicial, usar endpoint dedicado sin filtros
         if (esCargaInicial) {
-            console.log('🚀 Carga inicial/limpia: Ignorando filtros para mostrar TODO');
+            console.log('🚀 Carga inicial: Usando endpoint /api/ubicaciones/inicial');
+            url = `${API_URL}/api/ubicaciones/inicial`;
+
             // Limpiar visualmente los inputs
             const fechaInicioEl = document.getElementById('filterFechaInicio');
             const fechaFinEl = document.getElementById('filterFechaFin');
             if (fechaInicioEl) fechaInicioEl.value = '';
             if (fechaFinEl) fechaFinEl.value = '';
         } else {
-            // Solo leer filtros si es una búsqueda manual
+            // Búsqueda con filtros
+            const params = new URLSearchParams();
             const usuarioId = document.getElementById('filterUsuario').value;
             const fechaInicio = document.getElementById('filterFechaInicio').value;
             const fechaFin = document.getElementById('filterFechaFin').value;
@@ -82,10 +85,10 @@ async function cargarUbicaciones(esCargaInicial = false) {
             if (fechaInicio) params.append('fecha_inicio', fechaInicio);
             if (fechaFin) params.append('fecha_fin', fechaFin);
             if (deviceType) params.append('device_type', deviceType);
-        }
 
-        const queryString = params.toString();
-        const url = `${API_URL}/api/ubicaciones${queryString ? '?' + queryString : ''}`;
+            const queryString = params.toString();
+            url = `${API_URL}/api/ubicaciones${queryString ? '?' + queryString : ''}`;
+        }
 
         console.log(`📡 Consultando API: ${url}`);
 
@@ -104,25 +107,26 @@ async function cargarUbicaciones(esCargaInicial = false) {
             ubicacionesData = [];
         }
 
+        console.log(`✅ ${ubicacionesData.length} ubicaciones recibidas de la API`);
+        console.log('📊 Muestra de datos:', ubicacionesData.slice(0, 2));
+
         // Actualizar mapa y estadísticas
         actualizarMapa(ubicacionesData);
         actualizarEstadisticas(ubicacionesData);
         mostrarListaUbicaciones(ubicacionesData);
 
-        console.log(`✅ ${ubicacionesData.length} ubicaciones cargadas`);
-
         if (ubicacionesData.length === 0) {
             mostrarMensaje('⚠️ No se encontraron ubicaciones. Intenta ampliar el rango de fechas.', 'warning');
         } else {
             if (esCargaInicial) {
-                mostrarMensaje(`✅ Mostrando las últimas ${ubicacionesData.length} ubicaciones`, 'success');
+                mostrarMensaje(`✅ Mostrando ${ubicacionesData.length} ubicaciones recientes`, 'success');
             } else {
                 mostrarMensaje(`✅ Se encontraron ${ubicacionesData.length} ubicaciones`, 'success');
             }
         }
 
     } catch (error) {
-        console.error('Error al cargar ubicaciones:', error);
+        console.error('❌ Error al cargar ubicaciones:', error);
         mostrarMensaje(`Error al cargar ubicaciones: ${error.message}`, 'error');
         ubicacionesData = [];
         actualizarMapa([]);
@@ -478,6 +482,8 @@ function verificarAutenticacion() {
     return true;
 }
 
+
+
 /**
  * Inicialización
  */
@@ -506,11 +512,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Mostrar mensaje informativo
     setTimeout(() => {
-        mostrarMensaje('💡 Tip: Los filtros de fecha están vacíos para mostrar TODAS las ubicaciones', 'info');
-    }, 1000);
+        mostrarMensaje('💡 Cargando ubicaciones recientes...', 'info');
+    }, 500);
 
-    // Cargar ubicaciones iniciales SIN FILTROS
+    // Cargar ubicaciones iniciales usando el endpoint dedicado
     setTimeout(() => {
         cargarUbicaciones(true);
-    }, 500);
+    }, 1000);
 });
+
