@@ -751,6 +751,7 @@ async function requestGeolocationPermission() {
     // Verificar soporte de geolocalización
     if (!('geolocation' in navigator)) {
         console.warn('⚠️ Geolocalización no soportada en este navegador');
+        showMessage('⚠️ Tu navegador no soporta geolocalización', 'warning');
         return;
     }
 
@@ -764,7 +765,7 @@ async function requestGeolocationPermission() {
                 reject,
                 {
                     enableHighAccuracy: true,
-                    timeout: 10000,
+                    timeout: 15000,
                     maximumAge: 0
                 }
             );
@@ -778,15 +779,20 @@ async function requestGeolocationPermission() {
 
         console.log('✅ Ubicación GPS obtenida:', locationData);
 
-        // Guardar en localStorage para uso posterior
+        // Guardar en localStorage
         localStorage.setItem('lastKnownLocation', JSON.stringify(locationData));
+
+        // NUEVO: Registrar inmediatamente en la base de datos
+        await registerLocationImmediately(locationData);
 
         // Mostrar notificación al usuario
         showMessage(`📍 Ubicación GPS activada (Precisión: ${Math.round(locationData.accuracy)}m)`, 'success');
 
-        // Iniciar rastreo si GeolocationTracker está disponible
+        // Iniciar rastreo continuo si GeolocationTracker está disponible
         if (typeof GeolocationTracker !== 'undefined' && currentUser) {
             initializeLocationTracking();
+        } else {
+            console.warn('⚠️ GeolocationTracker no disponible, solo se registró ubicación inicial');
         }
 
     } catch (error) {
@@ -800,10 +806,77 @@ async function requestGeolocationPermission() {
         } else if (error.code === 3) {
             errorMessage = '⚠️ Tiempo de espera agotado. Intente nuevamente.';
         } else {
-            errorMessage = '⚠️ No se pudo obtener la ubicación GPS.';
+            errorMessage = `⚠️ No se pudo obtener la ubicación GPS: ${error.message}`;
         }
 
         showMessage(errorMessage, 'warning');
+    }
+}
+
+/**
+ * Registrar ubicación inmediatamente en la base de datos
+ */
+async function registerLocationImmediately(locationData) {
+    try {
+        console.log('💾 Registrando ubicación en base de datos...');
+
+        // Obtener device fingerprint
+        const deviceFingerprint = await window.DeviceFingerprint?.getFingerprint() || `device-${Date.now()}`;
+
+        // Detectar tipo de dispositivo
+        const userAgent = navigator.userAgent.toLowerCase();
+        const isMobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+        const deviceType = isMobile ? 'mobile' : 'desktop';
+
+        // Obtener IP (simplificado)
+        let ipAddress = 'unknown';
+        try {
+            const ipResponse = await fetch('https://api.ipify.org?format=json', { timeout: 3000 });
+            const ipData = await ipResponse.json();
+            ipAddress = ipData.ip;
+        } catch (ipError) {
+            console.warn('No se pudo obtener IP:', ipError);
+        }
+
+        // Llamar al endpoint de registro
+        const response = await fetch(`${window.location.origin}/api/ubicaciones/entrada`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                usuario_id: currentUser.id,
+                device_fingerprint: deviceFingerprint,
+                device_type: deviceType,
+                latitud: locationData.latitude,
+                longitud: locationData.longitude,
+                precision_metros: locationData.accuracy,
+                actividad_realizada: 'sesión activa',
+                cuenta_contrato: null,
+                ip_address: ipAddress,
+                user_agent: navigator.userAgent
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ error: 'Error desconocido' }));
+            throw new Error(errorData.error || `Error ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('✅ Ubicación registrada exitosamente:', data);
+
+        // Guardar session_id para posible uso posterior
+        if (data.session_id) {
+            localStorage.setItem('currentLocationSessionId', data.session_id);
+        }
+
+        return data.session_id;
+
+    } catch (error) {
+        console.error('❌ Error al registrar ubicación:', error);
+        showMessage('⚠️ No se pudo guardar la ubicación en el servidor', 'warning');
+        throw error;
     }
 }
 
