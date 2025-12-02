@@ -3,6 +3,9 @@
  * Visualización interactiva de ubicaciones GPS y tiempo de permanencia
  */
 
+// Configuración de API - Detectar automáticamente la URL base
+const API_URL = window.location.origin;
+
 let map;
 let markers = [];
 let ubicacionesData = [];
@@ -69,9 +72,18 @@ async function cargarUbicaciones() {
 
         const response = await fetch(`${API_URL}/api/ubicaciones?${params}`);
 
-        if (!response.ok) throw new Error('Error al cargar ubicaciones');
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ error: 'Error desconocido' }));
+            throw new Error(errorData.error || `Error ${response.status}: ${response.statusText}`);
+        }
 
         ubicacionesData = await response.json();
+
+        // Validar que sea un array
+        if (!Array.isArray(ubicacionesData)) {
+            console.warn('Respuesta no es un array:', ubicacionesData);
+            ubicacionesData = [];
+        }
 
         // Actualizar mapa y estadísticas
         actualizarMapa(ubicacionesData);
@@ -80,9 +92,19 @@ async function cargarUbicaciones() {
 
         console.log(`✅ ${ubicacionesData.length} ubicaciones cargadas`);
 
+        if (ubicacionesData.length === 0) {
+            mostrarMensaje('No se encontraron ubicaciones con los filtros seleccionados.', 'info');
+        }
+
     } catch (error) {
         console.error('Error al cargar ubicaciones:', error);
-        alert('Error al cargar las ubicaciones. Por favor, intente nuevamente.');
+        mostrarMensaje(`Error al cargar ubicaciones: ${error.message}`, 'error');
+
+        // Limpiar UI en caso de error
+        ubicacionesData = [];
+        actualizarMapa([]);
+        actualizarEstadisticas([]);
+        mostrarListaUbicaciones([]);
     } finally {
         showLoading(false);
     }
@@ -366,11 +388,56 @@ function limpiarFiltros() {
  */
 function showLoading(show) {
     const overlay = document.getElementById('loadingOverlay');
-    if (show) {
-        overlay.classList.add('active');
-    } else {
-        overlay.classList.remove('active');
+    if (overlay) {
+        if (show) {
+            overlay.classList.add('active');
+        } else {
+            overlay.classList.remove('active');
+        }
     }
+}
+
+/**
+ * Mostrar mensaje temporal
+ */
+function mostrarMensaje(mensaje, tipo = 'info') {
+    // Crear elemento de mensaje si no existe
+    let messageEl = document.getElementById('tempMessage');
+    if (!messageEl) {
+        messageEl = document.createElement('div');
+        messageEl.id = 'tempMessage';
+        messageEl.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 10000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s ease;
+            max-width: 400px;
+        `;
+        document.body.appendChild(messageEl);
+    }
+
+    // Establecer color según tipo
+    const colores = {
+        info: '#4299e1',
+        error: '#f56565',
+        success: '#48bb78',
+        warning: '#ed8936'
+    };
+
+    messageEl.style.background = colores[tipo] || colores.info;
+    messageEl.textContent = mensaje;
+    messageEl.style.display = 'block';
+
+    // Ocultar después de 5 segundos
+    setTimeout(() => {
+        messageEl.style.display = 'none';
+    }, 5000);
 }
 
 /**

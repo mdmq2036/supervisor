@@ -13,37 +13,44 @@
 // ========================================
 
 const SUPABASE_CONFIG = {
-    // Si usas .env, estos valores se sobrescriben automáticamente
-    url: window.ENV?.SUPABASE_URL || 'https://bvqmaaxtaetebjsgdphj.supabase.co',
-    anonKey: window.ENV?.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ2cW1hYXh0YWV0ZWJqc2dkcGhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQzNjAyMzEsImV4cCI6MjA3OTkzNjIzMX0.p2dgaWGlQcUsKJ8Y92mQzwyCs32tcKGGEAMh8d_F9ms'
+    // Credenciales obtenidas desde el endpoint /api/config del servidor
+    // NUNCA coloques credenciales directamente aquí por seguridad
+    url: '',
+    anonKey: ''
 };
 
 // Inicializar cliente de Supabase
 let supabase;
 
-function initSupabase() {
-    // Actualizar config con variables de entorno si están disponibles
-    if (window.ENV?.SUPABASE_URL && window.ENV?.SUPABASE_ANON_KEY) {
-        SUPABASE_CONFIG.url = window.ENV.SUPABASE_URL;
-        SUPABASE_CONFIG.anonKey = window.ENV.SUPABASE_ANON_KEY;
-        console.log('✅ Usando credenciales desde archivo .env');
+async function initSupabase() {
+    try {
+        // Obtener credenciales desde el servidor (más seguro)
+        const response = await fetch('/api/config');
+        if (response.ok) {
+            const config = await response.json();
+            SUPABASE_CONFIG.url = config.SUPABASE_URL;
+            SUPABASE_CONFIG.anonKey = config.SUPABASE_ANON_KEY;
+            console.log('✅ Credenciales obtenidas del servidor');
+        } else {
+            console.warn('⚠️ No se pudieron obtener credenciales del servidor');
+        }
+    } catch (error) {
+        console.warn('⚠️ Error al obtener configuración del servidor:', error.message);
     }
 
     // Validar que las credenciales estén configuradas
-    if (SUPABASE_CONFIG.url === 'TU_SUPABASE_URL' ||
-        SUPABASE_CONFIG.anonKey === 'TU_SUPABASE_ANON_KEY' ||
-        SUPABASE_CONFIG.url === 'TU_SUPABASE_URL_AQUI' ||
-        SUPABASE_CONFIG.anonKey === 'TU_SUPABASE_ANON_KEY_AQUI') {
-        console.error('❌ Configura tus credenciales de Supabase');
-        console.info('📝 Edita el archivo .env o config.js con tus credenciales');
-        console.info('📖 Lee el archivo INSTRUCCIONES.md para más detalles');
+    if (!SUPABASE_CONFIG.url || !SUPABASE_CONFIG.anonKey) {
+        console.error('❌ Credenciales de Supabase no configuradas');
+        console.info('📝 Configure las variables de entorno SUPABASE_URL y SUPABASE_ANON_KEY');
+        console.info('📖 Consulte la documentación para más detalles');
         return false;
     }
 
     try {
         supabase = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
         console.log('✅ Supabase inicializado correctamente');
-        console.log('📊 Proyecto:', SUPABASE_CONFIG.url);
+        const projectId = SUPABASE_CONFIG.url.split('//')[1]?.split('.')[0] || 'unknown';
+        console.log(`📊 Proyecto: ${projectId}...`);
         return true;
     } catch (error) {
         console.error('❌ Error al inicializar Supabase:', error);

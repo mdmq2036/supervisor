@@ -40,25 +40,30 @@ app.get('/', (req, res) => {
 // Configuración de Supabase
 const { createClient } = require('@supabase/supabase-js');
 
-// Credenciales por defecto (Fallback)
-const DEFAULT_SUPABASE_URL = 'https://bvqmaaxtaetebjsgdphj.supabase.co';
-const DEFAULT_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ2cW1hYXh0YWV0ZWJqc2dkcGhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQzNjAyMzEsImV4cCI6MjA3OTkzNjIzMX0.p2dgaWGlQcUsKJ8Y92mQzwyCs32tcKGGEAMh8d_F9ms';
-
-const supabaseUrl = process.env.SUPABASE_URL || DEFAULT_SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_ANON_KEY || DEFAULT_SUPABASE_KEY;
+// Obtener credenciales SOLO de variables de entorno
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_ANON_KEY;
 
 let supabase;
 
-if (supabaseUrl && supabaseKey) {
+// Validar que las credenciales estén configuradas
+if (!supabaseUrl || !supabaseKey) {
+    console.error('========================================');
+    console.error('❌ ERROR CRÍTICO: Variables de entorno no configuradas');
+    console.error('📝 Debe configurar:');
+    console.error('   - SUPABASE_URL');
+    console.error('   - SUPABASE_ANON_KEY');
+    console.error('========================================');
+    console.warn('⚠️ El servidor continuará ejecutándose pero sin funcionalidad de base de datos.');
+    console.warn('⚠️ Configure las variables de entorno en Render o en su archivo .env local.');
+} else {
     try {
         supabase = createClient(supabaseUrl, supabaseKey);
         console.log('✅ Cliente Supabase inicializado correctamente');
+        console.log(`📊 Proyecto: ${supabaseUrl.split('//')[1].split('.')[0]}...`);
     } catch (error) {
         console.error('❌ Error al inicializar Supabase:', error.message);
     }
-} else {
-    console.warn('⚠️ ADVERTENCIA: SUPABASE_URL o SUPABASE_ANON_KEY no están definidos.');
-    console.warn('⚠️ La funcionalidad de base de datos no estará disponible.');
 }
 
 // Middleware para verificar conexión a BD antes de procesar peticiones API

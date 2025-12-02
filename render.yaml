@@ -1,21 +1,24 @@
 services:
   - type: web
     name: donet-supervision-system
-    env: node
+    runtime: node
     region: oregon
     plan: free
     buildCommand: npm install
     startCommand: npm start
     envVars:
+      # IMPORTANTE: Configure estas variables en el Dashboard de Render
+      # NO colocar credenciales reales en este archivo
+      # Dashboard > Environment > Environment Variables
       - key: SUPABASE_URL
-        value: https://bvqmaaxtaetebjsgdphj.supabase.co
+        sync: false
       - key: SUPABASE_ANON_KEY
-        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ2cW1hYXh0YWV0ZWJqc2dkcGhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQzNjAyMzEsImV4cCI6MjA3OTkzNjIzMX0.p2dgaWGlQcUsKJ8Y92mQzwyCs32tcKGGEAMh8d_F9ms
+        sync: false
       - key: APP_NAME
         value: DONET
       - key: APP_VERSION
         value: "1.0"
       - key: ENVIRONMENT
         value: production
-      - key: PORT
-        value: "8000"
+      - key: NODE_ENV
+        value: production

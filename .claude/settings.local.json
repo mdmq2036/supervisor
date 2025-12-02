@@ -35,7 +35,8 @@
       "Bash(git remote:*)",
       "Bash(printf:*)",
       "Bash(git credential-manager:*)",
-      "Bash(cmd.exe:*)"
+      "Bash(cmd.exe:*)",
+      "Bash(npm install)"
     ],
     "deny": [],
     "ask": []
