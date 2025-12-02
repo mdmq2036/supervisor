@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test API Ubicaciones</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #0a1628;
+            color: #fff;
+        }
+
+        .test-section {
+            background: #1a2942;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 2px solid #2d3748;
+        }
+
+        button {
+            background: #00d9ff;
+            color: #0a1628;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #00b8d4;
+        }
+
+        pre {
+            background: #0a1628;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            border: 1px solid #00d9ff;
+        }
+
+        .success {
+            color: #48bb78;
+        }
+
+        .error {
+            color: #f56565;
+        }
+
+        .warning {
+            color: #ed8936;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔍 Test API de Ubicaciones</h1>
+
+    <div class="test-section">
+        <h2>1. Test Endpoint: /api/ubicaciones/todas</h2>
+        <button onclick="testTodasUbicaciones()">Probar /api/ubicaciones/todas</button>
+        <pre id="result1">Esperando...</pre>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Test Endpoint: /api/ubicaciones (sin filtros)</h2>
+        <button onclick="testUbicacionesSinFiltros()">Probar /api/ubicaciones</button>
+        <pre id="result2">Esperando...</pre>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Test Endpoint: /api/ubicaciones (con filtro de usuario)</h2>
+        <button onclick="testUbicacionesConUsuario()">Probar con usuario_id</button>
+        <pre id="result3">Esperando...</pre>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Test Vista Directa en Supabase</h2>
+        <p>Ejecuta esta consulta en Supabase SQL Editor:</p>
+        <pre>SELECT * FROM v_analisis_ubicaciones LIMIT 5;</pre>
+    </div>
+
+    <script>
+        const API_URL = window.location.origin;
+
+        async function testTodasUbicaciones() {
+            const resultEl = document.getElementById('result1');
+            resultEl.innerHTML = '⏳ Cargando...';
+
+            try {
+                const url = `${API_URL}/api/ubicaciones/todas`;
+                console.log('Fetching:', url);
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                resultEl.innerHTML = `
+<span class="success">✅ SUCCESS</span>
+Status: ${response.status}
+Total ubicaciones: ${data.total || data.ubicaciones?.length || 0}
+
+Datos:
+${JSON.stringify(data, null, 2)}
+                `;
+            } catch (error) {
+                resultEl.innerHTML = `<span class="error">❌ ERROR</span>\n${error.message}`;
+            }
+        }
+
+        async function testUbicacionesSinFiltros() {
+            const resultEl = document.getElementById('result2');
+            resultEl.innerHTML = '⏳ Cargando...';
+
+            try {
+                const url = `${API_URL}/api/ubicaciones`;
+                console.log('Fetching:', url);
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (Array.isArray(data)) {
+                    resultEl.innerHTML = `
+<span class="success">✅ SUCCESS</span>
+Status: ${response.status}
+Total ubicaciones: ${data.length}
+
+Primera ubicación:
+${JSON.stringify(data[0], null, 2)}
+
+Todas las ubicaciones:
+${JSON.stringify(data, null, 2)}
+                    `;
+                } else {
+                    resultEl.innerHTML = `
+<span class="warning">⚠️ WARNING</span>
+Respuesta no es un array:
+${JSON.stringify(data, null, 2)}
+                    `;
+                }
+            } catch (error) {
+                resultEl.innerHTML = `<span class="error">❌ ERROR</span>\n${error.message}`;
+            }
+        }
+
+        async function testUbicacionesConUsuario() {
+            const resultEl = document.getElementById('result3');
+            resultEl.innerHTML = '⏳ Cargando...';
+
+            try {
+                // Primero obtener el ID del usuario prueba
+                const usersResponse = await fetch(`${API_URL}/api/usuarios`);
+                const users = await usersResponse.json();
+                const userPrueba = users.find(u => u.username === 'prueba');
+
+                if (!userPrueba) {
+                    resultEl.innerHTML = `<span class="error">❌ ERROR</span>\nNo se encontró usuario 'prueba'`;
+                    return;
+                }
+
+                const url = `${API_URL}/api/ubicaciones?usuario_id=${userPrueba.id}`;
+                console.log('Fetching:', url);
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                resultEl.innerHTML = `
+<span class="success">✅ SUCCESS</span>
+Status: ${response.status}
+Usuario ID: ${userPrueba.id}
+Total ubicaciones: ${data.length}
+
+Datos:
+${JSON.stringify(data, null, 2)}
+                `;
+            } catch (error) {
+                resultEl.innerHTML = `<span class="error">❌ ERROR</span>\n${error.message}`;
+            }
+        }
+
+        // Auto-ejecutar al cargar
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Test API cargado');
+            console.log('API URL:', API_URL);
+        });
+    </script>
+</body>
+
+</html>
