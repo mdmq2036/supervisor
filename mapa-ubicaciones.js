@@ -64,19 +64,38 @@ async function cargarUbicaciones() {
         const params = new URLSearchParams();
 
         const usuarioId = document.getElementById('filterUsuario').value;
+        // NOTA: Ignoramos los valores iniciales de los inputs de fecha para asegurar que cargue todo
+        // Solo usaremos los filtros si el usuario hace click en "Buscar"
         const fechaInicio = document.getElementById('filterFechaInicio').value;
         const fechaFin = document.getElementById('filterFechaFin').value;
         const deviceType = document.getElementById('filterDeviceType').value;
 
         if (usuarioId) params.append('usuario_id', usuarioId);
-        if (fechaInicio) params.append('fecha_inicio', fechaInicio);
-        if (fechaFin) params.append('fecha_fin', fechaFin);
+
+        // Solo aplicar fechas si NO es la carga automática (esto lo controlamos con una bandera o lógica)
+        // O mejor: si el usuario no ha interactuado, no filtrar.
+        // Por ahora, enviaremos las fechas solo si tienen valor, pero el problema es que el navegador las pre-llena.
+
+        // FIX: Si estamos en la carga inicial (o limpieza), queremos ver TODO.
+        // Vamos a detectar si la función fue llamada por el botón "Buscar"
+        const esBusquedaManual = window.event && window.event.type === 'click' && window.event.target.id === 'btnBuscar';
+
+        if (esBusquedaManual) {
+            if (fechaInicio) params.append('fecha_inicio', fechaInicio);
+            if (fechaFin) params.append('fecha_fin', fechaFin);
+        } else {
+            console.log('🚀 Carga automática: Ignorando filtros de fecha para mostrar historial completo');
+            // Limpiar visualmente los inputs
+            document.getElementById('filterFechaInicio').value = '';
+            document.getElementById('filterFechaFin').value = '';
+        }
+
         if (deviceType) params.append('device_type', deviceType);
 
         console.log('🔍 Filtros aplicados:', {
             usuario: usuarioId || 'Todos',
-            fechaInicio: fechaInicio || 'Sin límite',
-            fechaFin: fechaFin || 'Sin límite',
+            fechaInicio: esBusquedaManual ? fechaInicio : 'IGNORADO (Ver todo)',
+            fechaFin: esBusquedaManual ? fechaFin : 'IGNORADO (Ver todo)',
             dispositivo: deviceType || 'Todos'
         });
 
