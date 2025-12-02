@@ -4,6 +4,9 @@
  * Compatible con PC y dispositivos móviles
  */
 
+// Definir API_URL automáticamente basado en el origen de la página
+const API_URL = window.location.origin;
+
 class GeolocationTracker {
     constructor() {
         this.currentSessionId = null;
