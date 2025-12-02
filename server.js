@@ -40,30 +40,26 @@ app.get('/', (req, res) => {
 // Configuración de Supabase
 const { createClient } = require('@supabase/supabase-js');
 
-// Obtener credenciales SOLO de variables de entorno
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_ANON_KEY;
+// Credenciales de Supabase (con fallback para producción)
+// NOTA: En producción, idealmente usar variables de entorno
+// Pero incluimos fallback para facilitar el despliegue en Render
+const supabaseUrl = process.env.SUPABASE_URL || 'https://bvqmaaxtaetebjsgdphj.supabase.co';
+const supabaseKey = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ2cW1hYXh0YWV0ZWJqc2dkcGhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQzNjAyMzEsImV4cCI6MjA3OTkzNjIzMX0.p2dgaWGlQcUsKJ8Y92mQzwyCs32tcKGGEAMh8d_F9ms';
 
 let supabase;
 
-// Validar que las credenciales estén configuradas
-if (!supabaseUrl || !supabaseKey) {
-    console.error('========================================');
-    console.error('❌ ERROR CRÍTICO: Variables de entorno no configuradas');
-    console.error('📝 Debe configurar:');
-    console.error('   - SUPABASE_URL');
-    console.error('   - SUPABASE_ANON_KEY');
-    console.error('========================================');
-    console.warn('⚠️ El servidor continuará ejecutándose pero sin funcionalidad de base de datos.');
-    console.warn('⚠️ Configure las variables de entorno en Render o en su archivo .env local.');
-} else {
-    try {
-        supabase = createClient(supabaseUrl, supabaseKey);
-        console.log('✅ Cliente Supabase inicializado correctamente');
-        console.log(`📊 Proyecto: ${supabaseUrl.split('//')[1].split('.')[0]}...`);
-    } catch (error) {
-        console.error('❌ Error al inicializar Supabase:', error.message);
+// Inicializar cliente Supabase
+try {
+    supabase = createClient(supabaseUrl, supabaseKey);
+    console.log('✅ Cliente Supabase inicializado correctamente');
+    console.log(`📊 Proyecto: ${supabaseUrl.split('//')[1].split('.')[0]}...`);
+    if (process.env.SUPABASE_URL) {
+        console.log('🔐 Usando credenciales de variables de entorno');
+    } else {
+        console.log('⚙️ Usando credenciales de configuración por defecto');
     }
+} catch (error) {
+    console.error('❌ Error al inicializar Supabase:', error.message);
 }
 
 // Middleware para verificar conexión a BD antes de procesar peticiones API

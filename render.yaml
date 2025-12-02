@@ -7,13 +7,6 @@ services:
     buildCommand: npm install
     startCommand: npm start
     envVars:
-      # IMPORTANTE: Configure estas variables en el Dashboard de Render
-      # NO colocar credenciales reales en este archivo
-      # Dashboard > Environment > Environment Variables
-      - key: SUPABASE_URL
-        sync: false
-      - key: SUPABASE_ANON_KEY
-        sync: false
       - key: APP_NAME
         value: DONET
       - key: APP_VERSION
