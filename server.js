@@ -2,6 +2,7 @@
 // SERVIDOR NODE.JS - SISTEMA DONET
 // ========================================
 // Servidor Express para despliegue en Render
+// Versión: 2.0 - Con geolocalización GPS completa
 // ========================================
 
 require('dotenv').config();
