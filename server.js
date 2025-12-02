@@ -170,10 +170,37 @@ app.get('/api/ubicaciones', checkDbConnection, async (req, res) => {
 
         if (error) throw error;
 
-        res.json(data);
+        console.log(`📍 GET /api/ubicaciones - Filtros: usuario=${usuario_id}, device=${device_type}, desde=${fecha_inicio}, hasta=${fecha_fin}`);
+        console.log(`📊 Ubicaciones encontradas: ${data?.length || 0}`);
+
+        res.json(data || []);
 
     } catch (error) {
         console.error('Error al obtener ubicaciones:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// 3.5 DEBUG: Obtener TODAS las ubicaciones sin filtros
+app.get('/api/ubicaciones/todas', checkDbConnection, async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from('v_analisis_ubicaciones')
+            .select('*')
+            .order('timestamp_entrada', { ascending: false })
+            .limit(100);
+
+        if (error) throw error;
+
+        console.log(`🔍 DEBUG: Total ubicaciones en vista: ${data?.length || 0}`);
+
+        res.json({
+            total: data?.length || 0,
+            ubicaciones: data || []
+        });
+
+    } catch (error) {
+        console.error('Error al obtener todas las ubicaciones:', error);
         res.status(500).json({ error: error.message });
     }
 });
