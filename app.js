@@ -820,8 +820,19 @@ async function registerLocationImmediately(locationData) {
     try {
         console.log('💾 Registrando ubicación en base de datos...');
 
-        // Obtener device fingerprint
-        const deviceFingerprint = await window.DeviceFingerprint?.getFingerprint() || `device-${Date.now()}`;
+        // Obtener device fingerprint (simplificado para evitar errores)
+        let deviceFingerprint = `device-${currentUser.id}-${Date.now()}`;
+        try {
+            if (window.DeviceFingerprint) {
+                const fp = new window.DeviceFingerprint();
+                if (typeof fp.generate === 'function') {
+                    deviceFingerprint = await fp.generate();
+                    console.log('✅ Device fingerprint generado');
+                }
+            }
+        } catch (fpError) {
+            console.warn('⚠️ No se pudo generar device fingerprint, usando fallback:', fpError.message);
+        }
 
         // Detectar tipo de dispositivo
         const userAgent = navigator.userAgent.toLowerCase();
