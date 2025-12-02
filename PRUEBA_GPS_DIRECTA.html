@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba GPS Directa</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #0a1628;
+            color: #fff;
+        }
+        .log {
+            background: #1a2744;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #00d9ff;
+        }
+        button {
+            background: #00d9ff;
+            color: #0a1628;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #00b8d4;
+        }
+        .error {
+            border-left-color: #ff4444;
+        }
+        .success {
+            border-left-color: #44ff44;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Prueba GPS Directa - DONET</h1>
+    <p>Esta página prueba el GPS y el registro en la base de datos directamente.</p>
+
+    <button onclick="testGPS()">🔍 Probar GPS</button>
+    <button onclick="testRegister()">💾 Registrar en BD</button>
+    <button onclick="clearLogs()">🗑️ Limpiar Logs</button>
+
+    <div id="logs"></div>
+
+    <script>
+        let currentLocation = null;
+
+        function log(message, type = 'info') {
+            const logs = document.getElementById('logs');
+            const div = document.createElement('div');
+            div.className = `log ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong> - ${message}`;
+            logs.insertBefore(div, logs.firstChild);
+        }
+
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '';
+            log('Logs limpiados', 'info');
+        }
+
+        async function testGPS() {
+            log('📍 Solicitando permiso GPS...');
+
+            if (!('geolocation' in navigator)) {
+                log('❌ Tu navegador no soporta geolocalización', 'error');
+                return;
+            }
+
+            try {
+                const position = await new Promise((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(
+                        resolve,
+                        reject,
+                        {
+                            enableHighAccuracy: true,
+                            timeout: 15000,
+                            maximumAge: 0
+                        }
+                    );
+                });
+
+                currentLocation = {
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude,
+                    accuracy: position.coords.accuracy
+                };
+
+                log(`✅ GPS obtenido: Lat ${currentLocation.latitude.toFixed(6)}, Lon ${currentLocation.longitude.toFixed(6)}`, 'success');
+                log(`📏 Precisión: ${Math.round(currentLocation.accuracy)} metros`, 'success');
+                log('💡 Ahora puedes hacer click en "Registrar en BD"', 'info');
+
+            } catch (error) {
+                let errorMsg = '';
+                if (error.code === 1) {
+                    errorMsg = '❌ Permiso denegado. Habilita la ubicación en tu navegador.';
+                } else if (error.code === 2) {
+                    errorMsg = '❌ Ubicación no disponible. Verifica que el GPS esté activo.';
+                } else if (error.code === 3) {
+                    errorMsg = '❌ Timeout. El GPS tardó demasiado en responder.';
+                } else {
+                    errorMsg = `❌ Error: ${error.message}`;
+                }
+                log(errorMsg, 'error');
+            }
+        }
+
+        async function testRegister() {
+            if (!currentLocation) {
+                log('⚠️ Primero debes obtener la ubicación GPS', 'error');
+                return;
+            }
+
+            log('💾 Intentando registrar en base de datos...');
+
+            try {
+                // Usuario de prueba
+                const userId = 1; // ID del usuario 'prueba'
+                const deviceFingerprint = `test-${Date.now()}`;
+                const deviceType = /mobile|android|iphone|ipad/i.test(navigator.userAgent) ? 'mobile' : 'desktop';
+
+                log(`📱 Tipo de dispositivo: ${deviceType}`);
+                log(`🔑 Device ID: ${deviceFingerprint}`);
+
+                const payload = {
+                    usuario_id: userId,
+                    device_fingerprint: deviceFingerprint,
+                    device_type: deviceType,
+                    latitud: currentLocation.latitude,
+                    longitud: currentLocation.longitude,
+                    precision_metros: currentLocation.accuracy,
+                    actividad_realizada: 'Prueba directa GPS',
+                    cuenta_contrato: null,
+                    ip_address: 'test',
+                    user_agent: navigator.userAgent
+                };
+
+                log('📤 Enviando datos al servidor...');
+                log(`URL: ${window.location.origin}/api/ubicaciones/entrada`);
+
+                const response = await fetch(`${window.location.origin}/api/ubicaciones/entrada`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                log(`📡 Respuesta del servidor: ${response.status} ${response.statusText}`);
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ error: 'Error desconocido' }));
+                    throw new Error(errorData.error || `Error ${response.status}`);
+                }
+
+                const data = await response.json();
+                log(`✅ ¡Ubicación guardada exitosamente!`, 'success');
+                log(`🆔 Session ID: ${data.session_id}`, 'success');
+                log(`🗺️ Ahora verifica el mapa: <a href="/mapa-ubicaciones.html" style="color: #00d9ff;">Ver Mapa</a>`, 'success');
+
+            } catch (error) {
+                log(`❌ Error al registrar: ${error.message}`, 'error');
+                console.error('Error completo:', error);
+            }
+        }
+
+        // Auto-test al cargar (solo informativo)
+        window.addEventListener('DOMContentLoaded', () => {
+            log('✅ Página cargada correctamente', 'success');
+            log('👆 Click en "Probar GPS" para comenzar', 'info');
+        });
+    </script>
+</body>
+</html>
