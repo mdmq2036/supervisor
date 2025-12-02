@@ -1,13 +1,13 @@
 /**
- * MAPA DE UBICACIONES GPS - VERSIÓN CORREGIDA
- * SIN FILTROS DE FECHA POR DEFECTO - MUESTRA TODAS LAS UBICACIONES
- * Última actualización: 2025-12-02 - Fix definitivo filtros de fecha
+ * MAPA DE UBICACIONES GPS - VERSIÓN CORREGIDA PARA PRODUCCIÓN
+ * Última actualización: 2025-12-02 - Fix para Render
  */
 
 // Configuración de API - Detectar automáticamente la URL base
 const API_URL = window.location.origin;
 
-console.log('🔥 VERSIÓN CORREGIDA - SIN FILTROS DE FECHA POR DEFECTO');
+console.log('🔥 MAPA DE UBICACIONES - VERSIÓN PRODUCCIÓN');
+console.log('📡 API URL:', API_URL);
 
 let map;
 let markers = [];
@@ -15,19 +15,50 @@ let ubicacionesData = [];
 let polyline = null;
 
 /**
- * Inicializar mapa
+ * Inicializar mapa con validaciones
  */
 function initMap() {
-    // Crear mapa centrado en Lima, Perú
-    map = L.map('map').setView([-12.0464, -77.0428], 12);
+    try {
+        console.log('🗺️ Iniciando mapa de Leaflet...');
 
-    // Agregar capa de OpenStreetMap
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors',
-        maxZoom: 19
-    }).addTo(map);
+        // Verificar que el contenedor existe
+        const mapContainer = document.getElementById('map');
+        if (!mapContainer) {
+            console.error('❌ Contenedor del mapa no encontrado');
+            return false;
+        }
 
-    console.log('✅ Mapa inicializado');
+        console.log('✅ Contenedor del mapa encontrado');
+
+        // Crear mapa centrado en Lima, Perú
+        map = L.map('map').setView([-12.0464, -77.0428], 12);
+
+        console.log('✅ Instancia de mapa creada');
+
+        // Agregar capa de OpenStreetMap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(map);
+
+        console.log('✅ Capa de tiles agregada');
+
+        // Forzar actualización del tamaño del mapa
+        setTimeout(() => {
+            if (map) {
+                map.invalidateSize();
+                console.log('✅ Tamaño del mapa actualizado');
+            }
+        }, 100);
+
+        console.log('✅ Mapa inicializado correctamente');
+        return true;
+
+    } catch (error) {
+        console.error('❌ Error al inicializar mapa:', error);
+        mostrarMensaje('Error al inicializar el mapa. Por favor, recarga la página.', 'error');
+        return false;
+    }
 }
 
 /**
@@ -485,15 +516,39 @@ function verificarAutenticacion() {
 
 
 /**
- * Inicialización
+ * Inicialización del documento
  */
 document.addEventListener('DOMContentLoaded', () => {
-    if (!verificarAutenticacion()) return;
+    console.log('📄 DOM cargado, iniciando aplicación...');
 
-    initMap();
+    // Verificar autenticación
+    if (!verificarAutenticacion()) {
+        console.log('❌ Usuario no autenticado, redirigiendo...');
+        return;
+    }
+
+    console.log('✅ Usuario autenticado');
+
+    // Verificar que Leaflet esté disponible
+    if (typeof L === 'undefined') {
+        console.error('❌ Leaflet no está cargado');
+        mostrarMensaje('Error: Librería de mapas no disponible. Por favor, recarga la página.', 'error');
+        return;
+    }
+
+    console.log('✅ Leaflet disponible');
+
+    // Inicializar mapa
+    const mapaInicializado = initMap();
+    if (!mapaInicializado) {
+        console.error('❌ Fallo al inicializar el mapa');
+        return;
+    }
+
+    // Cargar usuarios para filtros
     cargarUsuarios();
 
-    // FORZAR limpieza INMEDIATA de campos de fecha
+    // Limpiar campos de fecha
     const fechaInicio = document.getElementById('filterFechaInicio');
     const fechaFin = document.getElementById('filterFechaFin');
 
@@ -508,7 +563,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     console.log('✅ Campos de fecha limpiados');
-    console.log('📅 Mostrando TODAS las ubicaciones (sin filtros de fecha)');
 
     // Mostrar mensaje informativo
     setTimeout(() => {
@@ -517,7 +571,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Cargar ubicaciones iniciales usando el endpoint dedicado
     setTimeout(() => {
+        console.log('🚀 Iniciando carga de ubicaciones...');
         cargarUbicaciones(true);
     }, 1000);
 });
+
 
