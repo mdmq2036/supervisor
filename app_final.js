@@ -163,27 +163,9 @@ async function handleLogin(e) {
 
 // Manejar logout
 function handleLogout() {
-    currentUser = null;
-    localStorage.removeItem('currentUser');
-    showScreen('loginScreen');
-    document.getElementById('loginForm').reset();
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    dateDisplay.textContent = new Date().toLocaleDateString('es-ES', options);
 }
-
-// Actualizar información del usuario
-function updateUserInfo() {
-    const supervisorName = document.getElementById('supervisorName');
-    if (supervisorName && currentUser) {
-        supervisorName.textContent = currentUser.nombre;
-    }
-}
-
-// Establecer fecha actual
-function setCurrentDate() {
-    const dateDisplay = document.getElementById('currentDate');
-    if (dateDisplay) {
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        dateDisplay.textContent = new Date().toLocaleDateString('es-ES', options);
-    }
 }
 
 // Manejar registro de inspección

@@ -61,7 +61,7 @@
                     <p>Ingresar nuevos datos y fotografías</p>
                 </div>
 
-                <div class="menu-card" onclick="requestAdminAccess()">
+                <div class="menu-card" id="btnCargaMasiva" onclick="requestAdminAccess()" style="display: none;">
                     <div class="card-icon">📤</div>
                     <h3>Carga Masiva</h3>
                     <p>Importar datos desde Excel</p>
@@ -79,7 +79,8 @@
                     <p>Generar y descargar reportes</p>
                 </div>
 
-                <div class="menu-card" onclick="window.location.href='mapa-ubicaciones.html'">
+                <div class="menu-card" id="btnMapaUbicaciones" onclick="window.location.href='mapa-ubicaciones.html'"
+                    style="display: none;">
                     <div class="card-icon">🗺️</div>
                     <h3>Mapa de Ubicaciones</h3>
                     <p>Ver ubicaciones GPS y tiempo de permanencia</p>

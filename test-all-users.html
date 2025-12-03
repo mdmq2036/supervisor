@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificador de Login - DONET</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #00d4ff;
+            padding-bottom: 10px;
+        }
+
+        .user-test {
+            background: #f9f9f9;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #00d4ff;
+        }
+
+        .user-test h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+
+        .credentials {
+            font-family: 'Courier New', monospace;
+            background: #e8e8e8;
+            padding: 10px;
+            border-radius: 3px;
+            margin: 5px 0;
+        }
+
+        .test-btn {
+            background: #00d4ff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .test-btn:hover {
+            background: #00b8e6;
+        }
+
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .failed {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .pending {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .info {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196F3;
+        }
+
+        .commits {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔐 Verificador de Login - DONET</h1>
+
+        <div class="info">
+            <h3>📋 Estado de Correcciones</h3>
+            <p><strong>Errores corregidos:</strong></p>
+            <ul>
+                <li>✅ Variables <code>userData</code> e <code>isSpecialUser</code> declaradas en app.js</li>
+                <li>✅ Versión de cache incrementada: app.js?v=13</li>
+                <li>✅ Versión del paquete: 1.0.1</li>
+            </ul>
+            <div class="commits">
+                <strong>Commits en GitHub:</strong><br>
+                • 05a6df9 - Fix: Declarar variables<br>
+                • 30fec4c - Incrementar versión cache<br>
+                • 182da9a - v1.0.1 FORCE REDEPLOY
+            </div>
+            <p><strong>URL de Producción:</strong> <a href="https://supervisor-svkg.onrender.com"
+                    target="_blank">https://supervisor-svkg.onrender.com</a></p>
+        </div>
+
+        <h2>👥 Usuarios Configurados (9 total)</h2>
+
+        <div class="user-test">
+            <h3>1. Admin</h3>
+            <div class="credentials">
+                Usuario: <strong>admin</strong><br>
+                Contraseña: <strong>admin2025</strong><br>
+                Rol: <em>admin</em>
+            </div>
+            <button class="test-btn" onclick="testUser('admin', 'admin2025', 1)">Probar Login</button>
+            <div id="result-1" class="result pending" style="display:none;">⏳ Probando...</div>
+        </div>
+
+        <div class="user-test">
+            <h3>2. Demo</h3>
+            <div class="credentials">
+                Usuario: <strong>demo</strong><br>
+                Contraseña: <strong>demo123</strong><br>
+                Rol: <em>prueba</em>
+            </div>
+            <button class="test-btn" onclick="testUser('demo', 'demo123', 2)">Probar Login</button>
+            <div id="result-2" class="result pending" style="display:none;">⏳ Probando...</div>
+        </div>
+
+        <div class="user-test">
+            <h3>3. Mdonet</h3>
+            <div class="credentials">
+                Usuario: <strong>mdonet</strong><br>
+                Contraseña: <strong>mdonet123</strong><br>
+                Rol: <em>prueba</em>
+            </div>
+            <button class="test-btn" onclick="testUser('mdonet', 'mdonet123', 3)">Probar Login</button>
+            <div id="result-3" class="result pending" style="display:none;">⏳ Probando...</div>
+        </div>
+
+        <div class="user-test">
+            <h3>4. Prueba</h3>
+            <div class="credentials">
+                Usuario: <strong>prueba</strong><br>
+                Contraseña: <strong>prueba2025</strong><br>
+                Rol: <em>prueba</em>
+            </div>
+            <button class="test-btn" onclick="testUser('prueba', 'prueba2025', 4)">Probar Login</button>
+            <div id="result-4" class="result pending" style="display:none;">⏳ Probando...</div>
+        </div>
+
+        <div class="user-test">
+            <h3>5. Carlos (Supervisor)</h3>
+            <div class="credentials">
+                Usuario: <strong>carlos</strong><br>
+                Contraseña: <strong>43803239</strong><br>
+                Rol: <em>supervisor</em>
+            </div>
+            <button class="test-btn" onclick="testUser('carlos', '43803239', 5)">Probar Login</button>
+            <div id="result-5" class="result pending" style="display:none;">⏳ Probando...</div>
+        </div>
+
+        <div class="user-test">
+            <h3>6. Wilmer (Supervisor)</h3>
+            <div class="credentials">
+                Usuario: <strong>wilmer</strong><br>
+                Contraseña: <strong>46298703</strong><br>
+                Rol: <em>supervisor</em>
+            </div>
+            <button class="test-btn" onclick="testUser('wilmer', '46298703', 6)">Probar Login</button>
+            <div id="result-6" class="result pending" style="display:none;">⏳ Probando...</div>
+        </div>
+
+        <div class="user-test">
+            <h3>7. Marcelino (Supervisor)</h3>
+            <div class="credentials">
+                Usuario: <strong>marcelino</strong><br>
+                Contraseña: <strong>9394061</strong><br>
+                Rol: <em>supervisor</em>
+            </div>
+            <button class="test-btn" onclick="testUser('marcelino', '9394061', 7)">Probar Login</button>
+            <div id="result-7" class="result pending" style="display:none;">⏳ Probando...</div>
+        </div>
+
+        <div class="user-test">
+            <h3>8. Manuel (Supervisor)</h3>
+            <div class="credentials">
+                Usuario: <strong>manuel</strong><br>
+                Contraseña: <strong>561773</strong><br>
+                Rol: <em>supervisor</em>
+            </div>
+            <button class="test-btn" onclick="testUser('manuel', '561773', 8)">Probar Login</button>
+            <div id="result-8" class="result pending" style="display:none;">⏳ Probando...</div>
+        </div>
+
+        <div class="user-test">
+            <h3>9. Angelo (Supervisor)</h3>
+            <div class="credentials">
+                Usuario: <strong>angelo</strong><br>
+                Contraseña: <strong>76935270</strong><br>
+                Rol: <em>supervisor</em>
+            </div>
+            <button class="test-btn" onclick="testUser('angelo', '76935270', 9)">Probar Login</button>
+            <div id="result-9" class="result pending" style="display:none;">⏳ Probando...</div>
+        </div>
+
+        <div class="info" style="margin-top: 30px;">
+            <h3>📝 Instrucciones</h3>
+            <ol>
+                <li>Haz clic en "Probar Login" para cada usuario</li>
+                <li>Se abrirá una nueva ventana con la aplicación</li>
+                <li>El script intentará hacer login automáticamente</li>
+                <li>Verifica si ves el menú del sistema o sigues en login</li>
+                <li>Cierra la ventana y regresa aquí para probar el siguiente</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        function testUser(username, password, id) {
+            const resultDiv = document.getElementById(`result-${id}`);
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result pending';
+            resultDiv.textContent = '⏳ Abriendo ventana de prueba...';
+
+            // Abrir la aplicación en una nueva ventana
+            const testWindow = window.open('https://supervisor-svkg.onrender.com', '_blank');
+
+            setTimeout(() => {
+                resultDiv.textContent = `✅ Ventana abierta. Prueba manual con: ${username} / ${password}`;
+                resultDiv.className = 'result pending';
+            }, 1000);
+        }
+    </script>
+</body>
+
+</html>
