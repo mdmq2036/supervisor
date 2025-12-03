@@ -458,8 +458,10 @@ async function loadCuentasContrato() {
             .select('cuenta_contrato, supervisor_id, supervisores(nombre)')
             .order('cuenta_contrato');
 
-        // Solo filtrar por supervisor_id si NO es usuario "prueba"
-        if (currentUser.usuario !== 'prueba') {
+        // Solo filtrar por supervisor_id si NO es usuario admin
+        // Usuarios con acceso total: prueba, admin, luiggy
+        const usuariosAdmin = ['prueba', 'admin', 'luiggy'];
+        if (!usuariosAdmin.includes(currentUser.usuario)) {
             query = query.eq('supervisor_id', currentUser.id);
         }
 
@@ -531,8 +533,10 @@ async function cargarTodosLosRegistros() {
             .order('fecha_carga', { ascending: false })
             .limit(100); // Limitar a 100 para no sobrecargar
 
-        // Solo filtrar por supervisor_id si NO es usuario "prueba"
-        if (currentUser.usuario !== 'prueba') {
+        // Solo filtrar por supervisor_id si NO es usuario admin
+        // Usuarios con acceso total: prueba, admin, luiggy
+        const usuariosAdmin = ['prueba', 'admin', 'luiggy'];
+        if (!usuariosAdmin.includes(currentUser.usuario)) {
             query = query.eq('supervisor_id', currentUser.id);
         }
 

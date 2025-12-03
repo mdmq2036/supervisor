@@ -946,7 +946,9 @@
                     .order('fecha_carga', { ascending: false });
 
                 // **NUEVO: Solo filtrar por supervisor si NO es usuario "prueba"**
-                if (currentUser.usuario !== 'prueba') {
+                // Usuarios con acceso total: prueba, admin, luiggy
+                const usuariosAdmin = ['prueba', 'admin', 'luiggy'];
+                if (!usuariosAdmin.includes(currentUser.usuario)) {
                     query = query.eq('supervisor_id', currentUser.id);
                 }
 
@@ -1123,7 +1125,9 @@
                     .order('cuenta_contrato');
 
                 // Solo filtrar por supervisor_id si NO es usuario "prueba"
-                if (currentUser.usuario !== 'prueba') {
+                // Usuarios con acceso total: prueba, admin, luiggy
+                const usuariosAdmin = ['prueba', 'admin', 'luiggy'];
+                if (!usuariosAdmin.includes(currentUser.usuario)) {
                     query = query.eq('supervisor_id', currentUser.id);
                 }
 
@@ -1196,7 +1200,9 @@
                     .limit(100); // Limitar a 100 para no sobrecargar
 
                 // Solo filtrar por supervisor_id si NO es usuario "prueba"
-                if (currentUser.usuario !== 'prueba') {
+                // Usuarios con acceso total: prueba, admin, luiggy
+                const usuariosAdmin = ['prueba', 'admin', 'luiggy'];
+                if (!usuariosAdmin.includes(currentUser.usuario)) {
                     query = query.eq('supervisor_id', currentUser.id);
                 }
 
