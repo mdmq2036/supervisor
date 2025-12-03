@@ -6,10 +6,10 @@
 -- ========================================
 
 -- Insertar usuario luiggy con rol admin
-INSERT INTO usuarios (username, nombre, rol, activo)
-VALUES ('luiggy', 'Luiggy', 'admin', true)
+INSERT INTO usuarios (username, password, nombre, rol, activo)
+VALUES ('luiggy', 'luiggy2025', 'Luiggy', 'admin', true)
 ON CONFLICT (username) DO UPDATE
-SET nombre = 'Luiggy', rol = 'admin', activo = true;
+SET password = 'luiggy2025', nombre = 'Luiggy', rol = 'admin', activo = true;
 
 -- Verificar que se creó correctamente
 SELECT * FROM usuarios WHERE username = 'luiggy';
