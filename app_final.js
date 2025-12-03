@@ -62,7 +62,7 @@ async function handleLogin(e) {
         var userData = null;
         var isSpecialUser = false;
 
-        // Primero intentar buscar en la tabla 'usuarios' (para prueba y admin)
+        // Primero intentar buscar en la tabla 'usuarios' (para prueba, admin, y otros)
         try {
             const { data: usuarioData, error: usuarioError } = await supabase
                 .from('usuarios')
@@ -73,10 +73,8 @@ async function handleLogin(e) {
 
             if (usuarioData && !usuarioError) {
                 // Usuario encontrado en tabla usuarios
-                // Por ahora validación simple (en producción usar bcrypt en backend)
-                if ((username === 'prueba' && password === 'prueba2025') ||
-                    (username === 'admin' && password === 'admin2025') ||
-                    (username === 'luiggy' && password === 'luiggy2025')) {
+                // Validar contraseña (comparación simple, en producción usar bcrypt en backend)
+                if (usuarioData.password === password) {
                     userData = usuarioData;
                     isSpecialUser = true;
 
