@@ -75,7 +75,8 @@ async function handleLogin(e) {
                 // Usuario encontrado en tabla usuarios
                 // Por ahora validación simple (en producción usar bcrypt en backend)
                 if ((username === 'prueba' && password === 'prueba2025') ||
-                    (username === 'admin' && password === 'admin2025')) {
+                    (username === 'admin' && password === 'admin2025') ||
+                    (username === 'luiggy' && password === 'luiggy2025')) {
                     userData = usuarioData;
                     isSpecialUser = true;
 
