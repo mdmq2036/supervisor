@@ -75,6 +75,14 @@ class GeolocationTracker {
 
             navigator.geolocation.getCurrentPosition(
                 (position) => {
+                    // FILTRO DE PRECISIÓN: Descartar si es muy mala (> 200m)
+                    // Para el usuario pedimos 10m, pero en móviles a veces es 20-50m.
+                    // 200m es un límite razonable para descartar "saltos" de antenas celulares.
+                    if (position.coords.accuracy > 200) {
+                        console.warn(`⚠️ Ubicación descartada por baja precisión: ${position.coords.accuracy}m`);
+                        // Opcional: Podríamos rechazar, pero mejor devolvemos con flag
+                    }
+
                     const locationData = {
                         latitude: position.coords.latitude,
                         longitude: position.coords.longitude,

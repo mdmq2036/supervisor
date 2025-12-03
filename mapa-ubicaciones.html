@@ -435,140 +435,60 @@
         let map = null;
         let markers = [];
         let ubicacionesData = [];
-        let polyline = null;
+                } else {
+            // Búsqueda con filtros
+            const params = new URLSearchParams();
+            const usuarioId = document.getElementById('filterUsuario')?.value || '';
+            const fechaInicio = document.getElementById('filterFechaInicio')?.value || '';
+            const fechaFin = document.getElementById('filterFechaFin')?.value || '';
+            const deviceType = document.getElementById('filterDeviceType')?.value || '';
 
-        /**
-         * Inicializar mapa de Leaflet
-         */
-        function initMap() {
-            try {
-                console.log('Creando mapa de Leaflet...');
+            if (usuarioId) params.append('usuario_id', usuarioId);
+            if (fechaInicio) params.append('fecha_inicio', fechaInicio);
+            if (fechaFin) params.append('fecha_fin', fechaFin);
+            if (deviceType) params.append('device_type', deviceType);
 
-                // Verificar que el contenedor existe
-                const mapContainer = document.getElementById('map');
-                if (!mapContainer) {
-                    console.error('❌ Contenedor #map no encontrado');
-                    return false;
-                }
-
-                // Crear mapa centrado en Lima, Perú
-                map = L.map('map').setView([-12.0464, -77.0428], 12);
-
-                // Agregar capa de tiles de OpenStreetMap
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '© OpenStreetMap contributors',
-                    maxZoom: 19
-                }).addTo(map);
-
-                // Forzar actualización del tamaño del mapa
-                setTimeout(() => {
-                    if (map) {
-                        map.invalidateSize();
-                        console.log('✅ Mapa inicializado correctamente');
-                    }
-                }, 100);
-
-                return true;
-            } catch (error) {
-                console.error('❌ Error al inicializar mapa:', error);
-                mostrarMensaje('Error al inicializar el mapa: ' + error.message, 'error');
-                return false;
-            }
+            const queryString = params.toString();
+            url = `${MAP_API_URL}/api/ubicaciones${queryString ? '?' + queryString : ''}`;
         }
 
-        /**
-         * Cargar usuarios para el filtro
-         */
-        async function cargarUsuarios() {
-            try {
-                const response = await fetch(`${MAP_API_URL}/api/usuarios`);
-                if (!response.ok) throw new Error('Error al cargar usuarios');
+        console.log(`📡 Consultando: ${url}`);
 
-                const usuarios = await response.json();
-                const select = document.getElementById('filterUsuario');
-
-                if (select) {
-                    usuarios.forEach(usuario => {
-                        const option = document.createElement('option');
-                        option.value = usuario.id;
-                        option.textContent = `${usuario.nombre} (${usuario.username})`;
-                        select.appendChild(option);
-                    });
-                }
-
-                console.log(`✅ ${usuarios.length} usuarios cargados`);
-            } catch (error) {
-                console.error('Error al cargar usuarios:', error);
-            }
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Error ${response.status}: ${response.statusText}`);
         }
 
-        /**
-         * Cargar ubicaciones desde la API
-         */
-        async function cargarUbicaciones(esCargaInicial = false) {
-            showLoading(true);
+        ubicacionesData = await response.json();
 
-            try {
-                let url;
+        if (!Array.isArray(ubicacionesData)) {
+            console.warn('Respuesta no es un array');
+            ubicacionesData = [];
+        }
 
-                if (esCargaInicial) {
-                    // Carga inicial: usar endpoint dedicado sin filtros
-                    url = `${MAP_API_URL}/api/ubicaciones/inicial`;
-                    console.log('🚀 Carga inicial sin filtros');
-                } else {
-                    // Búsqueda con filtros
-                    const params = new URLSearchParams();
-                    const usuarioId = document.getElementById('filterUsuario')?.value || '';
-                    const fechaInicio = document.getElementById('filterFechaInicio')?.value || '';
-                    const fechaFin = document.getElementById('filterFechaFin')?.value || '';
-                    const deviceType = document.getElementById('filterDeviceType')?.value || '';
+        console.log(`✅ ${ubicacionesData.length} ubicaciones recibidas`);
 
-                    if (usuarioId) params.append('usuario_id', usuarioId);
-                    if (fechaInicio) params.append('fecha_inicio', fechaInicio);
-                    if (fechaFin) params.append('fecha_fin', fechaFin);
-                    if (deviceType) params.append('device_type', deviceType);
+        // Actualizar interfaz
+        actualizarMapa(ubicacionesData);
+        actualizarEstadisticas(ubicacionesData);
+        mostrarListaUbicaciones(ubicacionesData);
 
-                    const queryString = params.toString();
-                    url = `${MAP_API_URL}/api/ubicaciones${queryString ? '?' + queryString : ''}`;
-                }
-
-                console.log(`📡 Consultando: ${url}`);
-
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error(`Error ${response.status}: ${response.statusText}`);
-                }
-
-                ubicacionesData = await response.json();
-
-                if (!Array.isArray(ubicacionesData)) {
-                    console.warn('Respuesta no es un array');
-                    ubicacionesData = [];
-                }
-
-                console.log(`✅ ${ubicacionesData.length} ubicaciones recibidas`);
-
-                // Actualizar interfaz
-                actualizarMapa(ubicacionesData);
-                actualizarEstadisticas(ubicacionesData);
-                mostrarListaUbicaciones(ubicacionesData);
-
-                if (ubicacionesData.length === 0) {
-                    mostrarMensaje('⚠️ No se encontraron ubicaciones', 'warning');
-                } else {
-                    mostrarMensaje(`✅ ${ubicacionesData.length} ubicaciones cargadas`, 'success');
-                }
+        if (ubicacionesData.length === 0) {
+            mostrarMensaje('⚠️ No se encontraron ubicaciones', 'warning');
+        } else {
+            mostrarMensaje(`✅ ${ubicacionesData.length} ubicaciones cargadas`, 'success');
+        }
 
             } catch (error) {
-                console.error('❌ Error al cargar ubicaciones:', error);
-                mostrarMensaje('Error al cargar ubicaciones: ' + error.message, 'error');
-                ubicacionesData = [];
-                actualizarMapa([]);
-                actualizarEstadisticas([]);
-                mostrarListaUbicaciones([]);
-            } finally {
-                showLoading(false);
-            }
+            console.error('❌ Error al cargar ubicaciones:', error);
+            mostrarMensaje('Error al cargar ubicaciones: ' + error.message, 'error');
+            ubicacionesData = [];
+            actualizarMapa([]);
+            actualizarEstadisticas([]);
+            mostrarListaUbicaciones([]);
+        } finally {
+            showLoading(false);
+        }
         }
 
         /**
