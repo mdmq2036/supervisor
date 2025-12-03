@@ -853,6 +853,201 @@
                 return false;
             }
             return true;
+            const elTiempo = document.getElementById('statTiempoPromedio');
+            const elDispositivos = document.getElementById('statDispositivos');
+            const elDistancia = document.getElementById('statDistanciaTotal');
+
+            if (elTotal) elTotal.textContent = totalUbicaciones;
+            if (elTiempo) elTiempo.textContent = `${tiempoPromedio} min`;
+            if (elDispositivos) elDispositivos.textContent = dispositivosUnicos;
+            if (elDistancia) elDistancia.textContent = `${(distanciaTotal / 1000).toFixed(2)} km`;
+        }
+
+        /**
+         * Mostrar lista de ubicaciones
+         */
+        function mostrarListaUbicaciones(ubicaciones) {
+            const container = document.getElementById('locationsList');
+            if (!container) return;
+
+            if (ubicaciones.length === 0) {
+                container.innerHTML = '<p style="color: #718096;">No hay ubicaciones para mostrar</p>';
+                return;
+            }
+
+            container.innerHTML = ubicaciones.map((ubicacion, index) => {
+                const fechaEntrada = new Date(ubicacion.timestamp_entrada);
+                const duracion = ubicacion.duracion_minutos
+                    ? formatearDuracion(ubicacion.duracion_minutos)
+                    : 'En curso';
+
+                return `
+                    <div class="location-item" onclick="centrarMapa(${ubicacion.latitud}, ${ubicacion.longitud}, ${index})" data-id="${ubicacion.id}">
+                        <div class="location-header">
+                            <span class="location-time">
+                                ${ubicacion.device_type === 'mobile' ? '📱' : '💻'}
+                                ${formatearFechaPerú(fechaEntrada)}
+                            </span>
+                            <span class="location-duration">⏱️ ${duracion}</span>
+                        </div>
+                        <div class="location-details">
+                            <strong>${ubicacion.nombre || ubicacion.username || 'Usuario desconocido'}</strong><br>
+                            ${ubicacion.actividad_realizada ? `Actividad: ${ubicacion.actividad_realizada}<br>` : ''}
+                            ${ubicacion.cuenta_contrato ? `Cuenta: ${ubicacion.cuenta_contrato}<br>` : ''}
+                            <span class="location-coords">
+                                📍 ${ubicacion.latitud.toFixed(6)}, ${ubicacion.longitud.toFixed(6)}
+                            </span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        /**
+         * Centrar mapa en una ubicación
+         */
+        function centrarMapa(lat, lon, markerIndex) {
+            if (!map) return;
+
+            map.setView([lat, lon], 16);
+
+            if (markers[markerIndex]) {
+                markers[markerIndex].openPopup();
+            }
+        }
+
+        /**
+         * Calcular distancia entre dos puntos (Haversine)
+         */
+        function calcularDistancia(lat1, lon1, lat2, lon2) {
+            const R = 6371e3; // Radio de la Tierra en metros
+            const φ1 = lat1 * Math.PI / 180;
+            const φ2 = lat2 * Math.PI / 180;
+            const Δφ = (lat2 - lat1) * Math.PI / 180;
+            const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+            const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+                Math.cos(φ1) * Math.cos(φ2) *
+                Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+            return R * c; // Distancia en metros
+        }
+
+        /**
+         * Formatear fecha/hora para zona horaria de Perú (UTC-5)
+         */
+        function formatearFechaPerú(fecha) {
+            if (!fecha) return 'N/A';
+
+            const fechaObj = fecha instanceof Date ? fecha : new Date(fecha);
+
+            return fechaObj.toLocaleString('es-PE', {
+                timeZone: 'America/Lima',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
+            });
+        }
+
+        /**
+         * Formatear duración
+         */
+        function formatearDuracion(minutos) {
+            if (minutos < 60) {
+                return `${Math.round(minutos)} min`;
+            } else {
+                const horas = Math.floor(minutos / 60);
+                const mins = Math.round(minutos % 60);
+                return `${horas}h ${mins}min`;
+            }
+        }
+
+        /**
+         * Limpiar filtros
+         */
+        function limpiarFiltros() {
+            const u = document.getElementById('filterUsuario');
+            const fi = document.getElementById('filterFechaInicio');
+            const ff = document.getElementById('filterFechaFin');
+            const dt = document.getElementById('filterDeviceType');
+
+            if (u) u.value = '';
+            if (fi) fi.value = '';
+            if (ff) ff.value = '';
+            if (dt) dt.value = '';
+
+            cargarUbicaciones(true);
+        }
+
+        /**
+         * Mostrar/ocultar loading
+         */
+        function showLoading(show) {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                if (show) {
+                    overlay.classList.add('active');
+                } else {
+                    overlay.classList.remove('active');
+                }
+            }
+        }
+
+        /**
+         * Mostrar mensaje temporal
+         */
+        function mostrarMensaje(mensaje, tipo = 'info') {
+            let messageEl = document.getElementById('tempMessage');
+            if (!messageEl) {
+                messageEl = document.createElement('div');
+                messageEl.id = 'tempMessage';
+                messageEl.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 15px 20px;
+                    border-radius: 8px;
+                    color: white;
+                    font-weight: 500;
+                    z-index: 10000;
+                    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+                    max-width: 400px;
+                `;
+                document.body.appendChild(messageEl);
+            }
+
+            const colores = {
+                info: '#4299e1',
+                error: '#f56565',
+                success: '#48bb78',
+                warning: '#ed8936'
+            };
+
+            messageEl.style.background = colores[tipo] || colores.info;
+            messageEl.textContent = mensaje;
+            messageEl.style.display = 'block';
+
+            setTimeout(() => {
+                messageEl.style.display = 'none';
+            }, 5000);
+        }
+
+        /**
+         * Verificar autenticación
+         */
+        function verificarAutenticacion() {
+            const currentUser = localStorage.getItem('currentUser');
+            if (!currentUser) {
+                alert('Debe iniciar sesión para acceder a esta página');
+                window.location.href = 'index.html';
+                return false;
+            }
+            return true;
         }
 
         /**
@@ -860,6 +1055,15 @@
          */
         document.addEventListener('DOMContentLoaded', function () {
             console.log('📄 DOM cargado - Script Inline');
+
+            // Inicializar Supabase (CRÍTICO: Sin esto no hay conexión)
+            if (typeof initSupabase === 'function') {
+                initSupabase();
+            } else {
+                console.error('❌ initSupabase no está definido');
+                mostrarMensaje('Error crítico: No se pudo conectar a la base de datos', 'error');
+                return;
+            }
 
             // Verificar autenticación
             if (!verificarAutenticacion()) {
@@ -884,7 +1088,7 @@
                 return;
             }
 
-            // Cargar usuarios
+            // Cargar usuarios inmediatamente
             cargarUsuarios();
 
             // Limpiar campos de fecha
