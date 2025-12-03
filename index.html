@@ -428,12 +428,207 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    </div>
+    </div>
+    </div>
+
+    <div class="results-section">
+        <h3>Resultados</h3>
+        <div id="resultsContainer">
+            <p class="no-results">Utilice los filtros para buscar registros</p>
+        </div>
+    </div>
+    </div>
+    </div>
+
+    <!-- Pantalla de Reportes -->
+    <div id="reportsScreen" class="screen">
+        <div class="header">
+            <div class="header-content">
+                <img src="logo-donet-final.svg" alt="DONET" class="header-logo">
+                <h1>📊 Reportes</h1>
+                <button onclick="showScreen('menuScreen')" class="btn-back">← Volver</button>
+            </div>
+        </div>
+
+        <div class="reports-container">
+            <!-- Sección de filtros -->
+            <div class="reports-filter-section">
+                <h3>Seleccionar Periodo</h3>
+
+                <div class="filter-type-toggle">
+                    <button class="filter-toggle-btn active" onclick="setFilterType('month')" id="btnMonthFilter">
+                        📅 Mes Completo
+                    </button>
+                    <button class="filter-toggle-btn" onclick="setFilterType('range')" id="btnRangeFilter">
+                        📆 Rango Personalizado
+                    </button>
+                </div>
+
+                <!-- Filtro por mes -->
+                <div id="monthFilter" class="filter-option active">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Mes</label>
+                            <select id="reportMonth">
+                                <option value="1">Enero</option>
+                                <option value="2">Febrero</option>
+                                <option value="3">Marzo</option>
+                                <option value="4">Abril</option>
+                                <option value="5">Mayo</option>
+                                <option value="6">Junio</option>
+                                <option value="7">Julio</option>
+                                <option value="8">Agosto</option>
+                                <option value="9">Septiembre</option>
+                                <option value="10">Octubre</option>
+                                <option value="11">Noviembre</option>
+                                <option value="12">Diciembre</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Año</label>
+                            <select id="reportYear"></select>
+                        </div>
+                        <div class="form-group">
+                            <button onclick="generateReport()" class="btn-primary">🔍 Buscar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filtro por rango -->
+                <div id="rangeFilter" class="filter-option">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Fecha Inicio</label>
+                            <input type="date" id="reportStartDate">
+                        </div>
+                        <div class="form-group">
+                            <label>Fecha Fin</label>
+                            <input type="date" id="reportEndDate">
+                        </div>
+                        <div class="form-group">
+                            <button onclick="generateReport()" class="btn-primary">🔍 Buscar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección de descarga -->
+            <div class="reports-download-section">
+                <div class="download-group">
+                    <h3>📄 Reporte Detallado</h3>
+                    <p class="download-description">Todos los campos de cada registro</p>
+                    <div class="download-buttons">
+                        <button onclick="downloadReport('csv', 'detailed')" class="btn-download btn-green">
+                            📥 CSV Detallado
+                        </button>
+                        <button onclick="downloadReport('excel', 'detailed')" class="btn-download btn-excel">
+                            📗 Excel Detallado
+                        </button>
+                        <button onclick="downloadReport('pdf', 'detailed')" class="btn-download btn-red">
+                            📕 PDF Detallado
+                        </button>
+                    </div>
+                </div>
+
+                <div class="download-group">
+                    <h3>📊 Reporte Resumido</h3>
+                    <p class="download-description">Datos consolidados por categoría</p>
+                    <div class="download-buttons">
+                        <button onclick="downloadReport('csv', 'summary')" class="btn-download btn-green">
+                            📥 CSV Resumido
+                        </button>
+                        <button onclick="downloadReport('excel', 'summary')" class="btn-download btn-excel">
+                            📗 Excel Resumido
+                        </button>
+                        <button onclick="downloadReport('pdf', 'summary')" class="btn-download btn-red">
+                            📕 PDF Resumido
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección de compartir -->
+            <div class="reports-share-section">
+                <h3>📱 Compartir por WhatsApp</h3>
+                <div class="share-buttons">
+                    <button onclick="shareWhatsApp('detailed')" class="btn-whatsapp">
+                        <span class="whatsapp-icon">💬</span>
+                        Compartir Detallado
+                    </button>
+                    <button onclick="shareWhatsApp('summary')" class="btn-whatsapp">
+                        <span class="whatsapp-icon">💬</span>
+                        Compartir Resumido
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tipos de reportes info -->
+            <div class="reports-info-section">
+                <h3>📋 Tipos de Reportes</h3>
+                <div class="info-grid">
+                    <div class="info-card">
+                        <h4>Detallado:</h4>
+                        <p>Planilla completa con todos los campos de cada registro diario.</p>
+                    </div>
+                    <div class="info-card">
+                        <h4>Resumido:</h4>
+                        <p>Consolidado con totales por categoría.</p>
+                    </div>
+                    <div class="info-card">
+                        <h4>CSV:</h4>
+                        <p>Formato de hoja de cálculo compatible con Excel, Google Sheets, etc.</p>
+                    </div>
+                    <div class="info-card">
+                        <h4>PDF:</h4>
+                        <p>Documento formateado listo para imprimir o compartir.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Registros del mes -->
+            <div class="reports-preview-section">
+                <h3>Registros del Mes <span id="previewCount" class="count-badge">0 registros</span></h3>
+                <div id="reportPreviewTable"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Login Admin para Carga Masiva -->
+    <div id="adminLoginModal" class="login-modal" style="display: none;">
+        <div class="login-box-admin">
+            <div class="logo-container" style="text-align: center; margin-bottom: 20px;">
+                <img src="logo-donet-final.svg" alt="DONET Logo" style="max-width: 80px; border-radius: 50%;">
+            </div>
+            <h2 style="color: #00d9ff; text-align: center; margin-bottom: 20px;">Acceso Administrativo</h2>
+            <p style="color: #ccc; text-align: center; margin-bottom: 20px;">Ingrese credenciales de administrador</p>
+            <form id="adminAccessForm">
+                <div class="input-group">
+                    <input type="text" id="adminAccessUser" placeholder="Usuario Administrador" required>
+                </div>
+                <div class="input-group">
+                    <input type="password" id="adminAccessPass" placeholder="Contraseña" required>
+                </div>
+                <div class="form-actions" style="display: flex; gap: 10px; justify-content: center;">
+                    <button type="button" onclick="closeAdminModal()" class="btn-secondary">Cancelar</button>
+                    <button type="submit" class="btn-primary">Acceder</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="config.js?v=7"></script>
     <script src="device-fingerprint.js?v=7"></script>
     <script src="geolocation-tracker.js?v=7"></script>
-    <script src="app.js?v=7"></script>
+    <script src="app_final.js?v=1"></script>
     <script src="reports.js?v=7"></script>
     <script src="reports-excel-formatter.js?v=7"></script>
 </body>
