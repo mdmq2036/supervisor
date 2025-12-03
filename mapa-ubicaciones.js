@@ -270,8 +270,8 @@ function crearPopupContent(ubicacion, numero) {
         <div class="popup-info">
             <strong>Usuario:</strong> ${ubicacion.nombre || ubicacion.username || 'N/A'}<br>
             <strong>Dispositivo:</strong> ${ubicacion.device_type === 'mobile' ? '📱 Móvil' : '💻 PC'}<br>
-            <strong>Entrada:</strong> ${fechaEntrada.toLocaleString('es-PE')}<br>
-            ${fechaSalida ? `<strong>Salida:</strong> ${fechaSalida.toLocaleString('es-PE')}<br>` : ''}
+            <strong>Entrada:</strong> ${formatearFechaPerú(fechaEntrada)}<br>
+            ${fechaSalida ? `<strong>Salida:</strong> ${formatearFechaPerú(fechaSalida)}<br>` : ''}
             <strong>Actividad:</strong> ${ubicacion.actividad_realizada || 'N/A'}<br>
             ${ubicacion.cuenta_contrato ? `<strong>Cuenta:</strong> ${ubicacion.cuenta_contrato}<br>` : ''}
             <strong>Precisión:</strong> ${Math.round(ubicacion.precision_metros)} metros<br>
@@ -342,7 +342,7 @@ function mostrarListaUbicaciones(ubicaciones) {
                 <div class="location-header">
                     <span class="location-time">
                         ${ubicacion.device_type === 'mobile' ? '📱' : '💻'}
-                        ${fechaEntrada.toLocaleString('es-PE')}
+                        ${formatearFechaPerú(fechaEntrada)}
                     </span>
                     <span class="location-duration">⏱️ ${duracion}</span>
                 </div>
@@ -388,6 +388,26 @@ function calcularDistancia(lat1, lon1, lat2, lon2) {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
     return R * c; // Distancia en metros
+}
+
+/**
+ * Formatear fecha/hora para zona horaria de Perú (UTC-5)
+ */
+function formatearFechaPerú(fecha) {
+    if (!fecha) return 'N/A';
+
+    const fechaObj = fecha instanceof Date ? fecha : new Date(fecha);
+
+    return fechaObj.toLocaleString('es-PE', {
+        timeZone: 'America/Lima',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+    });
 }
 
 /**
