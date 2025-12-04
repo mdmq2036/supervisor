@@ -141,13 +141,20 @@ async function handleLogin(e) {
             }
         }
 
+        // PASO CRÍTICO: Solicitar GPS OBLIGATORIO antes de permitir acceso
+        showLoading(true);
+        const gpsPermitido = await solicitarGPSObligatorio();
+        
+        if (!gpsPermitido) {
+            showMessage('❌ GPS es obligatorio para usar la aplicación', 'error');
+            showLoading(false);
+            return;
+        }
+
         currentUser = userData;
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
         showScreen('menuScreen');
         updateUserInfo();
-
-        // Solicitar permisos de geolocalización automáticamente
-        requestGeolocationPermission();
 
         // Limpiar formulario
         document.getElementById('loginForm').reset();
@@ -158,6 +165,208 @@ async function handleLogin(e) {
     }
 
     showLoading(false);
+}
+
+// NUEVA FUNCIÓN: Solicitar GPS OBLIGATORIO al login
+async function solicitarGPSObligatorio() {
+    return new Promise((resolve) => {
+        if (!navigator.geolocation) {
+            alert('⚠️ Tu navegador no soporta geolocalización. Por favor usa un navegador moderno.');
+            resolve(false);
+            return;
+        }
+
+        // Crear modal de solicitud
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        `;
+
+        modal.innerHTML = `
+            <div style="
+                background: linear-gradient(135deg, #1e293b, #0f172a);
+                padding: 40px;
+                border-radius: 16px;
+                text-align: center;
+                max-width: 450px;
+                border: 2px solid #00f2fe;
+                box-shadow: 0 0 30px rgba(0, 242, 254, 0.2);
+            ">
+                <h2 style="color: #00f2fe; margin-top: 0; font-size: 1.8em;">📍 ACTIVAR GPS - OBLIGATORIO</h2>
+                <p style="color: #94a3b8; line-height: 1.8; font-size: 1.1em; margin: 20px 0;">
+                    Para usar esta aplicación, <strong>debes activar tu ubicación GPS</strong>.
+                </p>
+                <div style="background: rgba(0, 242, 254, 0.1); padding: 20px; border-radius: 12px; margin: 20px 0; border-left: 4px solid #00f2fe;">
+                    <p style="margin: 0; color: #94a3b8; font-size: 0.95em; line-height: 1.6;">
+                        ✓ Precisión: ±10 metros<br>
+                        ✓ Datos encriptados<br>
+                        ✓ Solo para supervisión<br>
+                        <strong style="color: #ef4444;">⚠️ OBLIGATORIO PARA CONTINUAR</strong>
+                    </p>
+                </div>
+                <p style="color: #f59e0b; font-weight: 600; margin: 15px 0;">
+                    Selecciona una opción:
+                </p>
+                <button id="btnActivarGPS" style="
+                    background: linear-gradient(135deg, #00f2fe, #4facfe);
+                    color: #0f172a;
+                    border: none;
+                    padding: 14px 40px;
+                    border-radius: 8px;
+                    font-weight: 700;
+                    cursor: pointer;
+                    font-size: 1.05em;
+                    margin: 10px 5px;
+                    transition: all 0.3s ease;
+                    width: 100%;
+                ">
+                    ✓ ACTIVAR SIEMPRE
+                </button>
+                <button id="btnActivarSoloUso" style="
+                    background: rgba(79, 172, 254, 0.2);
+                    color: #4facfe;
+                    border: 2px solid #4facfe;
+                    padding: 14px 40px;
+                    border-radius: 8px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    font-size: 1.05em;
+                    margin: 10px 5px;
+                    transition: all 0.3s ease;
+                    width: 100%;
+                ">
+                    ⏱️ SOLO CUANDO ESTÁ EN USO
+                </button>
+                <button id="btnDenegarGPS" style="
+                    background: rgba(239, 68, 68, 0.1);
+                    color: #fca5a5;
+                    border: 2px solid #ef4444;
+                    padding: 14px 40px;
+                    border-radius: 8px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    font-size: 1.05em;
+                    margin: 10px 5px;
+                    transition: all 0.3s ease;
+                    width: 100%;
+                ">
+                    ✗ DENEGAR
+                </button>
+                <p style="color: #64748b; font-size: 0.85em; margin-top: 20px;">
+                    Nota: Debes seleccionar una opción para continuar
+                </p>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        // Botón: Activar Siempre
+        document.getElementById('btnActivarGPS').addEventListener('click', () => {
+            modal.remove();
+            navigator.geolocation.watchPosition(
+                async (position) => {
+                    console.log('✅ GPS Activado (SIEMPRE) - Precisión:', Math.round(position.coords.accuracy), 'metros');
+                    
+                    // Guardar ubicación
+                    await guardarUbicacionLogin(position, 'always');
+                    localStorage.setItem('gpsPermiso', 'always');
+                    resolve(true);
+                },
+                (error) => {
+                    console.error('❌ Error GPS:', error);
+                    alert('❌ No se pudo acceder al GPS. Acceso denegado.');
+                    resolve(false);
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        });
+
+        // Botón: Solo Cuando Está en Uso
+        document.getElementById('btnActivarSoloUso').addEventListener('click', () => {
+            modal.remove();
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    console.log('✅ GPS Activado (SOLO EN USO) - Precisión:', Math.round(position.coords.accuracy), 'metros');
+                    
+                    // Guardar ubicación
+                    await guardarUbicacionLogin(position, 'while_using');
+                    localStorage.setItem('gpsPermiso', 'while_using');
+                    resolve(true);
+                },
+                (error) => {
+                    console.error('❌ Error GPS:', error);
+                    alert('❌ No se pudo acceder al GPS. Acceso denegado.');
+                    resolve(false);
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        });
+
+        // Botón: Denegar
+        document.getElementById('btnDenegarGPS').addEventListener('click', () => {
+            modal.remove();
+            alert('❌ GPS es obligatorio. No puedes continuar sin activarlo.');
+            resolve(false);
+        });
+    });
+}
+
+// NUEVA FUNCIÓN: Guardar ubicación al login
+async function guardarUbicacionLogin(position, permiso) {
+    try {
+        if (!currentUser) return;
+
+        const response = await fetch('/api/ubicaciones/guardar', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                usuario_id: currentUser.id,
+                nombre: currentUser.nombre || currentUser.usuario || 'Usuario',
+                latitud: position.coords.latitude,
+                longitud: position.coords.longitude,
+                precision_metros: Math.round(position.coords.accuracy),
+                device_type: /mobile/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
+                device_fingerprint: getDeviceFingerprint(),
+                actividad: `Login - GPS ${permiso}`
+            })
+        });
+
+        if (response.ok) {
+            console.log('✅ Ubicación de login guardada en servidor');
+        }
+    } catch (error) {
+        console.error('Error guardando ubicación:', error);
+    }
+}
+
+// NUEVA FUNCIÓN: Obtener fingerprint del dispositivo
+function getDeviceFingerprint() {
+    const userAgent = navigator.userAgent;
+    const language = navigator.language;
+    const screenResolution = `${screen.width}x${screen.height}`;
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    
+    const fingerprint = `${userAgent}|${language}|${screenResolution}|${timezone}`;
+    return btoa(fingerprint).substring(0, 32);
 }
 
 // Manejar logout
