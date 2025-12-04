@@ -148,12 +148,12 @@ app.get('/api/ubicaciones', checkDbConnection, async (req, res) => {
     try {
         const { usuario_id, fecha_inicio, fecha_fin, device_type } = req.query;
 
+        // Intentar primero con v_ubicaciones_tiempo_real (nueva tabla)
         let query = supabase
-            .from('v_analisis_ubicaciones')
+            .from('v_ubicaciones_tiempo_real')
             .select('*')
             .order('timestamp_entrada', { ascending: false });
 
-        // Aplicar filtros dinámicos
         // Aplicar filtros dinámicos
         if (usuario_id) query = query.eq('usuario_id', usuario_id);
         if (device_type) query = query.eq('device_type', device_type);
@@ -169,7 +169,31 @@ app.get('/api/ubicaciones', checkDbConnection, async (req, res) => {
         // Limitar resultados para no saturar el mapa
         query = query.limit(500);
 
-        const { data, error } = await query;
+        let { data, error } = await query;
+
+        // Si no hay datos en v_ubicaciones_tiempo_real, intentar con v_analisis_ubicaciones
+        if (error || !data || data.length === 0) {
+            console.log('⚠️ No hay datos en v_ubicaciones_tiempo_real, intentando v_analisis_ubicaciones...');
+            
+            query = supabase
+                .from('v_analisis_ubicaciones')
+                .select('*')
+                .order('timestamp_entrada', { ascending: false });
+
+            if (usuario_id) query = query.eq('usuario_id', usuario_id);
+            if (device_type) query = query.eq('device_type', device_type);
+            if (fecha_inicio && fecha_inicio.trim() !== '') {
+                query = query.gte('timestamp_entrada', `${fecha_inicio}T00:00:00`);
+            }
+            if (fecha_fin && fecha_fin.trim() !== '') {
+                query = query.lte('timestamp_entrada', `${fecha_fin}T23:59:59`);
+            }
+            query = query.limit(500);
+
+            const result = await query;
+            data = result.data;
+            error = result.error;
+        }
 
         if (error) throw error;
 
