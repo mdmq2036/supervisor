@@ -9,8 +9,6 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Supabase -->
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
     <style>
         :root {
@@ -171,6 +169,65 @@
             border-radius: 50%;
         }
 
+        /* Reporte de Permanencia */
+        .report-section {
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: 16px;
+            margin-top: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .report-title {
+            color: var(--primary);
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .report-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .report-item {
+            background: rgba(15, 23, 42, 0.4);
+            padding: 15px;
+            border-radius: 12px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .report-location {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .report-stats {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .report-stats strong {
+            color: var(--text-primary);
+        }
+
+        .duration-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .duration-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
         /* Historial */
         .history-section {
             background: var(--bg-card);
@@ -242,6 +299,15 @@
                 transform: rotate(360deg);
             }
         }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid #ef4444;
+            color: #fca5a5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 
@@ -259,7 +325,7 @@
                 <div class="filter-group">
                     <label>Usuario</label>
                     <select id="filterUsuario">
-                        <option value="">Cargando usuarios...</option>
+                        <option value="">Todos los usuarios</option>
                     </select>
                 </div>
                 <div class="filter-group">
@@ -307,31 +373,30 @@
 
         <!-- Leyenda -->
         <div class="map-legend">
-            <div class="legend-item"><span class="legend-dot" style="background: #48bb78;"></span>
-                < 5 min</div>
-                    <div class="legend-item"><span class="legend-dot" style="background: #4299e1;"></span> 5-15 min
-                    </div>
-                    <div class="legend-item"><span class="legend-dot" style="background: #ed8936;"></span> 15-30 min
-                    </div>
-                    <div class="legend-item"><span class="legend-dot" style="background: #f56565;"></span> 30-60 min
-                    </div>
-                    <div class="legend-item"><span class="legend-dot" style="background: #9f7aea;"></span> > 60 min
-                    </div>
-                    <div class="legend-item"><span class="legend-dot" style="background: #718096;"></span> En curso
-                    </div>
-            </div>
+            <div class="legend-item"><span class="legend-dot" style="background: #48bb78;"></span> < 5 min</div>
+            <div class="legend-item"><span class="legend-dot" style="background: #4299e1;"></span> 5-15 min</div>
+            <div class="legend-item"><span class="legend-dot" style="background: #ed8936;"></span> 15-30 min</div>
+            <div class="legend-item"><span class="legend-dot" style="background: #f56565;"></span> 30-60 min</div>
+            <div class="legend-item"><span class="legend-dot" style="background: #9f7aea;"></span> > 60 min</div>
+            <div class="legend-item"><span class="legend-dot" style="background: #718096;"></span> En curso</div>
+        </div>
 
-            <!-- Historial -->
-            <div class="history-section">
-                <h3 style="color: var(--primary); margin-top: 0;">📋 Historial Detallado</h3>
-                <div id="historyList"></div>
-            </div>
+        <!-- Reporte de Permanencia -->
+        <div class="report-section">
+            <h3 class="report-title">📊 Reporte de Permanencia por Ubicación</h3>
+            <div id="reportList" class="report-grid"></div>
+        </div>
 
-            <div style="text-align: center; margin-top: 30px;">
-                <button onclick="window.location.href='index.html'" class="btn-search" style="background: #334155;">
-                    ← Volver al Menú
-                </button>
-            </div>
+        <!-- Historial -->
+        <div class="history-section">
+            <h3 style="color: var(--primary); margin-top: 0;">📋 Historial Detallado</h3>
+            <div id="historyList"></div>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <button onclick="window.location.href='index.html'" class="btn-search" style="background: #334155;">
+                ← Volver al Menú
+            </button>
         </div>
 
         <div id="loadingOverlay" class="loading-overlay">
@@ -340,13 +405,14 @@
 
         <!-- Scripts -->
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-        <script src="config.js"></script> <!-- Asegúrate de que config.js tenga la configuración de Supabase -->
+        <script src="config.js"></script>
 
         <script>
             // Variables globales
             let map;
             let markers = [];
             let polyline;
+            let ubicacionesData = [];
 
             // Inicializar al cargar
             document.addEventListener('DOMContentLoaded', async () => {
@@ -375,33 +441,25 @@
                 console.log('✅ Mapa inicializado');
             }
 
-            // Cargar Usuarios
+            // Cargar Usuarios desde API
             async function cargarUsuarios() {
                 const select = document.getElementById('filterUsuario');
-                select.innerHTML = '<option value="">Cargando...</option>';
-
+                
                 try {
-                    // Cargar de ambas tablas
-                    const { data: usuarios } = await supabase.from('usuarios').select('id, username, nombre').eq('activo', true);
-                    const { data: supervisores } = await supabase.from('supervisores').select('id, usuario, nombre').eq('activo', true);
-
-                    let todos = [];
-                    if (usuarios) todos = todos.concat(usuarios.map(u => ({ id: u.id, nombre: u.nombre || u.username })));
-                    if (supervisores) todos = todos.concat(supervisores.map(s => ({ id: s.id, nombre: s.nombre || s.usuario })));
-
-                    // Ordenar
-                    todos.sort((a, b) => a.nombre.localeCompare(b.nombre));
-
-                    // Llenar select
+                    const response = await fetch('/api/usuarios');
+                    if (!response.ok) throw new Error('Error al cargar usuarios');
+                    
+                    const usuarios = await response.json();
+                    
                     select.innerHTML = '<option value="">Todos los usuarios</option>';
-                    todos.forEach(u => {
+                    usuarios.forEach(u => {
                         const opt = document.createElement('option');
                         opt.value = u.id;
-                        opt.textContent = u.nombre;
+                        opt.textContent = u.nombre || u.username;
                         select.appendChild(opt);
                     });
 
-                    console.log(`✅ ${todos.length} usuarios cargados`);
+                    console.log(`✅ ${usuarios.length} usuarios cargados`);
 
                 } catch (error) {
                     console.error('Error cargando usuarios:', error);
@@ -409,37 +467,41 @@
                 }
             }
 
-            // Cargar Ubicaciones
+            // Cargar Ubicaciones desde API
             async function cargarUbicaciones() {
                 showLoading(true);
                 try {
-                    let query = supabase
-                        .from('ubicaciones_gps')
-                        .select('*')
-                        .order('timestamp_entrada', { ascending: false });
-
-                    // Filtros
                     const usuario = document.getElementById('filterUsuario').value;
                     const inicio = document.getElementById('filterFechaInicio').value;
                     const fin = document.getElementById('filterFechaFin').value;
                     const dispositivo = document.getElementById('filterDeviceType').value;
 
-                    if (usuario) query = query.eq('usuario_id', usuario);
-                    if (inicio) query = query.gte('timestamp_entrada', `${inicio}T00:00:00`);
-                    if (fin) query = query.lte('timestamp_entrada', `${fin}T23:59:59`);
-                    if (dispositivo) query = query.eq('device_type', dispositivo);
+                    // Construir URL con parámetros
+                    const params = new URLSearchParams();
+                    if (usuario) params.append('usuario_id', usuario);
+                    if (inicio) params.append('fecha_inicio', inicio);
+                    if (fin) params.append('fecha_fin', fin);
+                    if (dispositivo) params.append('device_type', dispositivo);
 
-                    const { data, error } = await query.limit(500);
+                    const url = `/api/ubicaciones${params.toString() ? '?' + params.toString() : ''}`;
+                    console.log('📡 Consultando:', url);
 
-                    if (error) throw error;
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error(`Error ${response.status}`);
 
-                    actualizarMapa(data);
-                    actualizarEstadisticas(data);
-                    actualizarHistorial(data);
+                    ubicacionesData = await response.json();
+                    if (!Array.isArray(ubicacionesData)) ubicacionesData = [];
+
+                    console.log(`✅ ${ubicacionesData.length} ubicaciones recibidas`);
+
+                    actualizarMapa(ubicacionesData);
+                    actualizarEstadisticas(ubicacionesData);
+                    generarReporte(ubicacionesData);
+                    actualizarHistorial(ubicacionesData);
 
                 } catch (error) {
                     console.error('Error cargando ubicaciones:', error);
-                    alert('Error al cargar datos del mapa');
+                    document.getElementById('reportList').innerHTML = `<div class="error-message">Error al cargar datos: ${error.message}</div>`;
                 } finally {
                     showLoading(false);
                 }
@@ -465,9 +527,9 @@
                     // Icono personalizado
                     const icon = L.divIcon({
                         className: 'custom-marker',
-                        html: `<div style="background:${color}; width:24px; height:24px; border-radius:50%; border:2px solid white; box-shadow:0 2px 5px rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; color:white; font-size:10px; font-weight:bold;">${index + 1}</div>`,
-                        iconSize: [24, 24],
-                        iconAnchor: [12, 12]
+                        html: `<div style="background:${color}; width:30px; height:30px; border-radius:50%; border:2px solid white; box-shadow:0 2px 5px rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; color:white; font-size:12px; font-weight:bold;">${index + 1}</div>`,
+                        iconSize: [30, 30],
+                        iconAnchor: [15, 15]
                     });
 
                     const marker = L.marker([u.latitud, u.longitud], { icon: icon })
@@ -484,7 +546,7 @@
                     map.fitBounds(bounds, { padding: [50, 50] });
                     // Dibujar ruta
                     if (latlngs.length > 1) {
-                        polyline = L.polyline(latlngs, { color: 'var(--primary)', dashArray: '5, 10' }).addTo(map);
+                        polyline = L.polyline(latlngs, { color: '#00f2fe', weight: 2, opacity: 0.6, dashArray: '5, 10' }).addTo(map);
                     }
                 }
             }
@@ -492,23 +554,78 @@
             // Crear contenido del Popup
             function crearPopup(u) {
                 const entrada = new Date(u.timestamp_entrada).toLocaleString('es-PE');
-                const duracion = u.duracion_minutos ? `${u.duracion_minutos} min` : 'En curso';
+                const duracion = u.duracion_minutos ? `${Math.round(u.duracion_minutos)} min` : 'En curso';
 
                 return `
-            <div style="font-family: 'Outfit', sans-serif; min-width: 200px;">
-                <h4 style="margin:0 0 8px 0; color:#0f172a;">📍 Detalle de Ubicación</h4>
-                <div style="font-size:0.9em; color:#334155;">
-                    <strong>Dispositivo:</strong> ${u.device_type === 'mobile' ? '📱 Móvil' : '💻 PC'}<br>
-                    <strong>Entrada:</strong> ${entrada}<br>
-                    <strong>Duración:</strong> ${duracion}<br>
-                    <strong>Actividad:</strong> ${u.actividad_realizada || 'N/A'}<br>
-                    <strong>Precisión:</strong> ${Math.round(u.precision_metros || 0)}m
-                </div>
-            </div>
-        `;
+                    <div style="font-family: 'Outfit', sans-serif; min-width: 200px;">
+                        <h4 style="margin:0 0 8px 0; color:#0f172a;">📍 Detalle de Ubicación</h4>
+                        <div style="font-size:0.9em; color:#334155;">
+                            <strong>Usuario:</strong> ${u.nombre || u.username || 'N/A'}<br>
+                            <strong>Dispositivo:</strong> ${u.device_type === 'mobile' ? '📱 Móvil' : '💻 PC'}<br>
+                            <strong>Entrada:</strong> ${entrada}<br>
+                            <strong>Duración:</strong> ${duracion}<br>
+                            <strong>Actividad:</strong> ${u.actividad_realizada || 'N/A'}<br>
+                            <strong>Precisión:</strong> ${Math.round(u.precision_metros || 0)}m
+                        </div>
+                    </div>
+                `;
             }
 
-            // Actualizar Historial (Lista debajo del mapa)
+            // Generar Reporte de Permanencia
+            function generarReporte(ubicaciones) {
+                const container = document.getElementById('reportList');
+                
+                if (!ubicaciones.length) {
+                    container.innerHTML = '<p style="text-align:center; color:var(--text-secondary);">No hay ubicaciones registradas en este periodo.</p>';
+                    return;
+                }
+
+                // Agrupar por ubicación (latitud, longitud)
+                const reportePorUbicacion = {};
+                
+                ubicaciones.forEach(u => {
+                    const key = `${u.latitud.toFixed(4)},${u.longitud.toFixed(4)}`;
+                    if (!reportePorUbicacion[key]) {
+                        reportePorUbicacion[key] = {
+                            latitud: u.latitud,
+                            longitud: u.longitud,
+                            actividades: [],
+                            duracionTotal: 0,
+                            usuarios: new Set()
+                        };
+                    }
+                    reportePorUbicacion[key].actividades.push(u.actividad_realizada || 'Sin especificar');
+                    reportePorUbicacion[key].duracionTotal += u.duracion_minutos || 0;
+                    if (u.nombre) reportePorUbicacion[key].usuarios.add(u.nombre);
+                });
+
+                // Encontrar duración máxima para la barra
+                const maxDuracion = Math.max(...Object.values(reportePorUbicacion).map(r => r.duracionTotal));
+
+                // Generar HTML
+                container.innerHTML = Object.values(reportePorUbicacion).map((reporte, idx) => {
+                    const porcentaje = (reporte.duracionTotal / maxDuracion) * 100;
+                    const color = getColorPorDuracion(reporte.duracionTotal / reporte.actividades.length);
+                    const horas = Math.floor(reporte.duracionTotal / 60);
+                    const minutos = Math.round(reporte.duracionTotal % 60);
+
+                    return `
+                        <div class="report-item">
+                            <div class="report-location">📍 Ubicación ${idx + 1}</div>
+                            <div class="report-stats">
+                                <strong>Permanencia:</strong> ${horas}h ${minutos}m<br>
+                                <strong>Visitas:</strong> ${reporte.actividades.length}<br>
+                                <strong>Usuarios:</strong> ${reporte.usuarios.size}
+                            </div>
+                            <div class="duration-bar">
+                                <div class="duration-fill" style="width: ${porcentaje}%; background: ${color};"></div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Actualizar Historial
             function actualizarHistorial(ubicaciones) {
                 const container = document.getElementById('historyList');
                 if (!ubicaciones.length) {
@@ -521,22 +638,22 @@
                     const color = getColorPorDuracion(u.duracion_minutos);
 
                     return `
-                <div class="history-item" onclick="centrarEn(${i})" style="border-left-color: ${color}">
-                    <div class="history-info">
-                        <strong>${u.actividad_realizada || 'Ubicación Registrada'}</strong>
-                        <span class="history-meta">
-                            ${u.device_type === 'mobile' ? '📱' : '💻'} 
-                            Precisión: ${Math.round(u.precision_metros)}m
-                        </span>
-                    </div>
-                    <div class="history-time">
-                        ${entrada}<br>
-                        <span style="font-size:0.8em; color:${color}">
-                            ${u.duracion_minutos ? u.duracion_minutos + ' min' : 'En curso'}
-                        </span>
-                    </div>
-                </div>
-            `;
+                        <div class="history-item" onclick="centrarEn(${i})" style="border-left-color: ${color}">
+                            <div class="history-info">
+                                <strong>${u.actividad_realizada || 'Ubicación Registrada'}</strong>
+                                <span class="history-meta">
+                                    ${u.device_type === 'mobile' ? '📱' : '💻'} 
+                                    ${u.nombre || u.username || 'Usuario'} - Precisión: ${Math.round(u.precision_metros)}m
+                                </span>
+                            </div>
+                            <div class="history-time">
+                                ${entrada}<br>
+                                <span style="font-size:0.8em; color:${color}">
+                                    ${u.duracion_minutos ? Math.round(u.duracion_minutos) + ' min' : 'En curso'}
+                                </span>
+                            </div>
+                        </div>
+                    `;
                 }).join('');
             }
 
