@@ -349,23 +349,23 @@
             <div class="filters-grid">
                 <div class="filter-group">
                     <label>Usuario</label>
-                    <select id="filterUsuario">
+                    <select id="filterUsuario" onchange="cargarUbicaciones()">
                         <option value="">Todos los usuarios</option>
                     </select>
                 </div>
                 <div class="filter-group">
                     <label>Cuenta Contrato</label>
-                    <select id="filterContrato">
+                    <select id="filterContrato" onchange="cargarUbicaciones()">
                         <option value="">Todos los contratos</option>
                     </select>
                 </div>
                 <div class="filter-group">
                     <label>Fecha Inicio</label>
-                    <input type="date" id="filterFechaInicio">
+                    <input type="date" id="filterFechaInicio" onchange="cargarUbicaciones()">
                 </div>
                 <div class="filter-group">
                     <label>Fecha Fin</label>
-                    <input type="date" id="filterFechaFin">
+                    <input type="date" id="filterFechaFin" onchange="cargarUbicaciones()">
                 </div>
                 <div class="filter-group">
                     <label>Tipo de Dispositivo</label>

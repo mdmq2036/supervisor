@@ -158,10 +158,7 @@ async function cargarUbicaciones(initialLoad = false) {
 
         if (fechaFin) {
             query = query.lte('timestamp_entrada', `${fechaFin}T23:59:59`);
-        } else if (initialLoad) {
-            // Por defecto hoy
-            const hoy = new Date().toISOString().split('T')[0];
-            query = query.gte('timestamp_entrada', `${hoy}T00:00:00`);
+        } // ELIMINADO: No forzar fecha de hoy para mostrar todo el historial por defectoT00:00:00`);
 
             // Actualizar inputs de fecha
             if (document.getElementById('filterFechaInicio')) {

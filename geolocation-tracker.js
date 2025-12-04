@@ -126,6 +126,44 @@ class GeolocationTracker {
     /**
      * Iniciar rastreo de ubicación
      */
+    
+    /**
+     * Solicitar permisos de GPS explícitamente con UI
+     */
+    async solicitarPermisosGPS() {
+        if (!this.isGeolocationSupported()) {
+            alert("Tu dispositivo no soporta geolocalización. Algunas funciones no estarán disponibles.");
+            return false;
+        }
+
+        try {
+            const result = await navigator.permissions.query({ name: "geolocation" });
+            
+            if (result.state === "denied") {
+                alert("⚠️ ACCESO A UBICACIÓN DENEGADO\n\nPara usar esta aplicación, debes permitir el acceso a tu ubicación en la configuración de tu navegador.\n\nPor favor, habilita el GPS y recarga la página.");
+                return false;
+            }
+            
+            // Intentar obtener una posición para forzar el prompt del navegador
+            await new Promise((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
+            });
+            
+            return true;
+        } catch (error) {
+            console.warn("Error verificando permisos:", error);
+            // Si falla la verificación de permisos API, intentamos obtener posición directamente
+            try {
+                await this.getCurrentPosition();
+                return true;
+            } catch (e) {
+                alert("⚠️ Por favor, activa el GPS de tu dispositivo para continuar.");
+                return false;
+            }
+        }
+    }
+
+    
     async startTracking(userId, activity = null, cuentaContrato = null) {
         if (this.isTracking) {
             console.warn('El rastreo ya está activo');
@@ -133,7 +171,7 @@ class GeolocationTracker {
         }
 
         try {
-            // Verificar permisos
+            // Verificar permisos explícitamente`n            await this.solicitarPermisosGPS();
             const permission = await this.requestPermission();
             if (!permission.granted) {
                 throw new Error('Permisos de geolocalización no concedidos');
