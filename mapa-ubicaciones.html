@@ -368,89 +368,109 @@
             </div>
         </div>
 
+        <!-- Usuarios Conectados (NUEVO) -->
+        <div class="connected-users-container"
+            style="margin-top: 20px; background: rgba(15, 23, 42, 0.6); padding: 15px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1);">
+            <h4 style="color: var(--primary); margin: 0 0 10px 0; display: flex; align-items: center; gap: 8px;">
+                <span
+                    style="background: var(--primary); width: 8px; height: 8px; border-radius: 50%; display: inline-block;"></span>
+                Usuarios Conectados en Tiempo Real
+            </h4>
+            <div id="connectedUsersList" style="display: flex; flex-wrap: wrap; gap: 10px;">
+                <!-- Aquí se insertarán los usuarios -->
+                <span style="color: var(--text-secondary); font-size: 0.9em;">Cargando usuarios...</span>
+            </div>
+        </div>
+
         <!-- Mapa -->
         <div id="map"></div>
 
         <!-- Leyenda -->
         <div class="map-legend">
-            <div class="legend-item"><span class="legend-dot" style="background: #48bb78;"></span> < 5 min</div>
-            <div class="legend-item"><span class="legend-dot" style="background: #4299e1;"></span> 5-15 min</div>
-            <div class="legend-item"><span class="legend-dot" style="background: #ed8936;"></span> 15-30 min</div>
-            <div class="legend-item"><span class="legend-dot" style="background: #f56565;"></span> 30-60 min</div>
-            <div class="legend-item"><span class="legend-dot" style="background: #9f7aea;"></span> > 60 min</div>
-            <div class="legend-item"><span class="legend-dot" style="background: #718096;"></span> En curso</div>
-        </div>
+            <div class="legend-item"><span class="legend-dot" style="background: #48bb78;"></span>
+                < 5 min</div>
+                    <div class="legend-item"><span class="legend-dot" style="background: #4299e1;"></span> 5-15 min
+                    </div>
+                    <div class="legend-item"><span class="legend-dot" style="background: #ed8936;"></span> 15-30 min
+                    </div>
+                    <div class="legend-item"><span class="legend-dot" style="background: #f56565;"></span> 30-60 min
+                    </div>
+                    <div class="legend-item"><span class="legend-dot" style="background: #9f7aea;"></span> > 60 min
+                    </div>
+                    <div class="legend-item"><span class="legend-dot" style="background: #718096;"></span> En curso
+                    </div>
+            </div>
 
-        <!-- Reporte de Permanencia -->
-        <div class="report-section">
-            <h3 class="report-title">📊 Reporte de Permanencia por Ubicación</h3>
-            <div id="reportList" class="report-grid"></div>
-        </div>
+            <!-- Reporte de Permanencia -->
+            <div class="report-section">
+                <h3 class="report-title">📊 Reporte de Permanencia por Ubicación</h3>
+                <div id="reportList" class="report-grid"></div>
+            </div>
 
-        <!-- Historial -->
-        <div class="history-section">
-            <h3 style="color: var(--primary); margin-top: 0;">📋 Historial Detallado</h3>
-            <div id="historyList"></div>
-        </div>
+            <!-- Historial -->
+            <div class="history-section">
+                <h3 style="color: var(--primary); margin-top: 0;">📋 Historial Detallado</h3>
+                <div id="historyList"></div>
+            </div>
 
-        <div style="text-align: center; margin-top: 30px;">
-            <button onclick="window.location.href='index.html'" class="btn-search" style="background: #334155;">
-                ← Volver al Menú
-            </button>
-        </div>
+            <div style="text-align: center; margin-top: 30px;">
+                <button onclick="window.location.href='index.html'" class="btn-search" style="background: #334155;">
+                    ← Volver al Menú
+                </button>
+            </div>
 
-        <div id="loadingOverlay" class="loading-overlay">
-            <div class="spinner"></div>
-        </div>
+            <div id="loadingOverlay" class="loading-overlay">
+                <div class="spinner"></div>
+            </div>
 
-        <!-- Scripts -->
-        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-        <script src="config.js"></script>
+            <!-- Scripts -->
+            <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+            <script src="config.js"></script>
 
-        <script>
-            // Variables globales
-            let map;
-            let markers = [];
-            let polyline;
-            let ubicacionesData = [];
-            let gpsActivado = false;
-            let userLocation = null;
+            <script>
+                // Variables globales
+                let map;
+                let markers = [];
+                let polyline;
+                let ubicacionesData = [];
+                let gpsActivado = false;
+                let userLocation = null;
 
-            // Inicializar al cargar
-            document.addEventListener('DOMContentLoaded', async () => {
-                // PASO 1: Solicitar GPS obligatoriamente
-                await solicitarGPSObligatorio();
-                
-                // PASO 2: Inicializar mapa
-                initMap();
-                
-                // PASO 3: Cargar usuarios y datos
-                await cargarUsuarios();
+                // Inicializar al cargar
+                document.addEventListener('DOMContentLoaded', async () => {
+                    // PASO 1: Solicitar GPS obligatoriamente
+                    await solicitarGPSObligatorio();
 
-                // Establecer fecha de hoy por defecto
-                const hoy = new Date().toISOString().split('T')[0];
-                document.getElementById('filterFechaInicio').value = hoy;
-                document.getElementById('filterFechaFin').value = hoy;
+                    // PASO 2: Inicializar mapa
+                    initMap();
 
-                // Cargar datos iniciales
-                await cargarUbicaciones();
-                
-                // Actualizar ubicaciones cada 30 segundos
-                setInterval(actualizarUbicacionesEnTiempoReal, 30000);
-            });
+                    // PASO 3: Cargar usuarios y datos
+                    await cargarUsuarios();
 
-            // NUEVA FUNCIÓN: Solicitar GPS obligatoriamente
-            async function solicitarGPSObligatorio() {
-                return new Promise((resolve) => {
-                    if (!navigator.geolocation) {
-                        alert('⚠️ Tu navegador no soporta geolocalización. Por favor usa un navegador moderno.');
-                        resolve();
-                        return;
-                    }
+                    // Establecer fecha de hoy por defecto
+                    const hoy = new Date().toISOString().split('T')[0];
+                    document.getElementById('filterFechaInicio').value = hoy;
+                    document.getElementById('filterFechaFin').value = hoy;
 
-                    // Mostrar modal de solicitud
-                    const modal = document.createElement('div');
-                    modal.style.cssText = `
+                    // Cargar datos iniciales
+                    await cargarUbicaciones();
+
+                    // Actualizar ubicaciones cada 30 segundos
+                    setInterval(actualizarUbicacionesEnTiempoReal, 30000);
+                });
+
+                // NUEVA FUNCIÓN: Solicitar GPS obligatoriamente
+                async function solicitarGPSObligatorio() {
+                    return new Promise((resolve) => {
+                        if (!navigator.geolocation) {
+                            alert('⚠️ Tu navegador no soporta geolocalización. Por favor usa un navegador moderno.');
+                            resolve();
+                            return;
+                        }
+
+                        // Mostrar modal de solicitud
+                        const modal = document.createElement('div');
+                        modal.style.cssText = `
                         position: fixed;
                         top: 0;
                         left: 0;
@@ -463,7 +483,7 @@
                         z-index: 10000;
                     `;
 
-                    modal.innerHTML = `
+                        modal.innerHTML = `
                         <div style="
                             background: var(--bg-card);
                             padding: 40px;
@@ -514,242 +534,242 @@
                         </div>
                     `;
 
-                    document.body.appendChild(modal);
+                        document.body.appendChild(modal);
 
-                    document.getElementById('btnAceptarGPS').addEventListener('click', () => {
-                        modal.remove();
-                        navigator.geolocation.watchPosition(
-                            (position) => {
-                                userLocation = {
-                                    lat: position.coords.latitude,
-                                    lng: position.coords.longitude,
-                                    accuracy: position.coords.accuracy,
-                                    timestamp: new Date()
-                                };
-                                gpsActivado = true;
-                                console.log('✅ GPS Activado - Precisión:', Math.round(position.coords.accuracy), 'metros');
-                                
-                                // Guardar ubicación en servidor
-                                guardarUbicacionUsuario(userLocation);
-                                
-                                resolve();
+                        document.getElementById('btnAceptarGPS').addEventListener('click', () => {
+                            modal.remove();
+                            navigator.geolocation.watchPosition(
+                                (position) => {
+                                    userLocation = {
+                                        lat: position.coords.latitude,
+                                        lng: position.coords.longitude,
+                                        accuracy: position.coords.accuracy,
+                                        timestamp: new Date()
+                                    };
+                                    gpsActivado = true;
+                                    console.log('✅ GPS Activado - Precisión:', Math.round(position.coords.accuracy), 'metros');
+
+                                    // Guardar ubicación en servidor
+                                    guardarUbicacionUsuario(userLocation);
+
+                                    resolve();
+                                },
+                                (error) => {
+                                    console.error('❌ Error GPS:', error);
+                                    alert('No se pudo acceder al GPS. Continuando sin ubicación.');
+                                    resolve();
+                                },
+                                {
+                                    enableHighAccuracy: true,
+                                    timeout: 10000,
+                                    maximumAge: 0
+                                }
+                            );
+                        });
+
+                        document.getElementById('btnRechazarGPS').addEventListener('click', () => {
+                            modal.remove();
+                            resolve();
+                        });
+                    });
+                }
+
+                // NUEVA FUNCIÓN: Guardar ubicación del usuario
+                async function guardarUbicacionUsuario(location) {
+                    try {
+                        const usuario = localStorage.getItem('currentUser');
+                        if (!usuario) return;
+
+                        const userData = JSON.parse(usuario);
+
+                        const response = await fetch('/api/ubicaciones/guardar', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
                             },
-                            (error) => {
-                                console.error('❌ Error GPS:', error);
-                                alert('No se pudo acceder al GPS. Continuando sin ubicación.');
-                                resolve();
-                            },
-                            {
-                                enableHighAccuracy: true,
-                                timeout: 10000,
-                                maximumAge: 0
-                            }
-                        );
-                    });
+                            body: JSON.stringify({
+                                usuario_id: userData.id,
+                                nombre: userData.nombre || userData.usuario,
+                                latitud: location.lat,
+                                longitud: location.lng,
+                                precision_metros: Math.round(location.accuracy),
+                                device_type: /mobile/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
+                                device_fingerprint: getDeviceFingerprint()
+                            })
+                        });
 
-                    document.getElementById('btnRechazarGPS').addEventListener('click', () => {
-                        modal.remove();
-                        resolve();
-                    });
-                });
-            }
-
-            // NUEVA FUNCIÓN: Guardar ubicación del usuario
-            async function guardarUbicacionUsuario(location) {
-                try {
-                    const usuario = localStorage.getItem('currentUser');
-                    if (!usuario) return;
-
-                    const userData = JSON.parse(usuario);
-                    
-                    const response = await fetch('/api/ubicaciones/guardar', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            usuario_id: userData.id,
-                            nombre: userData.nombre || userData.usuario,
-                            latitud: location.lat,
-                            longitud: location.lng,
-                            precision_metros: Math.round(location.accuracy),
-                            device_type: /mobile/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
-                            device_fingerprint: getDeviceFingerprint()
-                        })
-                    });
-
-                    if (response.ok) {
-                        console.log('✅ Ubicación guardada en servidor');
-                    }
-                } catch (error) {
-                    console.error('Error guardando ubicación:', error);
-                }
-            }
-
-            // NUEVA FUNCIÓN: Obtener fingerprint del dispositivo
-            function getDeviceFingerprint() {
-                const userAgent = navigator.userAgent;
-                const language = navigator.language;
-                const screenResolution = `${screen.width}x${screen.height}`;
-                const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-                
-                const fingerprint = `${userAgent}|${language}|${screenResolution}|${timezone}`;
-                return btoa(fingerprint).substring(0, 32);
-            }
-
-            // NUEVA FUNCIÓN: Actualizar ubicaciones en tiempo real
-            async function actualizarUbicacionesEnTiempoReal() {
-                if (gpsActivado && userLocation) {
-                    await guardarUbicacionUsuario(userLocation);
-                }
-                // Recargar datos del mapa
-                await cargarUbicaciones();
-            }
-
-            // Inicializar Mapa
-            function initMap() {
-                // Coordenadas de Lima por defecto
-                map = L.map('map').setView([-12.0464, -77.0428], 13);
-
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '© OpenStreetMap contributors',
-                    maxZoom: 19
-                }).addTo(map);
-
-                console.log('✅ Mapa inicializado');
-            }
-
-            // Cargar Usuarios desde API
-            async function cargarUsuarios() {
-                const select = document.getElementById('filterUsuario');
-                
-                try {
-                    const response = await fetch('/api/usuarios');
-                    if (!response.ok) throw new Error('Error al cargar usuarios');
-                    
-                    const usuarios = await response.json();
-                    
-                    select.innerHTML = '<option value="">Todos los usuarios</option>';
-                    usuarios.forEach(u => {
-                        const opt = document.createElement('option');
-                        opt.value = u.id;
-                        opt.textContent = u.nombre || u.username;
-                        select.appendChild(opt);
-                    });
-
-                    console.log(`✅ ${usuarios.length} usuarios cargados`);
-
-                } catch (error) {
-                    console.error('Error cargando usuarios:', error);
-                    select.innerHTML = '<option value="">Error cargando usuarios</option>';
-                }
-            }
-
-            // Cargar Ubicaciones desde API
-            async function cargarUbicaciones() {
-                showLoading(true);
-                try {
-                    const usuario = document.getElementById('filterUsuario').value;
-                    const inicio = document.getElementById('filterFechaInicio').value;
-                    const fin = document.getElementById('filterFechaFin').value;
-                    const dispositivo = document.getElementById('filterDeviceType').value;
-
-                    // Construir URL con parámetros
-                    const params = new URLSearchParams();
-                    if (usuario) params.append('usuario_id', usuario);
-                    if (inicio) params.append('fecha_inicio', inicio);
-                    if (fin) params.append('fecha_fin', fin);
-                    if (dispositivo) params.append('device_type', dispositivo);
-
-                    // Primero intentar obtener ubicaciones en tiempo real
-                    let url = `/api/ubicaciones${params.toString() ? '?' + params.toString() : ''}`;
-                    console.log('📡 Consultando:', url);
-
-                    let response = await fetch(url);
-                    
-                    // Si no hay datos, intentar con la vía rápida
-                    if (!response.ok || response.status === 404) {
-                        console.log('⚠️ Intentando vía rápida...');
-                        url = '/api/ubicaciones/inicial';
-                        response = await fetch(url);
-                    }
-
-                    if (!response.ok) throw new Error(`Error ${response.status}`);
-
-                    ubicacionesData = await response.json();
-                    
-                    // Manejar respuesta con estructura {total, ubicaciones}
-                    if (ubicacionesData.ubicaciones) {
-                        ubicacionesData = ubicacionesData.ubicaciones;
-                    }
-                    
-                    if (!Array.isArray(ubicacionesData)) ubicacionesData = [];
-
-                    console.log(`✅ ${ubicacionesData.length} ubicaciones recibidas`);
-
-                    actualizarMapa(ubicacionesData);
-                    actualizarEstadisticas(ubicacionesData);
-                    generarReporte(ubicacionesData);
-                    actualizarHistorial(ubicacionesData);
-
-                } catch (error) {
-                    console.error('Error cargando ubicaciones:', error);
-                    document.getElementById('reportList').innerHTML = `<div class="error-message">Error al cargar datos: ${error.message}</div>`;
-                } finally {
-                    showLoading(false);
-                }
-            }
-
-            // Actualizar Mapa con Marcadores
-            function actualizarMapa(ubicaciones) {
-                // Limpiar
-                markers.forEach(m => map.removeLayer(m));
-                markers = [];
-                if (polyline) map.removeLayer(polyline);
-
-                if (!ubicaciones || ubicaciones.length === 0) return;
-
-                const bounds = [];
-                const latlngs = [];
-
-                ubicaciones.forEach((u, index) => {
-                    if (!u.latitud || !u.longitud) return;
-
-                    const color = getColorPorDuracion(u.duracion_minutos);
-
-                    // Icono personalizado
-                    const icon = L.divIcon({
-                        className: 'custom-marker',
-                        html: `<div style="background:${color}; width:30px; height:30px; border-radius:50%; border:2px solid white; box-shadow:0 2px 5px rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; color:white; font-size:12px; font-weight:bold;">${index + 1}</div>`,
-                        iconSize: [30, 30],
-                        iconAnchor: [15, 15]
-                    });
-
-                    const marker = L.marker([u.latitud, u.longitud], { icon: icon })
-                        .bindPopup(crearPopup(u))
-                        .addTo(map);
-
-                    markers.push(marker);
-                    bounds.push([u.latitud, u.longitud]);
-                    latlngs.push([u.latitud, u.longitud]);
-                });
-
-                // Ajustar vista
-                if (bounds.length > 0) {
-                    map.fitBounds(bounds, { padding: [50, 50] });
-                    // Dibujar ruta
-                    if (latlngs.length > 1) {
-                        polyline = L.polyline(latlngs, { color: '#00f2fe', weight: 2, opacity: 0.6, dashArray: '5, 10' }).addTo(map);
+                        if (response.ok) {
+                            console.log('✅ Ubicación guardada en servidor');
+                        }
+                    } catch (error) {
+                        console.error('Error guardando ubicación:', error);
                     }
                 }
-            }
 
-            // Crear contenido del Popup
-            function crearPopup(u) {
-                const entrada = new Date(u.timestamp_entrada).toLocaleString('es-PE');
-                const duracion = u.duracion_minutos ? `${Math.round(u.duracion_minutos)} min` : 'En curso';
+                // NUEVA FUNCIÓN: Obtener fingerprint del dispositivo
+                function getDeviceFingerprint() {
+                    const userAgent = navigator.userAgent;
+                    const language = navigator.language;
+                    const screenResolution = `${screen.width}x${screen.height}`;
+                    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-                return `
+                    const fingerprint = `${userAgent}|${language}|${screenResolution}|${timezone}`;
+                    return btoa(fingerprint).substring(0, 32);
+                }
+
+                // NUEVA FUNCIÓN: Actualizar ubicaciones en tiempo real
+                async function actualizarUbicacionesEnTiempoReal() {
+                    if (gpsActivado && userLocation) {
+                        await guardarUbicacionUsuario(userLocation);
+                    }
+                    // Recargar datos del mapa
+                    await cargarUbicaciones();
+                }
+
+                // Inicializar Mapa
+                function initMap() {
+                    // Coordenadas de Lima por defecto
+                    map = L.map('map').setView([-12.0464, -77.0428], 13);
+
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '© OpenStreetMap contributors',
+                        maxZoom: 19
+                    }).addTo(map);
+
+                    console.log('✅ Mapa inicializado');
+                }
+
+                // Cargar Usuarios desde API
+                async function cargarUsuarios() {
+                    const select = document.getElementById('filterUsuario');
+
+                    try {
+                        const response = await fetch('/api/usuarios');
+                        if (!response.ok) throw new Error('Error al cargar usuarios');
+
+                        const usuarios = await response.json();
+
+                        select.innerHTML = '<option value="">Todos los usuarios</option>';
+                        usuarios.forEach(u => {
+                            const opt = document.createElement('option');
+                            opt.value = u.id;
+                            opt.textContent = u.nombre || u.username;
+                            select.appendChild(opt);
+                        });
+
+                        console.log(`✅ ${usuarios.length} usuarios cargados`);
+
+                    } catch (error) {
+                        console.error('Error cargando usuarios:', error);
+                        select.innerHTML = '<option value="">Error cargando usuarios</option>';
+                    }
+                }
+
+                // Cargar Ubicaciones desde API
+                async function cargarUbicaciones() {
+                    showLoading(true);
+                    try {
+                        const usuario = document.getElementById('filterUsuario').value;
+                        const inicio = document.getElementById('filterFechaInicio').value;
+                        const fin = document.getElementById('filterFechaFin').value;
+                        const dispositivo = document.getElementById('filterDeviceType').value;
+
+                        // Construir URL con parámetros
+                        const params = new URLSearchParams();
+                        if (usuario) params.append('usuario_id', usuario);
+                        if (inicio) params.append('fecha_inicio', inicio);
+                        if (fin) params.append('fecha_fin', fin);
+                        if (dispositivo) params.append('device_type', dispositivo);
+
+                        // Primero intentar obtener ubicaciones en tiempo real
+                        let url = `/api/ubicaciones${params.toString() ? '?' + params.toString() : ''}`;
+                        console.log('📡 Consultando:', url);
+
+                        let response = await fetch(url);
+
+                        // Si no hay datos, intentar con la vía rápida
+                        if (!response.ok || response.status === 404) {
+                            console.log('⚠️ Intentando vía rápida...');
+                            url = '/api/ubicaciones/inicial';
+                            response = await fetch(url);
+                        }
+
+                        if (!response.ok) throw new Error(`Error ${response.status}`);
+
+                        ubicacionesData = await response.json();
+
+                        // Manejar respuesta con estructura {total, ubicaciones}
+                        if (ubicacionesData.ubicaciones) {
+                            ubicacionesData = ubicacionesData.ubicaciones;
+                        }
+
+                        if (!Array.isArray(ubicacionesData)) ubicacionesData = [];
+
+                        console.log(`✅ ${ubicacionesData.length} ubicaciones recibidas`);
+
+                        actualizarMapa(ubicacionesData);
+                        actualizarEstadisticas(ubicacionesData);
+                        generarReporte(ubicacionesData);
+                        actualizarHistorial(ubicacionesData);
+
+                    } catch (error) {
+                        console.error('Error cargando ubicaciones:', error);
+                        document.getElementById('reportList').innerHTML = `<div class="error-message">Error al cargar datos: ${error.message}</div>`;
+                    } finally {
+                        showLoading(false);
+                    }
+                }
+
+                // Actualizar Mapa con Marcadores
+                function actualizarMapa(ubicaciones) {
+                    // Limpiar
+                    markers.forEach(m => map.removeLayer(m));
+                    markers = [];
+                    if (polyline) map.removeLayer(polyline);
+
+                    if (!ubicaciones || ubicaciones.length === 0) return;
+
+                    const bounds = [];
+                    const latlngs = [];
+
+                    ubicaciones.forEach((u, index) => {
+                        if (!u.latitud || !u.longitud) return;
+
+                        const color = getColorPorDuracion(u.duracion_minutos);
+
+                        // Icono personalizado
+                        const icon = L.divIcon({
+                            className: 'custom-marker',
+                            html: `<div style="background:${color}; width:30px; height:30px; border-radius:50%; border:2px solid white; box-shadow:0 2px 5px rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; color:white; font-size:12px; font-weight:bold;">${index + 1}</div>`,
+                            iconSize: [30, 30],
+                            iconAnchor: [15, 15]
+                        });
+
+                        const marker = L.marker([u.latitud, u.longitud], { icon: icon })
+                            .bindPopup(crearPopup(u))
+                            .addTo(map);
+
+                        markers.push(marker);
+                        bounds.push([u.latitud, u.longitud]);
+                        latlngs.push([u.latitud, u.longitud]);
+                    });
+
+                    // Ajustar vista
+                    if (bounds.length > 0) {
+                        map.fitBounds(bounds, { padding: [50, 50] });
+                        // Dibujar ruta
+                        if (latlngs.length > 1) {
+                            polyline = L.polyline(latlngs, { color: '#00f2fe', weight: 2, opacity: 0.6, dashArray: '5, 10' }).addTo(map);
+                        }
+                    }
+                }
+
+                // Crear contenido del Popup
+                function crearPopup(u) {
+                    const entrada = new Date(u.timestamp_entrada).toLocaleString('es-PE');
+                    const duracion = u.duracion_minutos ? `${Math.round(u.duracion_minutos)} min` : 'En curso';
+
+                    return `
                     <div style="font-family: 'Outfit', sans-serif; min-width: 200px;">
                         <h4 style="margin:0 0 8px 0; color:#0f172a;">📍 Detalle de Ubicación</h4>
                         <div style="font-size:0.9em; color:#334155;">
@@ -762,47 +782,47 @@
                         </div>
                     </div>
                 `;
-            }
-
-            // Generar Reporte de Permanencia
-            function generarReporte(ubicaciones) {
-                const container = document.getElementById('reportList');
-                
-                if (!ubicaciones.length) {
-                    container.innerHTML = '<p style="text-align:center; color:var(--text-secondary);">No hay ubicaciones registradas en este periodo.</p>';
-                    return;
                 }
 
-                // Agrupar por ubicación (latitud, longitud)
-                const reportePorUbicacion = {};
-                
-                ubicaciones.forEach(u => {
-                    const key = `${u.latitud.toFixed(4)},${u.longitud.toFixed(4)}`;
-                    if (!reportePorUbicacion[key]) {
-                        reportePorUbicacion[key] = {
-                            latitud: u.latitud,
-                            longitud: u.longitud,
-                            actividades: [],
-                            duracionTotal: 0,
-                            usuarios: new Set()
-                        };
+                // Generar Reporte de Permanencia
+                function generarReporte(ubicaciones) {
+                    const container = document.getElementById('reportList');
+
+                    if (!ubicaciones.length) {
+                        container.innerHTML = '<p style="text-align:center; color:var(--text-secondary);">No hay ubicaciones registradas en este periodo.</p>';
+                        return;
                     }
-                    reportePorUbicacion[key].actividades.push(u.actividad_realizada || 'Sin especificar');
-                    reportePorUbicacion[key].duracionTotal += u.duracion_minutos || 0;
-                    if (u.nombre) reportePorUbicacion[key].usuarios.add(u.nombre);
-                });
 
-                // Encontrar duración máxima para la barra
-                const maxDuracion = Math.max(...Object.values(reportePorUbicacion).map(r => r.duracionTotal));
+                    // Agrupar por ubicación (latitud, longitud)
+                    const reportePorUbicacion = {};
 
-                // Generar HTML
-                container.innerHTML = Object.values(reportePorUbicacion).map((reporte, idx) => {
-                    const porcentaje = (reporte.duracionTotal / maxDuracion) * 100;
-                    const color = getColorPorDuracion(reporte.duracionTotal / reporte.actividades.length);
-                    const horas = Math.floor(reporte.duracionTotal / 60);
-                    const minutos = Math.round(reporte.duracionTotal % 60);
+                    ubicaciones.forEach(u => {
+                        const key = `${u.latitud.toFixed(4)},${u.longitud.toFixed(4)}`;
+                        if (!reportePorUbicacion[key]) {
+                            reportePorUbicacion[key] = {
+                                latitud: u.latitud,
+                                longitud: u.longitud,
+                                actividades: [],
+                                duracionTotal: 0,
+                                usuarios: new Set()
+                            };
+                        }
+                        reportePorUbicacion[key].actividades.push(u.actividad_realizada || 'Sin especificar');
+                        reportePorUbicacion[key].duracionTotal += u.duracion_minutos || 0;
+                        if (u.nombre) reportePorUbicacion[key].usuarios.add(u.nombre);
+                    });
 
-                    return `
+                    // Encontrar duración máxima para la barra
+                    const maxDuracion = Math.max(...Object.values(reportePorUbicacion).map(r => r.duracionTotal));
+
+                    // Generar HTML
+                    container.innerHTML = Object.values(reportePorUbicacion).map((reporte, idx) => {
+                        const porcentaje = (reporte.duracionTotal / maxDuracion) * 100;
+                        const color = getColorPorDuracion(reporte.duracionTotal / reporte.actividades.length);
+                        const horas = Math.floor(reporte.duracionTotal / 60);
+                        const minutos = Math.round(reporte.duracionTotal % 60);
+
+                        return `
                         <div class="report-item">
                             <div class="report-location">📍 Ubicación ${idx + 1}</div>
                             <div class="report-stats">
@@ -815,22 +835,22 @@
                             </div>
                         </div>
                     `;
-                }).join('');
-            }
-
-            // Actualizar Historial
-            function actualizarHistorial(ubicaciones) {
-                const container = document.getElementById('historyList');
-                if (!ubicaciones.length) {
-                    container.innerHTML = '<p style="text-align:center; color:var(--text-secondary);">No hay ubicaciones registradas en este periodo.</p>';
-                    return;
+                    }).join('');
                 }
 
-                container.innerHTML = ubicaciones.map((u, i) => {
-                    const entrada = new Date(u.timestamp_entrada).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
-                    const color = getColorPorDuracion(u.duracion_minutos);
+                // Actualizar Historial
+                function actualizarHistorial(ubicaciones) {
+                    const container = document.getElementById('historyList');
+                    if (!ubicaciones.length) {
+                        container.innerHTML = '<p style="text-align:center; color:var(--text-secondary);">No hay ubicaciones registradas en este periodo.</p>';
+                        return;
+                    }
 
-                    return `
+                    container.innerHTML = ubicaciones.map((u, i) => {
+                        const entrada = new Date(u.timestamp_entrada).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
+                        const color = getColorPorDuracion(u.duracion_minutos);
+
+                        return `
                         <div class="history-item" onclick="centrarEn(${i})" style="border-left-color: ${color}">
                             <div class="history-info">
                                 <strong>${u.actividad_realizada || 'Ubicación Registrada'}</strong>
@@ -847,60 +867,101 @@
                             </div>
                         </div>
                     `;
-                }).join('');
-            }
-
-            // Actualizar Estadísticas
-            function actualizarEstadisticas(data) {
-                document.getElementById('statTotal').textContent = data.length;
-
-                const duraciones = data.filter(d => d.duracion_minutos).map(d => d.duracion_minutos);
-                const promedio = duraciones.length ? Math.round(duraciones.reduce((a, b) => a + b, 0) / duraciones.length) : 0;
-                document.getElementById('statTiempo').textContent = `${promedio} min`;
-
-                const dispositivos = new Set(data.map(d => d.device_fingerprint)).size;
-                document.getElementById('statDispositivos').textContent = dispositivos;
-
-                // Distancia aproximada
-                let dist = 0;
-                for (let i = 1; i < data.length; i++) {
-                    dist += calcularDistancia(data[i - 1].latitud, data[i - 1].longitud, data[i].latitud, data[i].longitud);
+                    }).join('');
                 }
-                document.getElementById('statDistancia').textContent = `${(dist / 1000).toFixed(2)} km`;
-            }
 
-            // Utilidades
-            function getColorPorDuracion(minutos) {
-                if (!minutos) return '#718096'; // Gris (En curso)
-                if (minutos < 5) return '#48bb78'; // Verde
-                if (minutos < 15) return '#4299e1'; // Azul
-                if (minutos < 30) return '#ed8936'; // Naranja
-                if (minutos < 60) return '#f56565'; // Rojo
-                return '#9f7aea'; // Morado
-            }
+                // Actualizar Estadísticas
+                function actualizarEstadisticas(data) {
+                    document.getElementById('statTotal').textContent = data.length;
 
-            function calcularDistancia(lat1, lon1, lat2, lon2) {
-                const R = 6371e3;
-                const φ1 = lat1 * Math.PI / 180;
-                const φ2 = lat2 * Math.PI / 180;
-                const Δφ = (lat2 - lat1) * Math.PI / 180;
-                const Δλ = (lon2 - lon1) * Math.PI / 180;
-                const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-                return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            }
+                    const duraciones = data.filter(d => d.duracion_minutos).map(d => d.duracion_minutos);
+                    const promedio = duraciones.length ? Math.round(duraciones.reduce((a, b) => a + b, 0) / duraciones.length) : 0;
+                    document.getElementById('statTiempo').textContent = `${promedio} min`;
 
-            function centrarEn(index) {
-                if (markers[index]) {
-                    markers[index].openPopup();
-                    map.setView(markers[index].getLatLng(), 16);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    const dispositivos = new Set(data.map(d => d.device_fingerprint)).size;
+                    document.getElementById('statDispositivos').textContent = dispositivos;
+
+                    // Distancia aproximada
+                    let dist = 0;
+                    for (let i = 1; i < data.length; i++) {
+                        dist += calcularDistancia(data[i - 1].latitud, data[i - 1].longitud, data[i].latitud, data[i].longitud);
+                    }
+                    document.getElementById('statDistancia').textContent = `${(dist / 1000).toFixed(2)} km`;
+
+                    // ACTUALIZAR LISTA DE USUARIOS CONECTADOS
+                    const usersContainer = document.getElementById('connectedUsersList');
+                    if (usersContainer) {
+                        if (data.length === 0) {
+                            usersContainer.innerHTML = '<span style="color: var(--text-secondary); font-size: 0.9em;">No hay usuarios conectados</span>';
+                        } else {
+                            // Obtener usuarios únicos más recientes
+                            const usuariosUnicos = {};
+                            data.forEach(d => {
+                                // Usar nombre o username como clave
+                                const key = d.nombre || d.username || 'Desconocido';
+                                // Si no existe o este registro es más reciente, actualizar
+                                if (!usuariosUnicos[key] || new Date(d.timestamp_entrada) > new Date(usuariosUnicos[key].timestamp_entrada)) {
+                                    usuariosUnicos[key] = d;
+                                }
+                            });
+
+                            // Generar HTML
+                            usersContainer.innerHTML = Object.values(usuariosUnicos).map(u => {
+                                const isMobile = u.device_type === 'mobile';
+                                const icon = isMobile ? '📱' : '💻';
+                                const deviceName = isMobile ? 'Móvil' : 'PC';
+                                const nombre = u.nombre || u.username || 'Usuario';
+                                const esSupervisor = u.tipo_usuario === 'supervisor' || nombre.includes('(Supervisor)');
+
+                                // Estilo diferente para supervisores
+                                const bgStyle = esSupervisor
+                                    ? 'background: rgba(159, 122, 234, 0.2); border: 1px solid rgba(159, 122, 234, 0.4);'
+                                    : 'background: rgba(66, 153, 225, 0.2); border: 1px solid rgba(66, 153, 225, 0.4);';
+
+                                return `
+                                    <div style="${bgStyle} padding: 5px 10px; border-radius: 20px; display: flex; align-items: center; gap: 6px; font-size: 0.85em; color: var(--text-primary);">
+                                        <span style="font-size: 1.1em;">${icon}</span>
+                                        <strong>${nombre}</strong>
+                                        <span style="opacity: 0.7; font-size: 0.9em;">(${deviceName})</span>
+                                    </div>
+                                `;
+                            }).join('');
+                        }
+                    }
                 }
-            }
 
-            function showLoading(show) {
-                document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
-            }
-        </script>
+                // Utilidades
+                function getColorPorDuracion(minutos) {
+                    if (!minutos) return '#718096'; // Gris (En curso)
+                    if (minutos < 5) return '#48bb78'; // Verde
+                    if (minutos < 15) return '#4299e1'; // Azul
+                    if (minutos < 30) return '#ed8936'; // Naranja
+                    if (minutos < 60) return '#f56565'; // Rojo
+                    return '#9f7aea'; // Morado
+                }
+
+                function calcularDistancia(lat1, lon1, lat2, lon2) {
+                    const R = 6371e3;
+                    const φ1 = lat1 * Math.PI / 180;
+                    const φ2 = lat2 * Math.PI / 180;
+                    const Δφ = (lat2 - lat1) * Math.PI / 180;
+                    const Δλ = (lon2 - lon1) * Math.PI / 180;
+                    const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+                    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                }
+
+                function centrarEn(index) {
+                    if (markers[index]) {
+                        markers[index].openPopup();
+                        map.setView(markers[index].getLatLng(), 16);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                }
+
+                function showLoading(show) {
+                    document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
+                }
+            </script>
 
 </body>
 
