@@ -11,24 +11,7 @@ DELETE FROM ubicaciones_en_tiempo_real;
 -- 2. Limpiar tabla ubicaciones_gps (si existe)
 DELETE FROM ubicaciones_gps;
 
--- 3. Resetear secuencias (para que IDs comiencen desde 1)
--- Nota: Si las secuencias no existen, el script continúa sin error
-DO $$
-BEGIN
-  BEGIN
-    ALTER SEQUENCE ubicaciones_en_tiempo_real_id_seq RESTART WITH 1;
-  EXCEPTION WHEN OTHERS THEN
-    NULL;
-  END;
-  
-  BEGIN
-    ALTER SEQUENCE ubicaciones_gps_id_seq RESTART WITH 1;
-  EXCEPTION WHEN OTHERS THEN
-    NULL;
-  END;
-END $$;
-
--- 4. Verificar que está vacío
+-- 3. Verificar que está vacío
 SELECT COUNT(*) as "Total ubicaciones_en_tiempo_real" FROM ubicaciones_en_tiempo_real;
 SELECT COUNT(*) as "Total ubicaciones_gps" FROM ubicaciones_gps;
 
@@ -36,4 +19,12 @@ SELECT COUNT(*) as "Total ubicaciones_gps" FROM ubicaciones_gps;
 -- RESULTADO ESPERADO:
 -- Total ubicaciones_en_tiempo_real: 0
 -- Total ubicaciones_gps: 0
+-- ==========================================
+-- 
+-- NOTAS:
+-- - Solo elimina datos, NO toca estructura
+-- - Todas las tablas, índices, vistas siguen intactas
+-- - RLS y políticas de seguridad NO se tocan
+-- - Puedes ejecutar esto múltiples veces sin problemas
+-- - El sistema sigue funcionando normalmente después
 -- ==========================================
