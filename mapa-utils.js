@@ -8,38 +8,25 @@
  */
 async function cargarUsuarios() {
     const select = document.getElementById('filterUsuario');
-    if (!select) {
-        console.error('❌ Select filterUsuario no encontrado');
-        return;
-    }
+    if (!select) return;
 
-    // Limpiar opciones excepto la primera ("Todos los usuarios")
+    // Guardar selección actual si existe
+    const valorPrevio = select.value;
+
+    // Limpiar opciones excepto la primera
     while (select.options.length > 1) {
         select.remove(1);
     }
 
     try {
         console.log('🔄 Cargando usuarios...');
-
-        // 1. Obtener usuarios (admin, prueba, luiggy)
-        const { data: usuarios, error: errorUsuarios } = await supabase
-            .from('usuarios')
-            .select('id, username, nombre')
-            .eq('activo', true);
-
-        // 2. Obtener supervisores
-        const { data: supervisores, error: errorSupervisores } = await supabase
-            .from('supervisores')
-            .select('id, usuario, nombre')
-            .eq('activo', true);
-
-        if (errorUsuarios) console.warn('Aviso cargando usuarios:', errorUsuarios);
-        if (errorSupervisores) console.warn('Aviso cargando supervisores:', errorSupervisores);
-
-        // Combinar listas
         let todos = [];
 
-        if (usuarios && usuarios.length > 0) {
+        // 1. Intentar cargar de Supabase
+        const { data: usuarios } = await supabase.from('usuarios').select('id, username, nombre').eq('activo', true);
+        const { data: supervisores } = await supabase.from('supervisores').select('id, usuario, nombre').eq('activo', true);
+
+        if (usuarios) {
             todos = todos.concat(usuarios.map(u => ({
                 id: u.id,
                 nombre: u.nombre || u.username,
@@ -47,7 +34,7 @@ async function cargarUsuarios() {
             })));
         }
 
-        if (supervisores && supervisores.length > 0) {
+        if (supervisores) {
             todos = todos.concat(supervisores.map(s => ({
                 id: s.id,
                 nombre: s.nombre || s.usuario,
@@ -55,10 +42,27 @@ async function cargarUsuarios() {
             })));
         }
 
-        // Ordenar alfabéticamente
+        // 2. Fallback: Si no hay datos, agregar al menos al usuario actual y algunos conocidos
+        if (todos.length === 0) {
+            console.warn('⚠️ No se pudieron cargar usuarios. Usando fallback.');
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (currentUser) {
+                todos.push({
+                    id: currentUser.id,
+                    nombre: currentUser.nombre || currentUser.usuario || 'Usuario Actual',
+                    tipo: 'usuario'
+                });
+            }
+        }
+
+        // 3. Eliminar duplicados (por ID)
+        const unicos = new Map();
+        todos.forEach(u => unicos.set(u.id, u));
+        todos = Array.from(unicos.values());
+
+        // 4. Ordenar y llenar select
         todos.sort((a, b) => a.nombre.localeCompare(b.nombre));
 
-        // Llenar select
         todos.forEach(u => {
             const option = document.createElement('option');
             option.value = u.id;
@@ -67,152 +71,114 @@ async function cargarUsuarios() {
             select.appendChild(option);
         });
 
-        console.log(`✅ ${todos.length} usuarios cargados en el filtro`);
+        // Restaurar selección si sigue existiendo
+        if (valorPrevio && [...select.options].some(o => o.value === valorPrevio)) {
+            select.value = valorPrevio;
+        }
+
+        console.log(`✅ ${todos.length} usuarios cargados`);
 
     } catch (error) {
-        console.error('❌ Error al cargar usuarios:', error);
+        console.error('❌ Error crítico cargando usuarios:', error);
     }
 }
 
 /**
- * Cargar contratos disponibles para el filtro
+ * Cargar contratos disponibles
  */
 async function cargarContratosMap() {
     const select = document.getElementById('filterContrato');
     if (!select) return;
 
-    // Limpiar opciones
-    while (select.options.length > 1) {
-        select.remove(1);
-    }
+    while (select.options.length > 1) select.remove(1);
 
     try {
-        console.log('🔄 Cargando contratos...');
-
-        // Obtener contratos únicos de la tabla de ubicaciones
-        const { data, error } = await supabase
+        const { data } = await supabase
             .from('ubicaciones_gps')
             .select('cuenta_contrato')
             .not('cuenta_contrato', 'is', null)
-            .order('cuenta_contrato');
+            .order('cuenta_contrato')
+            .limit(1000);
 
-        if (error) throw error;
-
-        // Filtrar únicos
-        const contratosUnicos = [...new Set(data.map(item => item.cuenta_contrato))];
-        contratosUnicos.sort();
-
-        // Llenar select
-        contratosUnicos.forEach(contrato => {
-            if (contrato && contrato.trim() !== '') {
-                const option = document.createElement('option');
-                option.value = contrato;
-                option.textContent = contrato;
-                select.appendChild(option);
-            }
-        });
-
-        console.log(`✅ ${contratosUnicos.length} contratos cargados`);
-
-    } catch (error) {
-        console.error('❌ Error al cargar contratos:', error);
-    }
+        if (data) {
+            const contratos = [...new Set(data.map(d => d.cuenta_contrato))].sort();
+            contratos.forEach(c => {
+                if (c) {
+                    const opt = document.createElement('option');
+                    opt.value = c;
+                    opt.textContent = c;
+                    select.appendChild(opt);
+                }
+            });
+        }
+    } catch (e) { console.error(e); }
 }
 
 /**
- * Sobrescribir función cargarUbicaciones para incluir filtro de contrato
+ * Cargar Ubicaciones con filtros
  */
 async function cargarUbicaciones(initialLoad = false) {
     showLoading(true);
 
     try {
-        // IMPORTANTE: La tabla ubicaciones_gps tiene columna usuario_id, NO username
-        // También necesitamos hacer un join o fetch adicional para obtener el nombre del usuario
-        // si queremos mostrarlo en el mapa, pero ubicaciones_gps ya tiene usuario_id para filtrar.
+        // 1. Limpiar fechas en carga inicial para mostrar TODO el historial
+        if (initialLoad) {
+            const fechaInicio = document.getElementById('filterFechaInicio');
+            const fechaFin = document.getElementById('filterFechaFin');
+            if (fechaInicio) fechaInicio.value = '';
+            if (fechaFin) fechaFin.value = '';
+        }
 
         let query = supabase
             .from('ubicaciones_gps')
-            .select('*') // Seleccionamos todo
+            .select('*')
             .order('timestamp_entrada', { ascending: false });
 
-        // Filtros
+        // 2. Obtener valores de filtros
         const usuarioId = document.getElementById('filterUsuario')?.value;
         const contrato = document.getElementById('filterContrato')?.value;
         const fechaInicio = document.getElementById('filterFechaInicio')?.value;
         const fechaFin = document.getElementById('filterFechaFin')?.value;
         const deviceType = document.getElementById('filterDeviceType')?.value;
 
-        // Aplicar filtros
-        if (usuarioId) {
-            // Filtramos directamente por usuario_id
-            query = query.eq('usuario_id', usuarioId);
-        }
+        // 3. Aplicar filtros solo si tienen valor
+        if (usuarioId) query = query.eq('usuario_id', usuarioId);
+        if (contrato) query = query.eq('cuenta_contrato', contrato);
 
-        if (contrato) {
-            query = query.eq('cuenta_contrato', contrato);
-        }
+        if (fechaInicio) query = query.gte('timestamp_entrada', `${fechaInicio}T00:00:00`);
+        if (fechaFin) query = query.lte('timestamp_entrada', `${fechaFin}T23:59:59`);
 
-        if (fechaInicio) {
-            query = query.gte('timestamp_entrada', `${fechaInicio}T00:00:00`);
-        }
+        if (deviceType && deviceType !== 'Todos') query = query.eq('device_type', deviceType);
 
-        if (fechaFin) {
-            query = query.lte('timestamp_entrada', `${fechaFin}T23:59:59`);
-        } // ELIMINADO: No forzar fecha de hoy para mostrar todo el historial por defectoT00:00:00`);
-
-            // Actualizar inputs de fecha
-            if (document.getElementById('filterFechaInicio')) {
-                document.getElementById('filterFechaInicio').value = hoy;
-            }
-            if (document.getElementById('filterFechaFin')) {
-                document.getElementById('filterFechaFin').value = hoy;
-            }
-        }
-
-        if (deviceType) {
-            query = query.eq('device_type', deviceType);
-        }
-
-        // Limitar resultados para no saturar el mapa
-        query = query.limit(500);
+        // 4. Limitar resultados (aumentado a 1000 para ver más historia)
+        query = query.limit(1000);
 
         const { data, error } = await query;
 
         if (error) throw error;
 
-        // Enriquecer datos con nombres de usuario si es necesario
-        // (Si ubicaciones_gps no tiene nombre/username, podríamos necesitar hacer un fetch adicional
-        // o un join, pero por ahora asumimos que el usuario quiere ver los puntos)
-
-        // Si la tabla no tiene nombre/username, intentamos obtenerlo del select si está filtrado
-        if (data && data.length > 0 && !data[0].nombre && !data[0].username) {
-            const select = document.getElementById('filterUsuario');
-            const nombreUsuario = select.options[select.selectedIndex]?.text || 'Usuario';
-
-            data.forEach(d => {
-                d.nombre = nombreUsuario; // Asignar nombre para el popup
-            });
-        }
-
+        // 5. Actualizar interfaz
         actualizarMapa(data);
         actualizarEstadisticas(data);
         mostrarListaUbicaciones(data);
 
-    } catch (error) {
-        console.error('Error al cargar ubicaciones:', error);
-        if (typeof mostrarMensaje === 'function') {
-            mostrarMensaje('Error al cargar datos del mapa', 'error');
+        if (data.length === 0) {
+            console.log('ℹ️ No se encontraron ubicaciones con los filtros actuales');
         }
+
+    } catch (error) {
+        console.error('Error cargando ubicaciones:', error);
     } finally {
         showLoading(false);
     }
 }
 
-// Inicializar cuando el DOM esté listo
+// Inicialización
 document.addEventListener('DOMContentLoaded', () => {
-    // Esperar un poco para asegurar que Supabase esté listo
     setTimeout(() => {
         cargarUsuarios();
         cargarContratosMap();
+        // Cargar ubicaciones iniciales (limpiando fechas)
+        cargarUbicaciones(true);
     }, 1000);
 });
