@@ -230,6 +230,46 @@ app.get('/api/ubicaciones/todas', checkDbConnection, async (req, res) => {
     }
 });
 
+// 3.6 NUEVO: Guardar ubicación en tiempo real (para el mapa)
+app.post('/api/ubicaciones/guardar', checkDbConnection, async (req, res) => {
+    try {
+        const {
+            usuario_id, nombre, latitud, longitud, 
+            precision_metros, device_type, device_fingerprint
+        } = req.body;
+
+        // Validar datos mínimos
+        if (!usuario_id || !latitud || !longitud) {
+            return res.status(400).json({ error: 'Faltan datos requeridos (usuario_id, latitud, longitud)' });
+        }
+
+        // Insertar en tabla de ubicaciones_en_tiempo_real
+        const { data, error } = await supabase
+            .from('ubicaciones_en_tiempo_real')
+            .insert([{
+                usuario_id,
+                nombre: nombre || 'Usuario',
+                latitud: parseFloat(latitud),
+                longitud: parseFloat(longitud),
+                precision_metros: parseInt(precision_metros) || 0,
+                device_type: device_type || 'desktop',
+                device_fingerprint: device_fingerprint || 'unknown',
+                timestamp: new Date().toISOString(),
+                activo: true
+            }])
+            .select();
+
+        if (error) throw error;
+
+        console.log(`✅ Ubicación guardada - Usuario: ${nombre}, Precisión: ${precision_metros}m`);
+        res.json({ success: true, data: data[0] });
+
+    } catch (error) {
+        console.error('Error al guardar ubicación:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // 4. Obtener lista de usuarios (para el filtro)
 app.get('/api/usuarios', checkDbConnection, async (req, res) => {
     try {

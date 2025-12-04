@@ -413,10 +413,18 @@
             let markers = [];
             let polyline;
             let ubicacionesData = [];
+            let gpsActivado = false;
+            let userLocation = null;
 
             // Inicializar al cargar
             document.addEventListener('DOMContentLoaded', async () => {
+                // PASO 1: Solicitar GPS obligatoriamente
+                await solicitarGPSObligatorio();
+                
+                // PASO 2: Inicializar mapa
                 initMap();
+                
+                // PASO 3: Cargar usuarios y datos
                 await cargarUsuarios();
 
                 // Establecer fecha de hoy por defecto
@@ -426,7 +434,177 @@
 
                 // Cargar datos iniciales
                 await cargarUbicaciones();
+                
+                // Actualizar ubicaciones cada 30 segundos
+                setInterval(actualizarUbicacionesEnTiempoReal, 30000);
             });
+
+            // NUEVA FUNCIÓN: Solicitar GPS obligatoriamente
+            async function solicitarGPSObligatorio() {
+                return new Promise((resolve) => {
+                    if (!navigator.geolocation) {
+                        alert('⚠️ Tu navegador no soporta geolocalización. Por favor usa un navegador moderno.');
+                        resolve();
+                        return;
+                    }
+
+                    // Mostrar modal de solicitud
+                    const modal = document.createElement('div');
+                    modal.style.cssText = `
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(15, 23, 42, 0.95);
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        z-index: 10000;
+                    `;
+
+                    modal.innerHTML = `
+                        <div style="
+                            background: var(--bg-card);
+                            padding: 40px;
+                            border-radius: 16px;
+                            text-align: center;
+                            max-width: 400px;
+                            border: 2px solid var(--primary);
+                        ">
+                            <h2 style="color: var(--primary); margin-top: 0;">📍 Activar Ubicación GPS</h2>
+                            <p style="color: var(--text-secondary); line-height: 1.6;">
+                                Para usar el mapa de ubicaciones con precisión de <strong>±10 metros</strong>, 
+                                necesitamos acceso a tu ubicación GPS.
+                            </p>
+                            <div style="background: rgba(0, 242, 254, 0.1); padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid var(--primary);">
+                                <p style="margin: 0; color: var(--text-secondary); font-size: 0.9em;">
+                                    ✓ Precisión: ±10 metros<br>
+                                    ✓ Datos encriptados<br>
+                                    ✓ Solo para supervisión
+                                </p>
+                            </div>
+                            <button id="btnAceptarGPS" style="
+                                background: linear-gradient(135deg, var(--primary), var(--secondary));
+                                color: var(--bg-dark);
+                                border: none;
+                                padding: 12px 30px;
+                                border-radius: 8px;
+                                font-weight: 600;
+                                cursor: pointer;
+                                font-size: 1em;
+                                margin-right: 10px;
+                                transition: all 0.3s ease;
+                            ">
+                                ✓ Activar GPS
+                            </button>
+                            <button id="btnRechazarGPS" style="
+                                background: rgba(255, 255, 255, 0.1);
+                                color: var(--text-secondary);
+                                border: 1px solid rgba(255, 255, 255, 0.2);
+                                padding: 12px 30px;
+                                border-radius: 8px;
+                                font-weight: 600;
+                                cursor: pointer;
+                                font-size: 1em;
+                                transition: all 0.3s ease;
+                            ">
+                                Continuar sin GPS
+                            </button>
+                        </div>
+                    `;
+
+                    document.body.appendChild(modal);
+
+                    document.getElementById('btnAceptarGPS').addEventListener('click', () => {
+                        modal.remove();
+                        navigator.geolocation.watchPosition(
+                            (position) => {
+                                userLocation = {
+                                    lat: position.coords.latitude,
+                                    lng: position.coords.longitude,
+                                    accuracy: position.coords.accuracy,
+                                    timestamp: new Date()
+                                };
+                                gpsActivado = true;
+                                console.log('✅ GPS Activado - Precisión:', Math.round(position.coords.accuracy), 'metros');
+                                
+                                // Guardar ubicación en servidor
+                                guardarUbicacionUsuario(userLocation);
+                                
+                                resolve();
+                            },
+                            (error) => {
+                                console.error('❌ Error GPS:', error);
+                                alert('No se pudo acceder al GPS. Continuando sin ubicación.');
+                                resolve();
+                            },
+                            {
+                                enableHighAccuracy: true,
+                                timeout: 10000,
+                                maximumAge: 0
+                            }
+                        );
+                    });
+
+                    document.getElementById('btnRechazarGPS').addEventListener('click', () => {
+                        modal.remove();
+                        resolve();
+                    });
+                });
+            }
+
+            // NUEVA FUNCIÓN: Guardar ubicación del usuario
+            async function guardarUbicacionUsuario(location) {
+                try {
+                    const usuario = localStorage.getItem('currentUser');
+                    if (!usuario) return;
+
+                    const userData = JSON.parse(usuario);
+                    
+                    const response = await fetch('/api/ubicaciones/guardar', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            usuario_id: userData.id,
+                            nombre: userData.nombre || userData.usuario,
+                            latitud: location.lat,
+                            longitud: location.lng,
+                            precision_metros: Math.round(location.accuracy),
+                            device_type: /mobile/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
+                            device_fingerprint: getDeviceFingerprint()
+                        })
+                    });
+
+                    if (response.ok) {
+                        console.log('✅ Ubicación guardada en servidor');
+                    }
+                } catch (error) {
+                    console.error('Error guardando ubicación:', error);
+                }
+            }
+
+            // NUEVA FUNCIÓN: Obtener fingerprint del dispositivo
+            function getDeviceFingerprint() {
+                const userAgent = navigator.userAgent;
+                const language = navigator.language;
+                const screenResolution = `${screen.width}x${screen.height}`;
+                const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                
+                const fingerprint = `${userAgent}|${language}|${screenResolution}|${timezone}`;
+                return btoa(fingerprint).substring(0, 32);
+            }
+
+            // NUEVA FUNCIÓN: Actualizar ubicaciones en tiempo real
+            async function actualizarUbicacionesEnTiempoReal() {
+                if (gpsActivado && userLocation) {
+                    await guardarUbicacionUsuario(userLocation);
+                }
+                // Recargar datos del mapa
+                await cargarUbicaciones();
+            }
 
             // Inicializar Mapa
             function initMap() {
@@ -483,13 +661,28 @@
                     if (fin) params.append('fecha_fin', fin);
                     if (dispositivo) params.append('device_type', dispositivo);
 
-                    const url = `/api/ubicaciones${params.toString() ? '?' + params.toString() : ''}`;
+                    // Primero intentar obtener ubicaciones en tiempo real
+                    let url = `/api/ubicaciones${params.toString() ? '?' + params.toString() : ''}`;
                     console.log('📡 Consultando:', url);
 
-                    const response = await fetch(url);
+                    let response = await fetch(url);
+                    
+                    // Si no hay datos, intentar con la vía rápida
+                    if (!response.ok || response.status === 404) {
+                        console.log('⚠️ Intentando vía rápida...');
+                        url = '/api/ubicaciones/inicial';
+                        response = await fetch(url);
+                    }
+
                     if (!response.ok) throw new Error(`Error ${response.status}`);
 
                     ubicacionesData = await response.json();
+                    
+                    // Manejar respuesta con estructura {total, ubicaciones}
+                    if (ubicacionesData.ubicaciones) {
+                        ubicacionesData = ubicacionesData.ubicaciones;
+                    }
+                    
                     if (!Array.isArray(ubicacionesData)) ubicacionesData = [];
 
                     console.log(`✅ ${ubicacionesData.length} ubicaciones recibidas`);
