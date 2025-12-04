@@ -22,7 +22,6 @@ async function cargarUsuarios() {
         console.log('🔄 Cargando usuarios...');
 
         // 1. Obtener usuarios (admin, prueba, luiggy)
-        // Intentamos obtener todos, ignorando RLS si es posible (aunque desde cliente está limitado)
         const { data: usuarios, error: errorUsuarios } = await supabase
             .from('usuarios')
             .select('id, username, nombre')
@@ -54,29 +53,6 @@ async function cargarUsuarios() {
                 nombre: s.nombre || s.usuario,
                 tipo: 'supervisor'
             })));
-        }
-
-        // Si la lista está vacía, intentar obtener usuarios únicos de la tabla de ubicaciones
-        if (todos.length === 0) {
-            console.log('⚠️ Tablas de usuarios vacías o inaccesibles. Intentando extraer de historial...');
-            const { data: historial } = await supabase
-                .from('ubicaciones_gps')
-                .select('username, nombre')
-                .limit(1000);
-
-            if (historial) {
-                const unicos = new Map();
-                historial.forEach(h => {
-                    if (h.username && !unicos.has(h.username)) {
-                        unicos.set(h.username, {
-                            id: h.username, // Usamos username como ID temporal
-                            nombre: h.nombre || h.username,
-                            tipo: 'historial'
-                        });
-                    }
-                });
-                todos = Array.from(unicos.values());
-            }
         }
 
         // Ordenar alfabéticamente
@@ -150,9 +126,13 @@ async function cargarUbicaciones(initialLoad = false) {
     showLoading(true);
 
     try {
+        // IMPORTANTE: La tabla ubicaciones_gps tiene columna usuario_id, NO username
+        // También necesitamos hacer un join o fetch adicional para obtener el nombre del usuario
+        // si queremos mostrarlo en el mapa, pero ubicaciones_gps ya tiene usuario_id para filtrar.
+
         let query = supabase
             .from('ubicaciones_gps')
-            .select('*')
+            .select('*') // Seleccionamos todo
             .order('timestamp_entrada', { ascending: false });
 
         // Filtros
@@ -164,27 +144,8 @@ async function cargarUbicaciones(initialLoad = false) {
 
         // Aplicar filtros
         if (usuarioId) {
-            // Verificar si es ID numérico (usuario/supervisor) o texto (username del historial)
-            if (!isNaN(usuarioId)) {
-                // Es ID numérico, pero en ubicaciones_gps no guardamos el ID del usuario directamente
-                // Guardamos username. Necesitamos buscar el username asociado a este ID
-                // OJO: Esto es complejo. Mejor filtramos por username si es posible.
-                // Simplificación: Si el filtro tiene un dataset tipo, usar lógica específica
-                const select = document.getElementById('filterUsuario');
-                const selectedOption = select.options[select.selectedIndex];
-                const tipo = selectedOption.dataset.tipo;
-
-                if (tipo === 'historial') {
-                    query = query.eq('username', usuarioId);
-                } else {
-                    // Intentar filtrar por nombre o username que coincida con el texto de la opción
-                    // Esto no es ideal pero funciona si no tenemos la relación directa
-                    const nombre = selectedOption.textContent;
-                    query = query.or(`username.eq.${nombre},nombre.eq.${nombre}`);
-                }
-            } else {
-                query = query.eq('username', usuarioId);
-            }
+            // Filtramos directamente por usuario_id
+            query = query.eq('usuario_id', usuarioId);
         }
 
         if (contrato) {
@@ -221,6 +182,20 @@ async function cargarUbicaciones(initialLoad = false) {
         const { data, error } = await query;
 
         if (error) throw error;
+
+        // Enriquecer datos con nombres de usuario si es necesario
+        // (Si ubicaciones_gps no tiene nombre/username, podríamos necesitar hacer un fetch adicional
+        // o un join, pero por ahora asumimos que el usuario quiere ver los puntos)
+
+        // Si la tabla no tiene nombre/username, intentamos obtenerlo del select si está filtrado
+        if (data && data.length > 0 && !data[0].nombre && !data[0].username) {
+            const select = document.getElementById('filterUsuario');
+            const nombreUsuario = select.options[select.selectedIndex]?.text || 'Usuario';
+
+            data.forEach(d => {
+                d.nombre = nombreUsuario; // Asignar nombre para el popup
+            });
+        }
 
         actualizarMapa(data);
         actualizarEstadisticas(data);
