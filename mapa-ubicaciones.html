@@ -4,1061 +4,594 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mapa de Ubicaciones - DONET</title>
-
+    <title>Mapa de Ubicaciones - Supervisor</title>
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-    <!-- Config -->
-    <script src="config.js"></script>
-
-    <!-- Geolocation Tracker -->
-    <script src="geolocation-tracker.js"></script>
-
-    <!-- Mapa Utils -->
-    <script src="mapa-utils.js"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --primary: #00f2fe;
+            --secondary: #4facfe;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0a1628 0%, #1a2942 100%);
-            color: #fff;
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 20px;
             min-height: 100vh;
         }
 
-        .map-container {
-            padding: 20px;
+        .container {
             max-width: 1400px;
             margin: 0 auto;
         }
 
-        .map-header {
+        .header {
             text-align: center;
             margin-bottom: 30px;
+            padding: 20px;
+            background: var(--bg-card);
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
 
-        .map-header h1 {
-            font-size: 2.5em;
-            color: #00d9ff;
-            margin-bottom: 10px;
+        .header h1 {
+            margin: 0;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 2.5rem;
         }
 
-        .map-header p {
-            color: #a0aec0;
-            font-size: 1.1em;
-        }
-
+        /* Filtros */
         .filters-section {
-            background: #1a2942;
-            padding: 25px;
-            border-radius: 12px;
-            margin-bottom: 25px;
-            border: 2px solid #2d3748;
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .filters-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .filter-group {
-            display: flex;
-            flex-direction: column;
+            align-items: end;
         }
 
         .filter-group label {
-            color: #00d9ff;
+            display: block;
+            color: var(--primary);
             margin-bottom: 8px;
-            font-weight: 600;
+            font-size: 0.9rem;
         }
 
-        .filter-group input,
-        .filter-group select {
+        select,
+        input {
+            width: 100%;
             padding: 10px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 8px;
-            border: 2px solid #2d3748;
-            background: #0a1628;
-            color: #fff;
-            font-size: 1em;
+            color: white;
+            font-family: inherit;
         }
 
-        .filter-group input:focus,
-        .filter-group select:focus {
-            outline: none;
-            border-color: #00d9ff;
-        }
-
-        .filter-actions {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-        }
-
-        .btn-filter {
-            padding: 12px 30px;
-            border-radius: 8px;
+        .btn-search {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: var(--bg-dark);
             border: none;
-            font-size: 1em;
+            padding: 10px 20px;
+            border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, #00d9ff 0%, #0099cc 100%);
-            color: #0a1628;
-        }
-
-        .btn-primary:hover {
+        .btn-search:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(0, 217, 255, 0.4);
+            box-shadow: 0 4px 12px rgba(0, 242, 254, 0.3);
         }
 
-        .btn-secondary {
-            background: #2d3748;
-            color: #fff;
-        }
-
-        .btn-secondary:hover {
-            background: #4a5568;
-        }
-
-        #map {
-            height: 600px;
-            border-radius: 12px;
-            margin-bottom: 25px;
-            border: 3px solid #00d9ff;
-            box-shadow: 0 10px 40px rgba(0, 217, 255, 0.3);
-        }
-
+        /* Estadísticas */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
 
         .stat-card {
-            background: linear-gradient(135deg, #1a2942 0%, #0a1628 100%);
-            padding: 25px;
-            border-radius: 12px;
-            border: 2px solid #2d3748;
-            transition: all 0.3s ease;
-        }
-
-        .stat-card:hover {
-            border-color: #00d9ff;
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0, 217, 255, 0.2);
-        }
-
-        .stat-icon {
-            font-size: 2.5em;
-            margin-bottom: 10px;
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .stat-value {
-            font-size: 2em;
+            font-size: 1.8rem;
             font-weight: 700;
-            color: #00d9ff;
+            color: var(--primary);
             margin: 10px 0;
         }
 
         .stat-label {
-            color: #a0aec0;
-            font-size: 0.9em;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
         }
 
-        .locations-list {
-            background: #1a2942;
-            padding: 25px;
-            border-radius: 12px;
-            max-height: 500px;
-            overflow-y: auto;
-        }
-
-        .locations-list h3 {
-            color: #00d9ff;
-            margin-top: 0;
+        /* Mapa */
+        #map {
+            height: 600px;
+            border-radius: 16px;
+            border: 2px solid var(--primary);
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.1);
             margin-bottom: 20px;
+            z-index: 1;
         }
 
-        .location-item {
-            background: #0a1628;
+        /* Leyenda */
+        .map-legend {
+            background: var(--bg-card);
             padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            border-left: 4px solid #00d9ff;
-            transition: all 0.3s ease;
-            cursor: pointer;
+            border-radius: 12px;
+            margin-top: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .location-item:hover {
-            transform: translateX(5px);
-            box-shadow: 0 5px 15px rgba(0, 217, 255, 0.2);
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
         }
 
-        .location-header {
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        /* Historial */
+        .history-section {
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: 16px;
+            margin-top: 20px;
+        }
+
+        .history-item {
+            background: rgba(15, 23, 42, 0.4);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--primary);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
         }
 
-        .location-time {
-            color: #00d9ff;
+        .history-item:hover {
+            background: rgba(15, 23, 42, 0.8);
+            transform: translateX(5px);
+        }
+
+        .history-info strong {
+            color: var(--primary);
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .history-meta {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .history-time {
+            text-align: right;
             font-weight: 600;
+            color: var(--secondary);
         }
 
-        .location-duration {
-            background: #2d3748;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.85em;
-            color: #fff;
-        }
-
-        .location-details {
-            color: #a0aec0;
-            font-size: 0.9em;
-            line-height: 1.6;
-        }
-
-        .location-coords {
-            font-family: monospace;
-            color: #718096;
-            font-size: 0.85em;
-        }
-
-        /* Estilos para popups del mapa */
-        .leaflet-popup-content-wrapper {
-            background: #1a2942;
-            color: #fff;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
-
-        .leaflet-popup-content {
-            margin: 15px;
-        }
-
-        .popup-title {
-            color: #00d9ff;
-            font-weight: 700;
-            font-size: 1.1em;
-            margin-bottom: 10px;
-        }
-
-        .popup-info {
-            color: #a0aec0;
-            line-height: 1.6;
-            font-size: 0.9em;
-        }
-
-        .popup-duration {
-            background: #00d9ff;
-            color: #0a1628;
-            padding: 5px 10px;
-            border-radius: 5px;
-            display: inline-block;
-            margin-top: 10px;
-            font-weight: 600;
-        }
-
+        /* Loading */
         .loading-overlay {
             position: fixed;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(10, 22, 40, 0.9);
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.9);
             display: none;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             z-index: 9999;
         }
 
-        .loading-overlay.active {
-            display: flex;
-        }
-
         .spinner {
-            border: 4px solid #2d3748;
-            border-top: 4px solid #00d9ff;
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(0, 242, 254, 0.3);
             border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            animation: spin 1s linear infinite;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
         }
 
         @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
+            to {
                 transform: rotate(360deg);
-            }
-        }
-
-        @media (max-width: 768px) {
-            .map-container {
-                padding: 10px;
-            }
-
-            .filters-grid {
-                grid-template-columns: 1fr;
-            }
-
-            #map {
-                height: 400px;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 
 <body>
-    <div class="map-container">
-        <!-- Header -->
-        <div class="map-header">
-            <h1>🗺️ Mapa de Ubicaciones y Tiempo de Permanencia</h1>
-            <p>Visualización de ubicaciones GPS y análisis de tiempo de permanencia</p>
+
+    <div class="container">
+        <div class="header">
+            <h1>🗺️ Mapa de Ubicaciones GPS</h1>
+            <p style="color: var(--text-secondary);">Monitoreo en tiempo real de personal y activos</p>
         </div>
 
         <!-- Filtros -->
         <div class="filters-section">
-            <h3 style="color: #00d9ff; margin-top: 0;">Filtros de Búsqueda</h3>
             <div class="filters-grid">
                 <div class="filter-group">
                     <label>Usuario</label>
-                    <select id="filterUsuario" onchange="cargarUbicaciones()">
-                        <option value="">Todos los usuarios</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Cuenta Contrato</label>
-                    <select id="filterContrato" onchange="cargarUbicaciones()">
-                        <option value="">Todos los contratos</option>
+                    <select id="filterUsuario">
+                        <option value="">Cargando usuarios...</option>
                     </select>
                 </div>
                 <div class="filter-group">
                     <label>Fecha Inicio</label>
-                    <input type="date" id="filterFechaInicio" onchange="cargarUbicaciones()">
+                    <input type="date" id="filterFechaInicio">
                 </div>
                 <div class="filter-group">
                     <label>Fecha Fin</label>
-                    <input type="date" id="filterFechaFin" onchange="cargarUbicaciones()">
+                    <input type="date" id="filterFechaFin">
                 </div>
                 <div class="filter-group">
-                    <label>Tipo de Dispositivo</label>
+                    <label>Dispositivo</label>
                     <select id="filterDeviceType">
                         <option value="">Todos</option>
                         <option value="mobile">Móvil</option>
-                        <option value="desktop">PC</option>
+                        <option value="desktop">PC/Laptop</option>
                     </select>
                 </div>
-            </div>
-            <div class="filter-actions">
-                <button class="btn-filter btn-secondary" onclick="limpiarFiltros()">Limpiar</button>
-                <button class="btn-filter btn-primary" id="btnBuscar" onclick="cargarUbicaciones()">Buscar</button>
+                <button class="btn-search" onclick="cargarUbicaciones()">🔍 Buscar</button>
             </div>
         </div>
 
         <!-- Estadísticas -->
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-icon">📍</div>
-                <div class="stat-value" id="statTotalUbicaciones">0</div>
-                <div class="stat-label">Total de Ubicaciones</div>
+                <div class="stat-value" id="statTotal">0</div>
+                <div class="stat-label">Ubicaciones</div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon">⏱️</div>
-                <div class="stat-value" id="statTiempoPromedio">0 min</div>
+                <div class="stat-value" id="statTiempo">0 min</div>
                 <div class="stat-label">Tiempo Promedio</div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon">📱</div>
                 <div class="stat-value" id="statDispositivos">0</div>
-                <div class="stat-label">Dispositivos Únicos</div>
+                <div class="stat-label">Dispositivos</div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon">🌍</div>
-                <div class="stat-value" id="statDistanciaTotal">0 km</div>
-                <div class="stat-label">Distancia Total</div>
+                <div class="stat-value" id="statDistancia">0 km</div>
+                <div class="stat-label">Distancia Recorrida</div>
             </div>
         </div>
 
         <!-- Mapa -->
-        <div id="map" style="position: relative;"></div>
-        
-        <!-- Leyenda de Colores -->
-        <div class="map-legend" style="background: white; padding: 10px; border-radius: 8px; margin-top: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; font-size: 0.9em;">
-            <div style="display: flex; align-items: center;"><span style="width: 12px; height: 12px; background: #48bb78; border-radius: 50%; display: inline-block; margin-right: 5px;"></span> < 5 min</div>
-            <div style="display: flex; align-items: center;"><span style="width: 12px; height: 12px; background: #4299e1; border-radius: 50%; display: inline-block; margin-right: 5px;"></span> 5-15 min</div>
-            <div style="display: flex; align-items: center;"><span style="width: 12px; height: 12px; background: #ed8936; border-radius: 50%; display: inline-block; margin-right: 5px;"></span> 15-30 min</div>
-            <div style="display: flex; align-items: center;"><span style="width: 12px; height: 12px; background: #f56565; border-radius: 50%; display: inline-block; margin-right: 5px;"></span> 30-60 min</div>
-            <div style="display: flex; align-items: center;"><span style="width: 12px; height: 12px; background: #9f7aea; border-radius: 50%; display: inline-block; margin-right: 5px;"></span> > 60 min</div>
-            <div style="display: flex; align-items: center;"><span style="width: 12px; height: 12px; background: #718096; border-radius: 50%; display: inline-block; margin-right: 5px;"></span> En curso</div>
+        <div id="map"></div>
+
+        <!-- Leyenda -->
+        <div class="map-legend">
+            <div class="legend-item"><span class="legend-dot" style="background: #48bb78;"></span>
+                < 5 min</div>
+                    <div class="legend-item"><span class="legend-dot" style="background: #4299e1;"></span> 5-15 min
+                    </div>
+                    <div class="legend-item"><span class="legend-dot" style="background: #ed8936;"></span> 15-30 min
+                    </div>
+                    <div class="legend-item"><span class="legend-dot" style="background: #f56565;"></span> 30-60 min
+                    </div>
+                    <div class="legend-item"><span class="legend-dot" style="background: #9f7aea;"></span> > 60 min
+                    </div>
+                    <div class="legend-item"><span class="legend-dot" style="background: #718096;"></span> En curso
+                    </div>
+            </div>
+
+            <!-- Historial -->
+            <div class="history-section">
+                <h3 style="color: var(--primary); margin-top: 0;">📋 Historial Detallado</h3>
+                <div id="historyList"></div>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <button onclick="window.location.href='index.html'" class="btn-search" style="background: #334155;">
+                    ← Volver al Menú
+                </button>
+            </div>
         </div>
 
-        <!-- Lista de ubicaciones -->
-        <div class="locations-list">
-            <h3>📋 Historial de Ubicaciones</h3>
-            <div id="locationsList"></div>
+        <div id="loadingOverlay" class="loading-overlay">
+            <div class="spinner"></div>
         </div>
 
-        <!-- Botón volver -->
-        <div style="margin-top: 30px; text-align: center;">
-            <button onclick="window.location.href='index.html'" class="btn-filter btn-secondary">
-                ← Volver al Menú Principal
-            </button>
-        </div>
-    </div>
+        <!-- Scripts -->
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        <script src="config.js"></script> <!-- Asegúrate de que config.js tenga la configuración de Supabase -->
 
-    <!-- Loading overlay -->
-    <div id="loadingOverlay" class="loading-overlay">
-        <div class="spinner"></div>
-    </div>
+        <script>
+            // Variables globales
+            let map;
+            let markers = [];
+            let polyline;
 
-    <script>
-        /**
-         * MAPA DE UBICACIONES GPS - VERSIÓN INLINE
-         * Última actualización: 2025-12-02
-         */
+            // Inicializar al cargar
+            document.addEventListener('DOMContentLoaded', async () => {
+                initMap();
+                await cargarUsuarios();
 
-        // Configuración de API
-        const MAP_API_URL = window.location.origin;
+                // Establecer fecha de hoy por defecto
+                const hoy = new Date().toISOString().split('T')[0];
+                document.getElementById('filterFechaInicio').value = hoy;
+                document.getElementById('filterFechaFin').value = hoy;
 
-        console.log('🗺️ Iniciando Mapa de Ubicaciones (Inline)');
-        console.log('📡 API URL:', MAP_API_URL);
-        function actualizarMapa(ubicaciones) {
-            if (!map) {
-                console.error('❌ Mapa no inicializado');
-                return;
+                // Cargar datos iniciales
+                await cargarUbicaciones();
+            });
+
+            // Inicializar Mapa
+            function initMap() {
+                // Coordenadas de Lima por defecto
+                map = L.map('map').setView([-12.0464, -77.0428], 13);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors',
+                    maxZoom: 19
+                }).addTo(map);
+
+                console.log('✅ Mapa inicializado');
             }
 
-            // Limpiar marcadores existentes
-            markers.forEach(marker => map.removeLayer(marker));
-            markers = [];
+            // Cargar Usuarios
+            async function cargarUsuarios() {
+                const select = document.getElementById('filterUsuario');
+                select.innerHTML = '<option value="">Cargando...</option>';
 
-            // Limpiar polilínea
-            if (polyline) {
-                map.removeLayer(polyline);
-                polyline = null;
+                try {
+                    // Cargar de ambas tablas
+                    const { data: usuarios } = await supabase.from('usuarios').select('id, username, nombre').eq('activo', true);
+                    const { data: supervisores } = await supabase.from('supervisores').select('id, usuario, nombre').eq('activo', true);
+
+                    let todos = [];
+                    if (usuarios) todos = todos.concat(usuarios.map(u => ({ id: u.id, nombre: u.nombre || u.username })));
+                    if (supervisores) todos = todos.concat(supervisores.map(s => ({ id: s.id, nombre: s.nombre || s.usuario })));
+
+                    // Ordenar
+                    todos.sort((a, b) => a.nombre.localeCompare(b.nombre));
+
+                    // Llenar select
+                    select.innerHTML = '<option value="">Todos los usuarios</option>';
+                    todos.forEach(u => {
+                        const opt = document.createElement('option');
+                        opt.value = u.id;
+                        opt.textContent = u.nombre;
+                        select.appendChild(opt);
+                    });
+
+                    console.log(`✅ ${todos.length} usuarios cargados`);
+
+                } catch (error) {
+                    console.error('Error cargando usuarios:', error);
+                    select.innerHTML = '<option value="">Error cargando usuarios</option>';
+                }
             }
 
-            if (ubicaciones.length === 0) {
-                console.log('⚠️ No hay ubicaciones para mostrar');
-                return;
+            // Cargar Ubicaciones
+            async function cargarUbicaciones() {
+                showLoading(true);
+                try {
+                    let query = supabase
+                        .from('ubicaciones_gps')
+                        .select('*')
+                        .order('timestamp_entrada', { ascending: false });
+
+                    // Filtros
+                    const usuario = document.getElementById('filterUsuario').value;
+                    const inicio = document.getElementById('filterFechaInicio').value;
+                    const fin = document.getElementById('filterFechaFin').value;
+                    const dispositivo = document.getElementById('filterDeviceType').value;
+
+                    if (usuario) query = query.eq('usuario_id', usuario);
+                    if (inicio) query = query.gte('timestamp_entrada', `${inicio}T00:00:00`);
+                    if (fin) query = query.lte('timestamp_entrada', `${fin}T23:59:59`);
+                    if (dispositivo) query = query.eq('device_type', dispositivo);
+
+                    const { data, error } = await query.limit(500);
+
+                    if (error) throw error;
+
+                    actualizarMapa(data);
+                    actualizarEstadisticas(data);
+                    actualizarHistorial(data);
+
+                } catch (error) {
+                    console.error('Error cargando ubicaciones:', error);
+                    alert('Error al cargar datos del mapa');
+                } finally {
+                    showLoading(false);
+                }
             }
 
-            console.log(`📍 Agregando ${ubicaciones.length} marcadores al mapa`);
+            // Actualizar Mapa con Marcadores
+            function actualizarMapa(ubicaciones) {
+                // Limpiar
+                markers.forEach(m => map.removeLayer(m));
+                markers = [];
+                if (polyline) map.removeLayer(polyline);
 
-            const bounds = [];
-            const routePoints = [];
+                if (!ubicaciones || ubicaciones.length === 0) return;
 
-            // Crear marcadores
-            ubicaciones.forEach((ubicacion, index) => {
-                const lat = parseFloat(ubicacion.latitud);
-                const lon = parseFloat(ubicacion.longitud);
+                const bounds = [];
+                const latlngs = [];
 
-                if (isNaN(lat) || isNaN(lon)) {
-                    console.warn(`Coordenadas inválidas en ubicación ${index}`);
+                ubicaciones.forEach((u, index) => {
+                    if (!u.latitud || !u.longitud) return;
+
+                    const color = getColorPorDuracion(u.duracion_minutos);
+
+                    // Icono personalizado
+                    const icon = L.divIcon({
+                        className: 'custom-marker',
+                        html: `<div style="background:${color}; width:24px; height:24px; border-radius:50%; border:2px solid white; box-shadow:0 2px 5px rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; color:white; font-size:10px; font-weight:bold;">${index + 1}</div>`,
+                        iconSize: [24, 24],
+                        iconAnchor: [12, 12]
+                    });
+
+                    const marker = L.marker([u.latitud, u.longitud], { icon: icon })
+                        .bindPopup(crearPopup(u))
+                        .addTo(map);
+
+                    markers.push(marker);
+                    bounds.push([u.latitud, u.longitud]);
+                    latlngs.push([u.latitud, u.longitud]);
+                });
+
+                // Ajustar vista
+                if (bounds.length > 0) {
+                    map.fitBounds(bounds, { padding: [50, 50] });
+                    // Dibujar ruta
+                    if (latlngs.length > 1) {
+                        polyline = L.polyline(latlngs, { color: 'var(--primary)', dashArray: '5, 10' }).addTo(map);
+                    }
+                }
+            }
+
+            // Crear contenido del Popup
+            function crearPopup(u) {
+                const entrada = new Date(u.timestamp_entrada).toLocaleString('es-PE');
+                const duracion = u.duracion_minutos ? `${u.duracion_minutos} min` : 'En curso';
+
+                return `
+            <div style="font-family: 'Outfit', sans-serif; min-width: 200px;">
+                <h4 style="margin:0 0 8px 0; color:#0f172a;">📍 Detalle de Ubicación</h4>
+                <div style="font-size:0.9em; color:#334155;">
+                    <strong>Dispositivo:</strong> ${u.device_type === 'mobile' ? '📱 Móvil' : '💻 PC'}<br>
+                    <strong>Entrada:</strong> ${entrada}<br>
+                    <strong>Duración:</strong> ${duracion}<br>
+                    <strong>Actividad:</strong> ${u.actividad_realizada || 'N/A'}<br>
+                    <strong>Precisión:</strong> ${Math.round(u.precision_metros || 0)}m
+                </div>
+            </div>
+        `;
+            }
+
+            // Actualizar Historial (Lista debajo del mapa)
+            function actualizarHistorial(ubicaciones) {
+                const container = document.getElementById('historyList');
+                if (!ubicaciones.length) {
+                    container.innerHTML = '<p style="text-align:center; color:var(--text-secondary);">No hay ubicaciones registradas en este periodo.</p>';
                     return;
                 }
 
-                bounds.push([lat, lon]);
-                routePoints.push([lat, lon]);
+                container.innerHTML = ubicaciones.map((u, i) => {
+                    const entrada = new Date(u.timestamp_entrada).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
+                    const color = getColorPorDuracion(u.duracion_minutos);
 
-                // Color según duración
-                const color = getMarkerColor(ubicacion.duracion_minutos);
-
-                // Crear icono personalizado
-                const icon = L.divIcon({
-                    className: 'custom-marker',
-                    html: `<div style="
-                        background: ${color};
-                        width: 30px;
-                        height: 30px;
-                        border-radius: 50%;
-                        border: 3px solid white;
-                        box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        color: white;
-                        font-weight: bold;
-                        font-size: 12px;
-                    ">${index + 1}</div>`,
-                    iconSize: [30, 30],
-                    iconAnchor: [15, 15]
-                });
-
-                // Crear marcador
-                const marker = L.marker([lat, lon], { icon: icon }).addTo(map);
-
-                // Crear popup
-                const popupContent = crearPopupContent(ubicacion, index + 1);
-                marker.bindPopup(popupContent);
-
-                markers.push(marker);
-            });
-
-            // Dibujar ruta si hay múltiples puntos
-            if (routePoints.length > 1) {
-                polyline = L.polyline(routePoints, {
-                    color: '#00d9ff',
-                    weight: 3,
-                    opacity: 0.6,
-                    dashArray: '10, 5'
-                }).addTo(map);
-            }
-
-            // Ajustar vista del mapa
-            if (bounds.length > 0) {
-                map.fitBounds(bounds, { padding: [50, 50] });
-            }
-
-            console.log(`✅ ${markers.length} marcadores agregados`);
-        }
-
-        /**
-         * Obtener color del marcador según duración
-         */
-        function getMarkerColor(duracionMinutos) {
-            if (!duracionMinutos) return '#718096'; // Gris - en curso
-            if (duracionMinutos < 5) return '#48bb78'; // Verde - muy corta
-            if (duracionMinutos < 15) return '#4299e1'; // Azul - corta
-            if (duracionMinutos < 30) return '#ed8936'; // Naranja - media
-            if (duracionMinutos < 60) return '#f56565'; // Rojo - larga
-            return '#9f7aea'; // Púrpura - muy larga
-        }
-
-        /**
-         * Crear contenido del popup
-         */
-        function crearPopupContent(ubicacion, numero) {
-            const fechaEntrada = new Date(ubicacion.timestamp_entrada);
-            const fechaSalida = ubicacion.timestamp_salida ? new Date(ubicacion.timestamp_salida) : null;
-
-            const duracion = ubicacion.duracion_minutos
-                ? formatearDuracion(ubicacion.duracion_minutos)
-                : 'En curso';
-
-            return `
-                <div class="popup-title">📍 Ubicación #${numero}</div>
-                <div class="popup-info">
-                    <strong>Usuario:</strong> ${ubicacion.nombre || ubicacion.username || 'N/A'}<br>
-                    <strong>Dispositivo:</strong> ${ubicacion.device_type === 'mobile' ? '📱 Móvil' : '💻 PC'}<br>
-                    <strong>Entrada:</strong> ${formatearFechaPerú(fechaEntrada)}<br>
-                    ${fechaSalida ? `<strong>Salida:</strong> ${formatearFechaPerú(fechaSalida)}<br>` : ''}
-                    <strong>Actividad:</strong> ${ubicacion.actividad_realizada || 'N/A'}<br>
-                    ${ubicacion.cuenta_contrato ? `<strong>Cuenta:</strong> ${ubicacion.cuenta_contrato}<br>` : ''}
-                    <strong>Precisión:</strong> ${Math.round(ubicacion.precision_metros)} metros<br>
-                    <strong>Coordenadas:</strong> ${ubicacion.latitud.toFixed(6)}, ${ubicacion.longitud.toFixed(6)}
+                    return `
+                <div class="history-item" onclick="centrarEn(${i})" style="border-left-color: ${color}">
+                    <div class="history-info">
+                        <strong>${u.actividad_realizada || 'Ubicación Registrada'}</strong>
+                        <span class="history-meta">
+                            ${u.device_type === 'mobile' ? '📱' : '💻'} 
+                            Precisión: ${Math.round(u.precision_metros)}m
+                        </span>
+                    </div>
+                    <div class="history-time">
+                        ${entrada}<br>
+                        <span style="font-size:0.8em; color:${color}">
+                            ${u.duracion_minutos ? u.duracion_minutos + ' min' : 'En curso'}
+                        </span>
+                    </div>
                 </div>
-                <div class="popup-duration">⏱️ ${duracion}</div>
             `;
-        }
+                }).join('');
+            }
 
-        /**
-         * Actualizar estadísticas
-         */
-        function actualizarEstadisticas(ubicaciones) {
-            const totalUbicaciones = ubicaciones.length;
+            // Actualizar Estadísticas
+            function actualizarEstadisticas(data) {
+                document.getElementById('statTotal').textContent = data.length;
 
-            // Calcular tiempo promedio
-            const duraciones = ubicaciones
-                .filter(u => u.duracion_minutos)
-                .map(u => u.duracion_minutos);
+                const duraciones = data.filter(d => d.duracion_minutos).map(d => d.duracion_minutos);
+                const promedio = duraciones.length ? Math.round(duraciones.reduce((a, b) => a + b, 0) / duraciones.length) : 0;
+                document.getElementById('statTiempo').textContent = `${promedio} min`;
 
-            const tiempoPromedio = duraciones.length > 0
-                ? Math.round(duraciones.reduce((a, b) => a + b, 0) / duraciones.length)
-                : 0;
+                const dispositivos = new Set(data.map(d => d.device_fingerprint)).size;
+                document.getElementById('statDispositivos').textContent = dispositivos;
 
-            // Contar dispositivos únicos
-            const dispositivosUnicos = new Set(ubicaciones.map(u => u.device_fingerprint)).size;
+                // Distancia aproximada
+                let dist = 0;
+                for (let i = 1; i < data.length; i++) {
+                    dist += calcularDistancia(data[i - 1].latitud, data[i - 1].longitud, data[i].latitud, data[i].longitud);
+                }
+                document.getElementById('statDistancia').textContent = `${(dist / 1000).toFixed(2)} km`;
+            }
 
-            // Calcular distancia total
-            let distanciaTotal = 0;
-            for (let i = 1; i < ubicaciones.length; i++) {
-                const prev = ubicaciones[i - 1];
-                const curr = ubicaciones[i];
+            // Utilidades
+            function getColorPorDuracion(minutos) {
+                if (!minutos) return '#718096'; // Gris (En curso)
+                if (minutos < 5) return '#48bb78'; // Verde
+                if (minutos < 15) return '#4299e1'; // Azul
+                if (minutos < 30) return '#ed8936'; // Naranja
+                if (minutos < 60) return '#f56565'; // Rojo
+                return '#9f7aea'; // Morado
+            }
 
-                if (prev.latitud && prev.longitud && curr.latitud && curr.longitud) {
-                    distanciaTotal += calcularDistancia(
-                        prev.latitud, prev.longitud,
-                        curr.latitud, curr.longitud
-                    );
+            function calcularDistancia(lat1, lon1, lat2, lon2) {
+                const R = 6371e3;
+                const φ1 = lat1 * Math.PI / 180;
+                const φ2 = lat2 * Math.PI / 180;
+                const Δφ = (lat2 - lat1) * Math.PI / 180;
+                const Δλ = (lon2 - lon1) * Math.PI / 180;
+                const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+                return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            }
+
+            function centrarEn(index) {
+                if (markers[index]) {
+                    markers[index].openPopup();
+                    map.setView(markers[index].getLatLng(), 16);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                 }
             }
 
-            // Actualizar UI
-            const elTotal = document.getElementById('statTotalUbicaciones');
-            const elTiempo = document.getElementById('statTiempoPromedio');
-            const elDispositivos = document.getElementById('statDispositivos');
-            const elDistancia = document.getElementById('statDistanciaTotal');
-
-            if (elTotal) elTotal.textContent = totalUbicaciones;
-            if (elTiempo) elTiempo.textContent = `${tiempoPromedio} min`;
-            if (elDispositivos) elDispositivos.textContent = dispositivosUnicos;
-            if (elDistancia) elDistancia.textContent = `${(distanciaTotal / 1000).toFixed(2)} km`;
-        }
-
-        /**
-         * Mostrar lista de ubicaciones
-         */
-        function mostrarListaUbicaciones(ubicaciones) {
-            const container = document.getElementById('locationsList');
-            if (!container) return;
-
-            if (ubicaciones.length === 0) {
-                container.innerHTML = '<p style="color: #718096;">No hay ubicaciones para mostrar</p>';
-                return;
+            function showLoading(show) {
+                document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
             }
+        </script>
 
-            container.innerHTML = ubicaciones.map((ubicacion, index) => {
-                const fechaEntrada = new Date(ubicacion.timestamp_entrada);
-                const duracion = ubicacion.duracion_minutos
-                    ? formatearDuracion(ubicacion.duracion_minutos)
-                    : 'En curso';
-
-                return `
-                    <div class="location-item" onclick="centrarMapa(${ubicacion.latitud}, ${ubicacion.longitud}, ${index})" data-id="${ubicacion.id}">
-                        <div class="location-header">
-                            <span class="location-time">
-                                ${ubicacion.device_type === 'mobile' ? '📱' : '💻'}
-                                ${formatearFechaPerú(fechaEntrada)}
-                            </span>
-                            <span class="location-duration">⏱️ ${duracion}</span>
-                        </div>
-                        <div class="location-details">
-                            <strong>${ubicacion.nombre || ubicacion.username || 'Usuario desconocido'}</strong><br>
-                            ${ubicacion.actividad_realizada ? `Actividad: ${ubicacion.actividad_realizada}<br>` : ''}
-                            ${ubicacion.cuenta_contrato ? `Cuenta: ${ubicacion.cuenta_contrato}<br>` : ''}
-                            <span class="location-coords">
-                                📍 ${ubicacion.latitud.toFixed(6)}, ${ubicacion.longitud.toFixed(6)}
-                            </span>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        /**
-         * Centrar mapa en una ubicación
-         */
-        function centrarMapa(lat, lon, markerIndex) {
-            if (!map) return;
-
-            map.setView([lat, lon], 16);
-
-            if (markers[markerIndex]) {
-                markers[markerIndex].openPopup();
-            }
-        }
-
-        /**
-         * Calcular distancia entre dos puntos (Haversine)
-         */
-        function calcularDistancia(lat1, lon1, lat2, lon2) {
-            const R = 6371e3; // Radio de la Tierra en metros
-            const φ1 = lat1 * Math.PI / 180;
-            const φ2 = lat2 * Math.PI / 180;
-            const Δφ = (lat2 - lat1) * Math.PI / 180;
-            const Δλ = (lon2 - lon1) * Math.PI / 180;
-
-            const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-                Math.cos(φ1) * Math.cos(φ2) *
-                Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-            return R * c; // Distancia en metros
-        }
-
-        /**
-         * Formatear fecha/hora para zona horaria de Perú (UTC-5)
-         */
-        function formatearFechaPerú(fecha) {
-            if (!fecha) return 'N/A';
-
-            const fechaObj = fecha instanceof Date ? fecha : new Date(fecha);
-
-            return fechaObj.toLocaleString('es-PE', {
-                timeZone: 'America/Lima',
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-                hour12: true
-            });
-        }
-
-        /**
-         * Formatear duración
-         */
-        function formatearDuracion(minutos) {
-            if (minutos < 60) {
-                return `${Math.round(minutos)} min`;
-            } else {
-                const horas = Math.floor(minutos / 60);
-                const mins = Math.round(minutos % 60);
-                return `${horas}h ${mins}min`;
-            }
-        }
-
-        /**
-         * Limpiar filtros
-         */
-        function limpiarFiltros() {
-            const u = document.getElementById('filterUsuario');
-            const fi = document.getElementById('filterFechaInicio');
-            const ff = document.getElementById('filterFechaFin');
-            const dt = document.getElementById('filterDeviceType');
-
-            if (u) u.value = '';
-            if (fi) fi.value = '';
-            if (ff) ff.value = '';
-            if (dt) dt.value = '';
-
-            cargarUbicaciones(true);
-        }
-
-        /**
-         * Mostrar/ocultar loading
-         */
-        function showLoading(show) {
-            const overlay = document.getElementById('loadingOverlay');
-            if (overlay) {
-                if (show) {
-                    overlay.classList.add('active');
-                } else {
-                    overlay.classList.remove('active');
-                }
-            }
-        }
-
-        /**
-         * Mostrar mensaje temporal
-         */
-        function mostrarMensaje(mensaje, tipo = 'info') {
-            let messageEl = document.getElementById('tempMessage');
-            if (!messageEl) {
-                messageEl = document.createElement('div');
-                messageEl.id = 'tempMessage';
-                messageEl.style.cssText = `
-                    position: fixed;
-                    top: 20px;
-                    right: 20px;
-                    padding: 15px 20px;
-                    border-radius: 8px;
-                    color: white;
-                    font-weight: 500;
-                    z-index: 10000;
-                    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-                    max-width: 400px;
-                `;
-                document.body.appendChild(messageEl);
-            }
-
-            const colores = {
-                info: '#4299e1',
-                error: '#f56565',
-                success: '#48bb78',
-                warning: '#ed8936'
-            };
-
-            messageEl.style.background = colores[tipo] || colores.info;
-            messageEl.textContent = mensaje;
-            messageEl.style.display = 'block';
-
-            setTimeout(() => {
-                messageEl.style.display = 'none';
-            }, 5000);
-        }
-
-        /**
-         * Verificar autenticación
-         */
-        function verificarAutenticacion() {
-            const currentUser = localStorage.getItem('currentUser');
-            if (!currentUser) {
-                alert('Debe iniciar sesión para acceder a esta página');
-                window.location.href = 'index.html';
-                return false;
-            }
-            return true;
-            const elTiempo = document.getElementById('statTiempoPromedio');
-            const elDispositivos = document.getElementById('statDispositivos');
-            const elDistancia = document.getElementById('statDistanciaTotal');
-
-            if (elTotal) elTotal.textContent = totalUbicaciones;
-            if (elTiempo) elTiempo.textContent = `${tiempoPromedio} min`;
-            if (elDispositivos) elDispositivos.textContent = dispositivosUnicos;
-            if (elDistancia) elDistancia.textContent = `${(distanciaTotal / 1000).toFixed(2)} km`;
-        }
-
-        /**
-         * Mostrar lista de ubicaciones
-         */
-        function mostrarListaUbicaciones(ubicaciones) {
-            const container = document.getElementById('locationsList');
-            if (!container) return;
-
-            if (ubicaciones.length === 0) {
-                container.innerHTML = '<p style="color: #718096;">No hay ubicaciones para mostrar</p>';
-                return;
-            }
-
-            container.innerHTML = ubicaciones.map((ubicacion, index) => {
-                const fechaEntrada = new Date(ubicacion.timestamp_entrada);
-                const duracion = ubicacion.duracion_minutos
-                    ? formatearDuracion(ubicacion.duracion_minutos)
-                    : 'En curso';
-
-                return `
-                    <div class="location-item" onclick="centrarMapa(${ubicacion.latitud}, ${ubicacion.longitud}, ${index})" data-id="${ubicacion.id}">
-                        <div class="location-header">
-                            <span class="location-time">
-                                ${ubicacion.device_type === 'mobile' ? '📱' : '💻'}
-                                ${formatearFechaPerú(fechaEntrada)}
-                            </span>
-                            <span class="location-duration">⏱️ ${duracion}</span>
-                        </div>
-                        <div class="location-details">
-                            <strong>${ubicacion.nombre || ubicacion.username || 'Usuario desconocido'}</strong><br>
-                            ${ubicacion.actividad_realizada ? `Actividad: ${ubicacion.actividad_realizada}<br>` : ''}
-                            ${ubicacion.cuenta_contrato ? `Cuenta: ${ubicacion.cuenta_contrato}<br>` : ''}
-                            <span class="location-coords">
-                                📍 ${ubicacion.latitud.toFixed(6)}, ${ubicacion.longitud.toFixed(6)}
-                            </span>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        /**
-         * Centrar mapa en una ubicación
-         */
-        function centrarMapa(lat, lon, markerIndex) {
-            if (!map) return;
-
-            map.setView([lat, lon], 16);
-
-            if (markers[markerIndex]) {
-                markers[markerIndex].openPopup();
-            }
-        }
-
-        /**
-         * Calcular distancia entre dos puntos (Haversine)
-         */
-        function calcularDistancia(lat1, lon1, lat2, lon2) {
-            const R = 6371e3; // Radio de la Tierra en metros
-            const φ1 = lat1 * Math.PI / 180;
-            const φ2 = lat2 * Math.PI / 180;
-            const Δφ = (lat2 - lat1) * Math.PI / 180;
-            const Δλ = (lon2 - lon1) * Math.PI / 180;
-
-            const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-                Math.cos(φ1) * Math.cos(φ2) *
-                Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-            return R * c; // Distancia en metros
-        }
-
-        /**
-         * Formatear fecha/hora para zona horaria de Perú (UTC-5)
-         */
-        function formatearFechaPerú(fecha) {
-            if (!fecha) return 'N/A';
-
-            const fechaObj = fecha instanceof Date ? fecha : new Date(fecha);
-
-            return fechaObj.toLocaleString('es-PE', {
-                timeZone: 'America/Lima',
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-                hour12: true
-            });
-        }
-
-        /**
-         * Formatear duración
-         */
-        function formatearDuracion(minutos) {
-            if (minutos < 60) {
-                return `${Math.round(minutos)} min`;
-            } else {
-                const horas = Math.floor(minutos / 60);
-                const mins = Math.round(minutos % 60);
-                return `${horas}h ${mins}min`;
-            }
-        }
-
-        /**
-         * Limpiar filtros
-         */
-        function limpiarFiltros() {
-            const u = document.getElementById('filterUsuario');
-            const fi = document.getElementById('filterFechaInicio');
-            const ff = document.getElementById('filterFechaFin');
-            const dt = document.getElementById('filterDeviceType');
-
-            if (u) u.value = '';
-            if (fi) fi.value = '';
-            if (ff) ff.value = '';
-            if (dt) dt.value = '';
-
-            cargarUbicaciones(true);
-        }
-
-        /**
-         * Mostrar/ocultar loading
-         */
-        function showLoading(show) {
-            const overlay = document.getElementById('loadingOverlay');
-            if (overlay) {
-                if (show) {
-                    overlay.classList.add('active');
-                } else {
-                    overlay.classList.remove('active');
-                }
-            }
-        }
-
-        /**
-         * Mostrar mensaje temporal
-         */
-        function mostrarMensaje(mensaje, tipo = 'info') {
-            let messageEl = document.getElementById('tempMessage');
-            if (!messageEl) {
-                messageEl = document.createElement('div');
-                messageEl.id = 'tempMessage';
-                messageEl.style.cssText = `
-                    position: fixed;
-                    top: 20px;
-                    right: 20px;
-                    padding: 15px 20px;
-                    border-radius: 8px;
-                    color: white;
-                    font-weight: 500;
-                    z-index: 10000;
-                    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-                    max-width: 400px;
-                `;
-                document.body.appendChild(messageEl);
-            }
-
-            const colores = {
-                info: '#4299e1',
-                error: '#f56565',
-                success: '#48bb78',
-                warning: '#ed8936'
-            };
-
-            messageEl.style.background = colores[tipo] || colores.info;
-            messageEl.textContent = mensaje;
-            messageEl.style.display = 'block';
-
-            setTimeout(() => {
-                messageEl.style.display = 'none';
-            }, 5000);
-        }
-
-        /**
-         * Verificar autenticación
-         */
-        function verificarAutenticacion() {
-            const currentUser = localStorage.getItem('currentUser');
-            if (!currentUser) {
-                alert('Debe iniciar sesión para acceder a esta página');
-                window.location.href = 'index.html';
-                return false;
-            }
-            return true;
-        }
-
-        /**
-         * Inicialización del documento
-         */
-        document.addEventListener('DOMContentLoaded', function () {
-            console.log('📄 DOM cargado - Script Inline');
-
-            // Inicializar Supabase (CRÍTICO: Sin esto no hay conexión)
-            if (typeof initSupabase === 'function') {
-                initSupabase();
-            } else {
-                console.error('❌ initSupabase no está definido');
-                mostrarMensaje('Error crítico: No se pudo conectar a la base de datos', 'error');
-                return;
-            }
-
-            // Verificar autenticación
-            if (!verificarAutenticacion()) {
-                return;
-            }
-
-            console.log('✅ Usuario autenticado');
-
-            // Verificar que Leaflet esté disponible
-            if (typeof L === 'undefined') {
-                console.error('❌ Leaflet no está cargado');
-                mostrarMensaje('Error: Librería de mapas no disponible', 'error');
-                return;
-            }
-
-            console.log('✅ Leaflet disponible');
-
-            // Inicializar mapa
-            const mapaOk = initMap();
-            if (!mapaOk) {
-                console.error('❌ Fallo al inicializar mapa');
-                return;
-            }
-
-            // Cargar usuarios inmediatamente
-            cargarUsuarios();
-
-            // Limpiar campos de fecha
-            const fi = document.getElementById('filterFechaInicio');
-            const ff = document.getElementById('filterFechaFin');
-            if (fi) fi.value = '';
-            if (ff) ff.value = '';
-
-            // Cargar ubicaciones iniciales después de un breve delay
-            setTimeout(() => {
-                console.log('🚀 Cargando ubicaciones iniciales...');
-                cargarUbicaciones(true);
-            }, 1000);
-        });
-    </script>
 </body>
 
 </html>
