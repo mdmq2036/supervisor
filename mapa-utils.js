@@ -123,12 +123,17 @@ async function cargarUbicaciones(initialLoad = false) {
     try {
         // 1. Limpiar fechas en carga inicial para mostrar TODO el historial
         if (initialLoad) {
-            // Por defecto, mostrar solo ubicaciones de HOY (usuarios conectados)
+            // Por defecto, mostrar solo ubicaciones de HOY
             const hoy = new Date().toISOString().split('T')[0];
             const fechaInicio = document.getElementById('filterFechaInicio');
             const fechaFin = document.getElementById('filterFechaFin');
             if (fechaInicio) fechaInicio.value = hoy;
             if (fechaFin) fechaFin.value = hoy;
+        }
+            const fechaInicio = document.getElementById('filterFechaInicio');
+            const fechaFin = document.getElementById('filterFechaFin');
+            if (fechaInicio) fechaInicio.value = '';
+            if (fechaFin) fechaFin.value = '';
         }
 
         let query = supabase

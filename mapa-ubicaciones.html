@@ -407,7 +407,17 @@
         </div>
 
         <!-- Mapa -->
-        <div id="map"></div>
+        <div id="map" style="position: relative;"></div>
+        
+        <!-- Leyenda de Colores -->
+        <div class="map-legend" style="background: white; padding: 10px; border-radius: 8px; margin-top: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; font-size: 0.9em;">
+            <div style="display: flex; align-items: center;"><span style="width: 12px; height: 12px; background: #48bb78; border-radius: 50%; display: inline-block; margin-right: 5px;"></span> < 5 min</div>
+            <div style="display: flex; align-items: center;"><span style="width: 12px; height: 12px; background: #4299e1; border-radius: 50%; display: inline-block; margin-right: 5px;"></span> 5-15 min</div>
+            <div style="display: flex; align-items: center;"><span style="width: 12px; height: 12px; background: #ed8936; border-radius: 50%; display: inline-block; margin-right: 5px;"></span> 15-30 min</div>
+            <div style="display: flex; align-items: center;"><span style="width: 12px; height: 12px; background: #f56565; border-radius: 50%; display: inline-block; margin-right: 5px;"></span> 30-60 min</div>
+            <div style="display: flex; align-items: center;"><span style="width: 12px; height: 12px; background: #9f7aea; border-radius: 50%; display: inline-block; margin-right: 5px;"></span> > 60 min</div>
+            <div style="display: flex; align-items: center;"><span style="width: 12px; height: 12px; background: #718096; border-radius: 50%; display: inline-block; margin-right: 5px;"></span> En curso</div>
+        </div>
 
         <!-- Lista de ubicaciones -->
         <div class="locations-list">

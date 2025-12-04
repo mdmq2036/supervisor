@@ -775,8 +775,11 @@
 
                 currentUser = userData;
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                
-                // SOLICITAR GPS OBLIGATORIO
+                showScreen('menuScreen');
+                updateUserInfo();
+
+                // Solicitar permisos de geolocalización automáticamente
+                // SOLICITAR GPS OBLIGATORIO Y REGISTRAR
                 if (navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(
                         async function(position) {
@@ -813,11 +816,6 @@
                 } else {
                     alert('Su navegador no soporta geolocalizacion.');
                 }
-                showScreen('menuScreen');
-                updateUserInfo();
-
-                // Solicitar permisos de geolocalización automáticamente
-                requestGeolocationPermission();
 
                 // Limpiar formulario
                 document.getElementById('loginForm').reset();
