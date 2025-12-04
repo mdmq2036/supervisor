@@ -174,7 +174,7 @@ app.get('/api/ubicaciones', checkDbConnection, async (req, res) => {
         // Si no hay datos en v_ubicaciones_tiempo_real, intentar con v_analisis_ubicaciones
         if (error || !data || data.length === 0) {
             console.log('⚠️ No hay datos en v_ubicaciones_tiempo_real, intentando v_analisis_ubicaciones...');
-            
+
             query = supabase
                 .from('v_analisis_ubicaciones')
                 .select('*')
@@ -258,7 +258,7 @@ app.get('/api/ubicaciones/todas', checkDbConnection, async (req, res) => {
 app.post('/api/ubicaciones/guardar', checkDbConnection, async (req, res) => {
     try {
         const {
-            usuario_id, nombre, latitud, longitud, 
+            usuario_id, nombre, latitud, longitud,
             precision_metros, device_type, device_fingerprint
         } = req.body;
 
@@ -294,18 +294,50 @@ app.post('/api/ubicaciones/guardar', checkDbConnection, async (req, res) => {
     }
 });
 
-// 4. Obtener lista de usuarios (para el filtro)
+// 4. Obtener lista de usuarios (para el filtro) - INCLUYE SUPERVISORES
 app.get('/api/usuarios', checkDbConnection, async (req, res) => {
     try {
-        // Consultar tabla de usuarios (ajustar campos según tu esquema real)
-        const { data, error } = await supabase
+        // Obtener usuarios regulares
+        const { data: usuarios, error: errorUsuarios } = await supabase
             .from('usuarios')
             .select('id, username, nombre')
             .order('nombre');
 
-        if (error) throw error;
+        if (errorUsuarios) throw errorUsuarios;
 
-        res.json(data);
+        // Obtener supervisores (solo tienen 'id' y 'nombre', no 'username')
+        const { data: supervisores, error: errorSupervisores } = await supabase
+            .from('supervisores')
+            .select('id, nombre')
+            .order('nombre');
+
+        // Si hay error al obtener supervisores, solo devolver usuarios
+        if (errorSupervisores) {
+            console.warn('⚠️ No se pudieron obtener supervisores:', errorSupervisores.message);
+            return res.json(usuarios || []);
+        }
+
+        // Combinar ambas listas y marcar el tipo de usuario
+        const usuariosCombinados = [
+            ...(usuarios || []).map(u => ({
+                id: u.id,
+                username: u.username || u.nombre,
+                nombre: u.nombre || u.username,
+                tipo: 'usuario'
+            })),
+            ...(supervisores || []).map(s => ({
+                id: s.id,
+                username: s.nombre, // Usar nombre como username para supervisores
+                nombre: `${s.nombre} (Supervisor)`,
+                tipo: 'supervisor'
+            }))
+        ];
+
+        // Ordenar por nombre
+        usuariosCombinados.sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
+
+        console.log(`✅ Usuarios cargados: ${usuarios?.length || 0} usuarios + ${supervisores?.length || 0} supervisores`);
+        res.json(usuariosCombinados);
 
     } catch (error) {
         console.error('Error al obtener usuarios:', error);
