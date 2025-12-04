@@ -288,11 +288,39 @@ app.post('/api/ubicaciones/guardar', checkDbConnection, async (req, res) => {
         console.log(`✅ Ubicación guardada - Usuario: ${nombre}, Precisión: ${precision_metros}m`);
         res.json({ success: true, data: data[0] });
 
+
     } catch (error) {
         console.error('Error al guardar ubicación:', error);
         res.status(500).json({ error: error.message });
     }
 });
+
+// 3.7 NUEVO: Cerrar sesión GPS al hacer logout
+app.post('/api/ubicaciones/cerrar-sesion', checkDbConnection, async (req, res) => {
+    try {
+        const { usuario_id } = req.body;
+
+        if (!usuario_id) {
+            return res.status(400).json({ error: 'Falta usuario_id' });
+        }
+
+        // Llamar a la función RPC de Supabase para cerrar sesiones
+        const { data, error } = await supabase
+            .rpc('cerrar_sesion_gps_usuario', {
+                p_usuario_id: usuario_id
+            });
+
+        if (error) throw error;
+
+        console.log(`✅ Sesiones GPS cerradas para usuario: ${usuario_id}`);
+        res.json({ success: true, message: 'Sesiones GPS cerradas correctamente' });
+
+    } catch (error) {
+        console.error('Error al cerrar sesión GPS:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 
 // 4. Obtener lista de usuarios (para el filtro) - INCLUYE SUPERVISORES
 app.get('/api/usuarios', checkDbConnection, async (req, res) => {

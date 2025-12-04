@@ -799,11 +799,53 @@
         }
 
         // Manejar logout
-        function handleLogout() {
-            currentUser = null;
-            localStorage.removeItem('currentUser');
-            showScreen('loginScreen');
-            document.getElementById('loginForm').reset();
+        async function handleLogout() {
+            try {
+                // 1. Detener rastreo GPS local si está activo
+                if (window.GeolocationTracker && window.GeolocationTracker.isTracking) {
+                    await window.GeolocationTracker.stopTracking();
+                    console.log('✅ Rastreo GPS local detenido');
+                }
+
+                // 2. Cerrar sesiones GPS en el servidor
+                if (currentUser && currentUser.id) {
+                    try {
+                        const response = await fetch('/api/ubicaciones/cerrar-sesion', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                usuario_id: currentUser.id
+                            })
+                        });
+
+                        if (response.ok) {
+                            console.log('✅ Sesiones GPS cerradas en servidor');
+                        } else {
+                            console.warn('⚠️ No se pudieron cerrar sesiones GPS en servidor');
+                        }
+                    } catch (error) {
+                        console.error('Error al cerrar sesiones GPS:', error);
+                    }
+                }
+
+                // 3. Limpiar datos locales
+                currentUser = null;
+                localStorage.removeItem('currentUser');
+                
+                // 4. Volver a pantalla de login
+                showScreen('loginScreen');
+                document.getElementById('loginForm').reset();
+                
+                console.log('✅ Logout completado correctamente');
+            } catch (error) {
+                console.error('Error en logout:', error);
+                // Asegurar que se cierre sesión aunque haya errores
+                currentUser = null;
+                localStorage.removeItem('currentUser');
+                showScreen('loginScreen');
+            }
         }
 
         // Actualizar información del usuario
